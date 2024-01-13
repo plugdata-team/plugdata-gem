@@ -54,7 +54,7 @@ bool glsl_tesseval :: isRunnable()
     return true;
   }
 
-  error("need OpenGL-4.0 to run GLSL tesselation");
+  pd_error(nullptr, "need OpenGL-4.0 to run GLSL tesselation");
   return false;
 }
 

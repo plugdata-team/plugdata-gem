@@ -51,7 +51,7 @@ void pix_share_read :: render(GemState *state)
         state->set(GemState::_PIX, &pix);
       }
     } else {
-      error("no shmaddr");
+      pd_error(nullptr, "no shmaddr");
       t_atom atom;
       SETFLOAT(&atom, -1);
       outlet_anything(m_outlet, gensym("error"), 1, &atom);

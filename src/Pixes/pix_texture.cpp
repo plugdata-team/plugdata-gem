@@ -209,7 +209,7 @@ bool pix_texture :: isRunnable(void)
 {
   /* for simplicity's sake, i have dropped support for very old openGL-versions */
   if(!GLEW_VERSION_1_1) {
-    error("need at least openGL-1.1 for texturing! refusing to work");
+    pd_error(nullptr, "need at least openGL-1.1 for texturing! refusing to work");
     return false;
   }
 
@@ -686,7 +686,7 @@ void pix_texture :: startRendering()
   m_dataSize[0] = m_dataSize[1] = m_dataSize[2] = -1;
 
   if (!m_realTextureObj)        {
-    error("Unable to allocate texture object");
+    pd_error(nullptr, "Unable to allocate texture object");
     return;
   }
 }
@@ -871,7 +871,7 @@ void pix_texture :: pboMess(int num)
 }
 void pix_texture :: modeMess(int mode)
 {
-  error("'mode' message is deprecated; please use 'rectangle' instead");
+  pd_error(nullptr, "'mode' message is deprecated; please use 'rectangle' instead");
   textureRectangle(mode);
 }
 void pix_texture :: clientStorage(int mode)
@@ -948,10 +948,10 @@ void pix_texture :: extTextureMess(t_symbol*s, int argc, t_atom*argv)
     index=0;
     return;
   default:
-    error("arguments: <texId> [<width> <height> [<type> [<upsidedown>]]]");
+    pd_error(nullptr, "arguments: <texId> [<width> <height> [<type> [<upsidedown>]]]");
     return;
   }
   if(index) {
-    error("invalid type of argument #%d", index);
+    pd_error(nullptr, "invalid type of argument #%d", index);
   }
 }

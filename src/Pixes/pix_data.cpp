@@ -173,7 +173,7 @@ void pix_data :: qualityMess(int q)
   if(q>=0) {
     m_quality=q;
   } else {
-    error("qualiy must be 0|1");
+    pd_error(nullptr, "qualiy must be 0|1");
   }
 
 }

@@ -115,7 +115,7 @@ pix_record :: pix_record(int argc, t_atom *argv):
   m_pimpl(new PIMPL())
 {
   if (argc != 0) {
-    error("ignoring arguments");
+    pd_error(nullptr, "ignoring arguments");
   }
   m_outNumFrames = outlet_new(this->x_obj, 0);
   m_outInfo      = outlet_new(this->x_obj, 0);
@@ -208,7 +208,7 @@ void pix_record :: startRecording()
   }
 
   if(m_filename.empty()) {
-    error("start recording requested with no prior open");
+    pd_error(nullptr, "start recording requested with no prior open");
     return;
   }
 
@@ -363,7 +363,7 @@ void pix_record :: dialogMess()
   }
 
   if(!m_handle->dialog()) {
-    error("unable to open settings dialog");
+    pd_error(nullptr, "unable to open settings dialog");
   }
 }
 /////////////////////////////////////////////////////////
@@ -443,7 +443,7 @@ void pix_record :: codecMess(t_atom *argv)
     if(id>0 && ((unsigned int)id)<codecs.size()) {
       sid=codecs[id];
     } else {
-      error("invalid codec# %d (0..%d)", id, codecs.size());
+      pd_error(nullptr, "invalid codec# %d (0..%d)", id, codecs.size());
       return;
     }
   }
@@ -451,7 +451,7 @@ void pix_record :: codecMess(t_atom *argv)
     m_codec=sid;
     verbose(1, "successfully set codec '%s'", sid.c_str());
   } else {
-    error("couldn't find a valid backend for codec '%s'", sid.c_str());
+    pd_error(nullptr, "couldn't find a valid backend for codec '%s'", sid.c_str());
     return;
   }
   enumPropertiesMess();

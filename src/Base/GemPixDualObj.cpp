@@ -142,7 +142,7 @@ void GemPixDualObj :: processImage(imageStruct &image)
 
   if (image.xsize != m_pixRight->image.xsize ||
       image.ysize != m_pixRight->image.ysize)    {
-    error("two images do not have equal dimensions (%dx%d != %dx%d)",
+    pd_error(nullptr, "two images do not have equal dimensions (%dx%d != %dx%d)",
           image.xsize, image.ysize,
           m_pixRight->image.xsize, m_pixRight->image.ysize);
     m_pixRightValid = 0;
@@ -216,7 +216,7 @@ void GemPixDualObj :: processDualImage(imageStruct &left,
 {
   std::string lformat=format2string(left.format);
   std::string rformat=format2string(right.format);
-  error("no method to combine (%s) and (%s)", lformat.c_str(),
+  pd_error(nullptr, "no method to combine (%s) and (%s)", lformat.c_str(),
         rformat.c_str());
 }
 

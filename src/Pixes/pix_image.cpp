@@ -118,7 +118,7 @@ void pix_image :: openMess(std::string filename)
       atoms.push_back(value=std::string("success"));
     }
   } else {
-    error("loading of '%s' failed", m_filename.c_str());
+    pd_error(nullptr, "loading of '%s' failed", m_filename.c_str());
     atoms.push_back(value=std::string("fail"));
   }
   atoms.push_back(value=m_filename);
@@ -151,7 +151,7 @@ void    pix_image:: loaded(const gem::image::load::id_t ID,
     verbose(0, "loaded image '%s'", m_filename.c_str());
     atoms.push_back(value=std::string("success"));
   } else {
-    error("failed to load image '%s'", m_filename.c_str());
+    pd_error(nullptr, "failed to load image '%s'", m_filename.c_str());
     atoms.push_back(value=std::string("fail"));
   }
   atoms.push_back(value=(int)ID);

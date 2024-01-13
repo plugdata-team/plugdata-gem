@@ -57,7 +57,7 @@ bool gemlist_matrix :: isRunnable()
     return true;
   }
 
-  error("your system does not support openGL-1.0 needed for operation");
+  pd_error(nullptr, "your system does not support openGL-1.0 needed for operation");
   return false;
 }
 

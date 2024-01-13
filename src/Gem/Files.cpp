@@ -85,16 +85,16 @@ std::vector<std::string>getFilenameListing(const std::string&pattern)
   switch( glob( pattern.c_str(), 0, NULL, &glob_buffer ) ) {
 #endif
   case GLOB_NOSPACE:
-    //        error("out of memory for \"%s\"",pattern.c_str());
+    //        pd_error(nullptr, "out of memory for \"%s\"",pattern.c_str());
     return result;
 # ifdef GLOB_ABORTED
   case GLOB_ABORTED:
-    //error("aborted \"%s\"",pattern.c_str());
+    //pd_error(nullptr, "aborted \"%s\"",pattern.c_str());
     return result;
 # endif
 # ifdef GLOB_NOMATCH
   case GLOB_NOMATCH:
-    //error("nothing found for \"%s\"",pattern.c_str());
+    //pd_error(nullptr, "nothing found for \"%s\"",pattern.c_str());
     return result;
 # endif
   }

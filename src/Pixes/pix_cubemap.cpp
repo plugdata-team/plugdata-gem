@@ -57,7 +57,7 @@ pix_cubemap :: pix_cubemap()
     m_numTexUnits(0),
     m_map(0)
 {
-  error("this object is likely to vanish! do not use!!");
+  pd_error(nullptr, "this object is likely to vanish! do not use!!");
 
 
   int i=0;
@@ -134,7 +134,7 @@ bool pix_cubemap :: isRunnable(void)
 {
   /* for simplicity's sake, i have dropped support for very old openGL-versions */
   if(!GLEW_VERSION_1_3) {
-    error("need at least openGL-1.3 for cube mapping! refusing to work");
+    pd_error(nullptr, "need at least openGL-1.3 for cube mapping! refusing to work");
     return false;
   }
 
@@ -286,7 +286,7 @@ void pix_cubemap :: rightImage(int id, GemState *state)
     return;
   }
   if(id<0 || id>=6) {
-    error("not a valid image-slot %d", id);
+    pd_error(nullptr, "not a valid image-slot %d", id);
   }
   pixBlock*img=NULL;
   state->get(GemState::_PIX, img);
@@ -341,7 +341,7 @@ void pix_cubemap :: startRendering()
   m_dataSize[0] = m_dataSize[1] = m_dataSize[2] = -1;
 
   if (!m_realTextureObj)        {
-    error("Unable to allocate texture object");
+    pd_error(nullptr, "Unable to allocate texture object");
     return;
   }
 }
@@ -509,7 +509,7 @@ void pix_cubemap :: rightImageMess(t_symbol *s, int argc, t_atom *argv)
     if(id>=0) {
       rightImage(id, (GemState *)(argv+1)->a_w.w_gpointer);
     } else {
-      error("unknown message '%s'",s->s_name);
+      pd_error(nullptr, "unknown message '%s'",s->s_name);
     }
   } else {
     pd_error(nullptr, "wrong righthand arguments...");

@@ -67,7 +67,7 @@ pix_video :: pix_video(int argc, t_atom*argv) :
   if(m_videoHandles.size()>0) {
     m_driver=-1;
   } else {
-    error("no video backends found!");
+    pd_error(nullptr, "no video backends found!");
   }
   MARK;
   std::string dev=gem::RTE::Symbol(argc, argv);
@@ -123,13 +123,13 @@ void pix_video :: startRendering()
   }
 
   if(m_videoHandles.size()<1) {
-    error("do video for this OS");
+    pd_error(nullptr, "do video for this OS");
     return;
   }
 
   if (!m_videoHandle) {
     if(!restart()) {
-      error("no valid video backend found");
+      pd_error(nullptr, "no valid video backend found");
       return;
     }
     return;
@@ -296,14 +296,14 @@ void pix_video :: driverMess(std::string s)
       }
     }
   }
-  error("could not find a backend for driver '%s'", s.c_str());
+  pd_error(nullptr, "could not find a backend for driver '%s'", s.c_str());
 }
 void pix_video :: driverMess(int dev)
 {
   if(dev>=0) {
     unsigned int udev=(unsigned int)dev;
     if(udev>=m_videoHandles.size()) {
-      error("driverID (%d) must not exceed %d", udev, m_videoHandles.size());
+      pd_error(nullptr, "driverID (%d) must not exceed %d", udev, m_videoHandles.size());
       return;
     }
 
@@ -504,7 +504,7 @@ void pix_video :: enumerateMess()
     }
   }
   if(data.size()<=0) {
-    error("no devices found");
+    pd_error(nullptr, "no devices found");
   }
 
   t_atom ap[2];
@@ -570,7 +570,7 @@ static void addProperties(gem::Properties&props, int argc, t_atom*argv)
   }
 
   if(argv->a_type != A_SYMBOL) {
-    error("no key given...");
+    pd_error(nullptr, "no key given...");
     return;
   }
   std::string key=std::string(atom_getsymbol(argv)->s_name);
@@ -598,7 +598,7 @@ static void addProperties(gem::Properties&props, int argc, t_atom*argv)
 void pix_video :: setPropertyMess(int argc, t_atom*argv)
 {
   if(!argc) {
-    error("no property specified!");
+    pd_error(nullptr, "no property specified!");
     return;
   }
   addProperties(m_writeprops, argc, argv);
@@ -764,7 +764,7 @@ void pix_video :: enumPropertyMess()
       outlet_anything(m_infoOut, gensym("proplist"), ac, ap);
     }
   } else {
-    error("cannot enumerate properties without a valid video-device");
+    pd_error(nullptr, "cannot enumerate properties without a valid video-device");
   }
 }
 

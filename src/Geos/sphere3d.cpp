@@ -93,11 +93,11 @@ void sphere3d :: print(int i, int j)
 {
   int index=0;
   if(i<0||i>=m_numSlices) {
-    error("slice-index must be within 0..%d", m_numSlices-1);
+    pd_error(nullptr, "slice-index must be within 0..%d", m_numSlices-1);
     return;
   }
   if(j<0||j>m_numStacks) {
-    error("stack-index must be within 0..%d", m_numStacks);
+    pd_error(nullptr, "stack-index must be within 0..%d", m_numStacks);
     return;
   }
 
@@ -139,11 +139,11 @@ void sphere3d :: setCartesian(int i, int j,
 {
   int index=0;
   if(i<0||i>=m_numSlices) {
-    error("slice-index must be within 0..%d", m_numSlices-1);
+    pd_error(nullptr, "slice-index must be within 0..%d", m_numSlices-1);
     return;
   }
   if(j<0||j>m_numStacks) {
-    error("stack-index must be within 0..%d", m_numStacks);
+    pd_error(nullptr, "stack-index must be within 0..%d", m_numStacks);
     return;
   }
 

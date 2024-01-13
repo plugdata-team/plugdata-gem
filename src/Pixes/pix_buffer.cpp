@@ -51,7 +51,7 @@ static void addProperties(gem::Properties&props, int argc, t_atom*argv)
   }
 
   if(argv->a_type != A_SYMBOL) {
-    error("no key given...");
+    pd_error(nullptr, "no key given...");
     return;
   }
   std::string key=std::string(atom_getsymbol(argv)->s_name);
@@ -183,7 +183,7 @@ void pix_buffer :: resizeMess(int newsize)
   int i;
 
   if(newsize<0) {
-    error("refusing to resize to <0 frames!");
+    pd_error(nullptr, "refusing to resize to <0 frames!");
     return;
   }
 
@@ -273,14 +273,14 @@ void pix_buffer :: loadMess(std::string filename, int pos)
 
   // some checks
   if (pos<0 || pos>=m_numframes) {
-    error("index %d out of range (0..%d)!", pos, m_numframes);
+    pd_error(nullptr, "index %d out of range (0..%d)!", pos, m_numframes);
     return;
   }
   std::string file=findFile(filename);
 
   image = image2mem(file.c_str());
   if(!image) {
-    error("'%s' is no valid image!", file.c_str());
+    pd_error(nullptr, "'%s' is no valid image!", file.c_str());
     return;
   }
 
@@ -300,7 +300,7 @@ void pix_buffer :: saveMess(std::string filename, int pos)
   imageStruct*img=NULL;
 
   if(filename.empty()) {
-    error("no filename given!");
+    pd_error(nullptr, "no filename given!");
     return;
   }
   img=getMess(pos);
@@ -313,7 +313,7 @@ void pix_buffer :: saveMess(std::string filename, int pos)
       mem2image(img, fullname.c_str(), 0);
     }
   } else {
-    error("index %d out of range (0..%d) or slot empty!", pos, m_numframes);
+    pd_error(nullptr, "index %d out of range (0..%d) or slot empty!", pos, m_numframes);
     return;
   }
 }
@@ -325,14 +325,14 @@ void pix_buffer :: saveMess(std::string filename, int pos)
 void pix_buffer :: copyMess(int src, int dst)
 {
   if(src==dst) {
-    //    error("refusing to do void copying within a slot");
+    //    pd_error(nullptr, "refusing to do void copying within a slot");
     return;
   }
   // copy an image from one slot to another
   if(putMess(getMess(src), dst)) {
     // fine
   } else {
-    error("unable to copy image from slot:%d to slot:%d", src, dst);
+    pd_error(nullptr, "unable to copy image from slot:%d to slot:%d", src, dst);
     return;
   }
 }
@@ -465,7 +465,7 @@ void pix_buffer :: allocateMess(t_symbol*s, int argc, t_atom*argv)
         c=4;
         break;
       default:
-        error("invalid format %s!", atom_getsymbol(ap)->s_name);
+        pd_error(nullptr, "invalid format %s!", atom_getsymbol(ap)->s_name);
         return;
       }
     } else if(A_FLOAT==ap->a_type) {
@@ -473,26 +473,26 @@ void pix_buffer :: allocateMess(t_symbol*s, int argc, t_atom*argv)
       c=(unsigned int)atom_getint(ap);
 
     } else {
-      error("invalid format!");
+      pd_error(nullptr, "invalid format!");
       return;
     }
   case 2:
     if((A_FLOAT==argv->a_type) && (A_FLOAT==(argv+1)->a_type)) {
       int i=atom_getint(argv);
       if(i<0) {
-        error("invalid dimenstions: x=%d < 0", i);
+        pd_error(nullptr, "invalid dimenstions: x=%d < 0", i);
         return;
       }
       x=(unsigned int)i;
 
       i=atom_getint(argv+1);
       if(i<0) {
-        error("invalid dimenstions: y=%d < 0", i);
+        pd_error(nullptr, "invalid dimenstions: y=%d < 0", i);
         return;
       }
       y=(unsigned int)i;
     } else {
-      error("invalid dimensions!");
+      pd_error(nullptr, "invalid dimensions!");
       return;
     }
     break;
@@ -500,24 +500,24 @@ void pix_buffer :: allocateMess(t_symbol*s, int argc, t_atom*argv)
     if(A_FLOAT==argv->a_type) {
       int i=atom_getint(argv);
       if(i<0) {
-        error("invalid dimenstions: x=%d < 0", i);
+        pd_error(nullptr, "invalid dimenstions: x=%d < 0", i);
         return;
       }
       x=(unsigned int)i;
       y=1;
       c=1;
     } else {
-      error("invalid dimension!");
+      pd_error(nullptr, "invalid dimension!");
       return;
     }
     break;
   default:
-    error("usage: allocate <width> <height> <format>");
+    pd_error(nullptr, "usage: allocate <width> <height> <format>");
     return;
   }
 
   if (x<1 || y<1) {
-    error("init-specs out of range");
+    pd_error(nullptr, "init-specs out of range");
     return;
   }
   if (c==0) {

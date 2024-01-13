@@ -213,6 +213,6 @@ void gemlist::rightMess(t_symbol *s, int argc, t_atom *argv)
     state=reinterpret_cast<GemState*>((argv+1)->a_w.w_gpointer);
     rightRender( cache, state );
   } else {
-    error("wrong righthand arguments....");
+    pd_error(nullptr, "wrong righthand arguments....");
   }
 }

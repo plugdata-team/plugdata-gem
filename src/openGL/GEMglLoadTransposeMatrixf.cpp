@@ -42,7 +42,7 @@ bool GEMglLoadTransposeMatrixf :: isRunnable(void)
   if(GLEW_VERSION_1_3) {
     return true;
   }
-  error("your system does not support OpenGL-1.3");
+  pd_error(nullptr, "your system does not support OpenGL-1.3");
   return false;
 }
 
@@ -61,7 +61,7 @@ void GEMglLoadTransposeMatrixf :: matrixMess (int argc,
     t_atom*argv)    // FUN
 {
   if(argc!=16) {
-    error("need 16 (4x4) elements");
+    pd_error(nullptr, "need 16 (4x4) elements");
     return;
   }
   int i;

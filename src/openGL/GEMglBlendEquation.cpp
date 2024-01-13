@@ -43,7 +43,7 @@ bool GEMglBlendEquation :: isRunnable(void)
   if(GLEW_VERSION_1_4) {
     return true;
   }
-  error("your system does not support OpenGL-1.4");
+  pd_error(nullptr, "your system does not support OpenGL-1.4");
   return false;
 }
 /////////////////////////////////////////////////////////

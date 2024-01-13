@@ -626,7 +626,7 @@ void pix_biquad :: processYUVAltivec(imageStruct &image)
 void pix_biquad :: faktorMess(t_symbol*, int argc, t_atom*argv)
 {
   if (argc<5 || argc>6) {
-    error("illegal number of arguments");
+    pd_error(nullptr, "illegal number of arguments");
     return;
   }
 

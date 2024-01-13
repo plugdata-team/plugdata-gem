@@ -185,7 +185,7 @@ void pix_threshold :: vecThreshMess(t_symbol*, int argc, t_atom *argv)
   } else if (argc == 3) {
     m_thresh[3] = 0;
   } else {
-    error("not enough threshold values");
+    pd_error(nullptr, "not enough threshold values");
     return;
   }
 

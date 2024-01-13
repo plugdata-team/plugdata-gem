@@ -38,9 +38,9 @@ void GemException::report(const char*origin) const
   const char*ErrorString = what();
   if(ErrorString && *ErrorString) {
     if (NULL==origin) {
-      error("GemException: %s", ErrorString);
+      pd_error(nullptr, "GemException: %s", ErrorString);
     } else {
-      error("[%s]: %s", origin, ErrorString);
+      pd_error(nullptr, "[%s]: %s", origin, ErrorString);
     }
   }
 }

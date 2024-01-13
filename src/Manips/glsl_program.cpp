@@ -83,7 +83,7 @@ namespace {
     case GL_SAMPLER_2D_RECT_ARB:
           return GL_INT;
     }
-    error("[glsl_program] unknown uniform type %d, assuming float", type);
+    pd_error(nullptr, "[glsl_program] unknown uniform type %d, assuming float", type);
     return GL_FLOAT;
   }
   GLint uniform2numelements(GLenum type) {
@@ -157,7 +157,7 @@ namespace {
       return 1;
     }
 
-    error("[glsl_program] unknown base size for uniform type %d, assuming 1", type);
+    pd_error(nullptr, "[glsl_program] unknown base size for uniform type %d, assuming 1", type);
     return 1;
   }
 };
@@ -261,7 +261,7 @@ bool glsl_program :: isRunnable()
     return true;
   }
 
-  error("openGL-2.0 (or at least ARB shader extensions) needed for GLSL");
+  pd_error(nullptr, "openGL-2.0 (or at least ARB shader extensions) needed for GLSL");
 
   return false;
 }
@@ -354,7 +354,7 @@ void glsl_program :: renderGL2()
     // glUniform1i(glGetUniformLocation(m_program, "MyTex1"), 1);
   } else {
     /* JMZ: this is really annoying... */
-    //error("no program linked");
+    //pd_error(nullptr, "no program linked");
   }
 }
 
@@ -444,7 +444,7 @@ void glsl_program :: renderARB()
     //  glUniform1iARB(glGetUniformLocationARB(program_object, "MyTex1"), 1);
   } else {
     /* JMZ: this is really annoying... */
-    //error("no program linked");
+    //pd_error(nullptr, "no program linked");
   }
 }
 
@@ -517,7 +517,7 @@ void glsl_program :: paramMess(t_symbol*s,int argc, t_atom *argv)
   }
 
   // if we reach this, then no param-name was matching!
-  error("no method for '%s' (it's not uniform variable)", s->s_name);
+  pd_error(nullptr, "no method for '%s' (it's not uniform variable)", s->s_name);
 }
 
 /////////////////////////////////////////////////////////
@@ -529,7 +529,7 @@ void glsl_program :: shaderMess(int argc, t_atom *argv)
   int i;
 
   if (!argc) {
-    error("can't link non-existent shaders");
+    pd_error(nullptr, "can't link non-existent shaders");
     return;
   }
 
@@ -544,7 +544,7 @@ void glsl_program :: shaderMess(int argc, t_atom *argv)
     try {
       ui=m_shadermapper.get(f);
     } catch(GemException&x) {
-      error("unable to get shaderID for %f...skipping!", f);
+      pd_error(nullptr, "unable to get shaderID for %f...skipping!", f);
       continue;
     }
     m_shaderObj[m_numShaders]    = ui;
@@ -741,7 +741,7 @@ void glsl_program :: LinkProgram()
 {
   bool success=false;
   if (!m_numShaders) {
-    error("can't link zero shaders");
+    pd_error(nullptr, "can't link zero shaders");
     return;
   }
 
@@ -877,7 +877,7 @@ void glsl_program :: getVariables()
 void glsl_program :: printInfo()
 {
   if(!m_linked) {
-    error("no GLSL-program linked");
+    pd_error(nullptr, "no GLSL-program linked");
     return;
   }
 

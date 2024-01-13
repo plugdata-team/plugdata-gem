@@ -83,7 +83,7 @@ void vertex_scale :: modeMess(int argc, t_atom*argv)
       m_texture=true;
       break;
     default:
-      error("invalid operand '%s'! skipping", atom_getsymbol(argv+i)->s_name);
+      pd_error(nullptr, "invalid operand '%s'! skipping", atom_getsymbol(argv+i)->s_name);
       break;
     }
   }
@@ -108,7 +108,7 @@ void vertex_scale :: paramMess(int argc, t_atom*argv)
     m_x = atom_getfloat(argv);
     break;
   default:
-    error("vertex_scale: scale must be 3 or 4 values!");
+    pd_error(nullptr, "vertex_scale: scale must be 3 or 4 values!");
     break;
   }
 }

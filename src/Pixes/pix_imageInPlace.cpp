@@ -61,7 +61,7 @@ bool pix_imageInPlace :: isRunnable(void)
     return true;
   }
 
-  error("your system lacks texture support");
+  pd_error(nullptr, "your system lacks texture support");
   return false;
 }
 
@@ -158,7 +158,7 @@ void pix_imageInPlace :: downloadMess()
   }
   m_wantDownload=false;
   if(!GLEW_VERSION_1_1 && !GLEW_EXT_texture_object) {
-    error("cannot download now: do you have a window?");
+    pd_error(nullptr, "cannot download now: do you have a window?");
     return;
   }
 

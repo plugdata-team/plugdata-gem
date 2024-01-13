@@ -83,7 +83,7 @@ void part_source :: domainMess(const std::string&str)
   } else if (str=="rectangle") {
     m_domain=PDRectangle;
   } else {
-    error("unknown domain '%s'", str.c_str());
+    pd_error(nullptr, "unknown domain '%s'", str.c_str());
   }
 }
 void part_source :: vectorMess(t_symbol*s, int argc, t_atom*argv)

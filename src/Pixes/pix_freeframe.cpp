@@ -971,7 +971,7 @@ void pix_freeframe :: openMess(t_symbol*s)
 {
 
   if(!m_canopen) {
-    error("this instance cannot dynamically change the plugin");
+    pd_error(nullptr, "this instance cannot dynamically change the plugin");
     return;
   }
 
@@ -987,7 +987,7 @@ void pix_freeframe :: openMess(t_symbol*s)
   }
 
   if(NULL==m_plugin) {
-    error("unable to open '%s'", pluginname.c_str());
+    pd_error(nullptr, "unable to open '%s'", pluginname.c_str());
     return;
   }
 }
@@ -1023,11 +1023,11 @@ void pix_freeframe :: processImage(imageStruct &image)
 void pix_freeframe :: parmMess(std::string key, t_atom *value)
 {
   if(!m_plugin) {
-    error("no instance of plugin available");
+    pd_error(nullptr, "no instance of plugin available");
     return;
   }
   if(key.empty()) {
-    error("unknown key '%s'", key.c_str());
+    pd_error(nullptr, "unknown key '%s'", key.c_str());
     return;
   }
   gem::Properties props;
@@ -1053,7 +1053,7 @@ void pix_freeframe :: parmMess(std::string key, t_atom *value)
 void pix_freeframe :: parmMess(int param, t_atom *value)
 {
   if(!m_plugin) {
-    error("no instance of plugin available");
+    pd_error(nullptr, "no instance of plugin available");
     return;
   }
   std::string key=m_plugin->getParameterName(param-1);

@@ -163,20 +163,20 @@ void GemPixObj :: processImage(imageStruct &image)
   switch (image.format) {
   case GL_RGBA:
   case GL_BGRA_EXT:
-    error("cannot handle RGBA image");
+    pd_error(nullptr, "cannot handle RGBA image");
     break;
   case GL_RGB:
   case GL_BGR_EXT:
-    error("cannot handle RGB image");
+    pd_error(nullptr, "cannot handle RGB image");
     break;
   case GL_LUMINANCE:
-    error("cannot handle Grey image");
+    pd_error(nullptr, "cannot handle Grey image");
     break;
   case GL_YCBCR_422_GEM:
-    error("cannot handle YUV image");
+    pd_error(nullptr, "cannot handle YUV image");
     break;
   default:
-    error("cannot handle this format (%x) !", image.format);
+    pd_error(nullptr, "cannot handle this format (%x) !", image.format);
   }
 }
 

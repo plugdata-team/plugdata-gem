@@ -298,7 +298,7 @@ void pix_add :: processRGBA_Altivec(imageStruct &image, imageStruct &right)
 void pix_add :: processDualImage(imageStruct &image, imageStruct &right)
 {
   if (image.format!=right.format) {
-    error("no method to combine (0x%X) and (0x%X)",
+    pd_error(nullptr, "no method to combine (0x%X) and (0x%X)",
           image.format, right.format);
     return;
   }

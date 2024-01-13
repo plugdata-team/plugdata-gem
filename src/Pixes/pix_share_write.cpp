@@ -69,7 +69,7 @@ pix_share_write :: pix_share_write(int argc, t_atom*argv) :
   memset(&shm_desc, 0, sizeof(shm_desc));
 #elif defined _WIN32
 #else
-    error("Gem has been compiled without shared memory support!");
+    pd_error(nullptr, "Gem has been compiled without shared memory support!");
 #endif
   if(argc<1) {
     //~ throw(GemException("no ID given"));
@@ -131,14 +131,14 @@ void pix_share_write :: freeShm()
 #elif USE_SHM
   if(shm_addr) {
     if (shmdt(shm_addr) == -1) {
-      error("shmdt failed at %p", shm_addr);
+      pd_error(nullptr, "shmdt failed at %p", shm_addr);
     }
   }
   if(shm_id>0) {
     if (shmctl(shm_id,IPC_STAT, &shm_desc) != -1) {
       if(shm_desc.shm_nattch<=0) {
         if (shmctl(shm_id,IPC_RMID, &shm_desc) == -1) {
-          error("shmctl remove failed for %d", shm_id);
+          pd_error(nullptr, "shmctl remove failed for %d", shm_id);
         }
       }
     }
@@ -290,7 +290,7 @@ int pix_share_write :: getShm(int argc,t_atom*argv)
                 m_fileMappingName);      // name of mapping object
 
   if (m_MapFile == NULL) {
-    error("Could not create file mapping object %s - error %ld.",
+    pd_error(nullptr, "Could not create file mapping object %s - error %ld.",
           m_fileMappingName, GetLastError());
     return -1;
   }
@@ -303,7 +303,7 @@ int pix_share_write :: getShm(int argc,t_atom*argv)
                segmentSize);
 
   if ( !shm_addr ) {
-    error("Could not get a view of file %s - error %ld",m_fileMappingName,
+    pd_error(nullptr, "Could not get a view of file %s - error %ld",m_fileMappingName,
           GetLastError());
     return -1;
   } else {
@@ -333,7 +333,7 @@ int pix_share_write :: getShm(int argc,t_atom*argv)
       }
       /* read the size of the blob from the shared segment */
       if(h&&h->size) {
-        error("someone was faster: only got %d bytes instead of %d",
+        pd_error(nullptr, "someone was faster: only got %d bytes instead of %d",
               h->size, m_size);
         m_size=h->size;
 
@@ -364,7 +364,7 @@ int pix_share_write :: getShm(int argc,t_atom*argv)
     verbose(1, "shm:: id(%d) segsz(%d) cpid (%d) mem(%p)",
             shm_id,shm_desc.shm_segsz,shm_desc.shm_cpid, shm_addr);
   } else {
-    error("couldn't get shm_id: error %d", errno);
+    pd_error(nullptr, "couldn't get shm_id: error %d", errno);
     return -1; // AV : added because i'm usure of what value is returned when we get this error...
   }
 #endif /* _WIN32, SHM */
@@ -395,7 +395,7 @@ void pix_share_write :: render(GemState *state)
 
     if (!shm_addr) {
       t_atom atom;
-      error("no shmaddr");
+      pd_error(nullptr, "no shmaddr");
       SETFLOAT(&atom, -1);
       outlet_anything(m_outlet, gensym("error"), 1, &atom);
       return;
@@ -410,7 +410,7 @@ void pix_share_write :: render(GemState *state)
       h->upsidedown=pix->upsidedown;
       memcpy(shm_addr+sizeof(t_pixshare_header),pix->data,size);
     } else {
-      error("input image too large: %dx%dx%d=%d>%d",
+      pd_error(nullptr, "input image too large: %dx%dx%d=%d>%d",
             pix->xsize, pix->ysize, pix->csize,
             pix->xsize*pix->ysize*pix->csize,
             m_size);

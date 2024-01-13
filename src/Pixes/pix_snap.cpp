@@ -52,7 +52,7 @@ pix_snap :: pix_snap(int argc, t_atom *argv) :
     m_x = m_y = 0;
     m_width = m_height = 128;
   } else {
-    error("needs 0, 2, or 4 values");
+    pd_error(nullptr, "needs 0, 2, or 4 values");
     m_x = m_y = 0;
     m_width = m_height = 128;
   }
@@ -110,7 +110,7 @@ void pix_snap :: snapMess(void)
   }
 
   if (m_width <= 0 || m_height <= 0) {
-    error("Illegal size");
+    pd_error(nullptr, "Illegal size");
     return;
   }
   // do we need to remake the data?

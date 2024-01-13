@@ -101,7 +101,7 @@ struct PixImageThreadLoader : public gem::thread::SynchedWorkerThread {
       (*(out->cb))(out->userdata, ID, out->img, out->props);
       delete out;
     } else {
-      error("loaded image:%d with no data!", ID);
+      pd_error(nullptr, "loaded image:%d with no data!", ID);
     }
   };
 

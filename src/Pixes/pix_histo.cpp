@@ -70,14 +70,14 @@ void pix_histo :: setMess(int argc, t_atom *argv)
   int n=argc;
 
   if (!(argc==1 || argc==3 || argc==4)) {
-    error("only 1, 3 or 4 arguments are allowed");
+    pd_error(nullptr, "only 1, 3 or 4 arguments are allowed");
     m_mode=0;
     return;
   }
 
   while(n--) {
     if (ap->a_type != A_SYMBOL) {
-      error("only symbolic table-names are accepted");
+      pd_error(nullptr, "only symbolic table-names are accepted");
       return;
     }
     ap++;

@@ -70,14 +70,14 @@ void pix_curve :: setMess(t_symbol*,int argc, t_atom *argv)
   int n=argc;
 
   if (!(argc==1 || argc==3 || argc==4)) {
-    error("only 1, 3 or 4 arguments are allowed");
+    pd_error(nullptr, "only 1, 3 or 4 arguments are allowed");
     m_mode=0;
     return;
   }
 
   while(n--) {
     if (ap->a_type != A_SYMBOL) {
-      error("only symbolic table-names are accepted");
+      pd_error(nullptr, "only symbolic table-names are accepted");
       return;
     }
     ap++;
@@ -142,7 +142,7 @@ void pix_curve :: processRGBAImage(imageStruct &image)
     setTable(tabA, name_R);
     break;
   default:
-    error("invalid mode %d", m_mode);
+    pd_error(nullptr, "invalid mode %d", m_mode);
     return;
   }
 

@@ -170,7 +170,7 @@ void TextBase :: fontNameMess(const std::string&filename)
   const char *bufptr=NULL;
 
   if(filename.empty()) {
-    error("no font-file specified");
+    pd_error(nullptr, "no font-file specified");
     return;
   }
   std::string fn = findFile(filename);
@@ -179,7 +179,7 @@ void TextBase :: fontNameMess(const std::string&filename)
   // try to open the file
   FILE*file = fopen(bufptr, "r");
   if (!file) {
-    error("cannot find font-file '%s'", bufptr);
+    pd_error(nullptr, "cannot find font-file '%s'", bufptr);
     return;
   }
   fclose(file);
@@ -187,7 +187,7 @@ void TextBase :: fontNameMess(const std::string&filename)
   // now read font
   m_font=makeFont(bufptr);
   if (NULL==m_font) {
-    error("unable to open font '%s'", bufptr);
+    pd_error(nullptr, "unable to open font '%s'", bufptr);
     return;
   }
   m_fontname=gensym(filename.c_str());
@@ -227,7 +227,7 @@ void TextBase :: setFontSize()
   }
 
   if(!m_font->FaceSize(fs)) {
-    error("unable to set fontsize !");
+    pd_error(nullptr, "unable to set fontsize !");
   }
   //setModified();
 }

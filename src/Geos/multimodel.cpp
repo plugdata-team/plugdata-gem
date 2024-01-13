@@ -207,7 +207,7 @@ void multimodel :: drawMess(int type)
 void multimodel :: drawMess(std::string name)
 {
   if(0==m_drawTypes.size()) {
-    error("unable to change drawstyle");
+    pd_error(nullptr, "unable to change drawstyle");
     return;
   }
 
@@ -218,7 +218,7 @@ void multimodel :: drawMess(std::string name)
     error ("unknown draw style '%s'... possible values are:", name.c_str());
     it=m_drawTypes.begin();
     while(m_drawTypes.end() != it) {
-      error("\t %s", it->first.c_str());
+      pd_error(nullptr, "\t %s", it->first.c_str());
       ++it;
     }
     return;
@@ -247,7 +247,7 @@ void multimodel :: backendMess(t_symbol*s, int argc, t_atom*argv)
         t_symbol *b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
       } else {
-        error("%s must be symbolic", s->s_name);
+        pd_error(nullptr, "%s must be symbolic", s->s_name);
       }
     }
   } else {
@@ -311,11 +311,11 @@ void multimodel :: open(const std::string&filename, int baseModel,
   std::vector<gem::plugins::modelloader*>loaders;
 
   if (!topModel) {
-    error("requires an int for number of models");
+    pd_error(nullptr, "requires an int for number of models");
     return;
   }
   if (baseModel > topModel) {
-    error("top range less than base model");
+    pd_error(nullptr, "top range less than base model");
     return;
   }
   if (skipRate < 1) {
@@ -332,7 +332,7 @@ void multimodel :: open(const std::string&filename, int baseModel,
   }
 
   if (!strPtr[i]) {
-    error("unable to find * in file name");
+    pd_error(nullptr, "unable to find * in file name");
     return;
   }
 
@@ -371,7 +371,7 @@ void multimodel :: open(const std::string&filename, int baseModel,
 
   if(loaders.size()!=numModels) {
     /* ouch, something went wrong! */
-    error("failed to load model#%d of %d (%s)...resetting to original models",
+    pd_error(nullptr, "failed to load model#%d of %d (%s)...resetting to original models",
           i, numModels, newName);
     unsigned int ui;
     for(ui=0; ui<loaders.size(); ui++) {
@@ -404,7 +404,7 @@ void multimodel :: open(const std::string&filename, int baseModel,
 void multimodel :: changeModel(int modelNum)
 {
   if (modelNum < 0 || ((unsigned int)modelNum) >= m_loaders.size()) {
-    error("selection %d out of range: 0..%d", modelNum, m_loaders.size()-1);
+    pd_error(nullptr, "selection %d out of range: 0..%d", modelNum, m_loaders.size()-1);
     return;
   }
   m_loader = m_loaders[modelNum];
@@ -570,7 +570,7 @@ void multimodel :: getVBOarray()
           copyArray(*vboArray[i].data, m_color);
           break;
         default:
-          error("VBO type %d not supported\n",vboArray[i].type);
+          pd_error(nullptr, "VBO type %d not supported\n",vboArray[i].type);
         }
       }
       m_loader->unsetRefresh();

@@ -49,7 +49,7 @@ bool GEMglUniform1fARB :: isRunnable(void)
   if(GLEW_ARB_shader_objects) {
     return true;
   }
-  error("ARB shader_objects not supported by this system");
+  pd_error(nullptr, "ARB shader_objects not supported by this system");
   return false;
 }
 

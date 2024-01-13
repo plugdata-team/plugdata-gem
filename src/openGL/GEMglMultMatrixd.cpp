@@ -41,7 +41,7 @@ bool GEMglMultMatrixd :: isRunnable(void)
   if(GLEW_VERSION_1_1) {
     return true;
   }
-  error("your system does not support OpenGL-1.1");
+  pd_error(nullptr, "your system does not support OpenGL-1.1");
   return false;
 }
 
@@ -60,7 +60,7 @@ void GEMglMultMatrixd :: render(GemState *state)
 void GEMglMultMatrixd :: matrixMess (int argc, t_atom*argv)     // FUN
 {
   if(argc!=16) {
-    error("need 16 (4x4) elements");
+    pd_error(nullptr, "need 16 (4x4) elements");
     return;
   }
   int i;

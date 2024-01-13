@@ -52,7 +52,7 @@ bool GEMglProgramLocalParameter4fvARB :: isRunnable(void)
   if(GLEW_ARB_vertex_program) {
     return true;
   }
-  error("your system does not support the ARB vertex_program extension");
+  pd_error(nullptr, "your system does not support the ARB vertex_program extension");
   return false;
 }
 
@@ -86,7 +86,7 @@ void GEMglProgramLocalParameter4fvARB :: paramsMess (int argc,
     t_atom*argv)     // FUN
 {
   if(argc!=4) {
-    error("GEMglProgramLocalParamter4vARB:  needs 4 elements");
+    pd_error(nullptr, "GEMglProgramLocalParamter4vARB:  needs 4 elements");
     return;
   }
   int i;

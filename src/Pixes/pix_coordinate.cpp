@@ -105,7 +105,7 @@ void pix_coordinate :: postrender(GemState *state)
 void pix_coordinate :: coordsMess(int argc, t_atom *argv)
 {
   if (argc % 2) {
-    error("must have a even number of coordinates");
+    pd_error(nullptr, "must have a even number of coordinates");
     return;
   }
 

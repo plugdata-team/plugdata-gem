@@ -195,7 +195,7 @@ void GemShape :: sizeMess(float size)
 void GemShape :: typeMess(t_symbol *type)
 {
   if(0==m_drawTypes.size()) {
-    error("unable to change drawstyle");
+    pd_error(nullptr, "unable to change drawstyle");
   }
 
   std::string name=type->s_name;
@@ -206,7 +206,7 @@ void GemShape :: typeMess(t_symbol *type)
     error ("unknown draw style '%s'... possible values are:", name.c_str());
     it=m_drawTypes.begin();
     while(m_drawTypes.end() != it) {
-      error("\t %s", it->first.c_str());
+      pd_error(nullptr, "\t %s", it->first.c_str());
       ++it;
     }
     return;

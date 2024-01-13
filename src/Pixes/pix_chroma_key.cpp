@@ -482,7 +482,7 @@ void pix_chroma_key :: processYUV_Altivec(imageStruct &image,
 
   //check to see if the buffer isn't 16byte aligned (highly unlikely)
   if (image.ysize*image.xsize % 16 != 0) {
-    error("image not properly aligned for Altivec");
+    pd_error(nullptr, "image not properly aligned for Altivec");
     return;
   }
 

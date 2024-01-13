@@ -83,7 +83,7 @@ static void setvec(const char*label, unsigned char*dest, int argc,
     dest[chRed]=dest[chGreen]=dest[chBlue]=atom_getfloat(argv+0)*255.;
     break;
   default:
-    error("illegal number of arguments for %s, must be 1, 3 or 4", label);
+    pd_error(nullptr, "illegal number of arguments for %s, must be 1, 3 or 4", label);
     break;
   }
 }

@@ -44,7 +44,7 @@ bool GEMglGenProgramsARB :: isRunnable(void)
   if(GLEW_ARB_vertex_program) {
     return true;
   }
-  error("your system does not support the ARB vertex_program extension");
+  pd_error(nullptr, "your system does not support the ARB vertex_program extension");
   return false;
 }
 /////////////////////////////////////////////////////////

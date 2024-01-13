@@ -270,7 +270,7 @@ void pix_test :: csMess(std::string cs)
     fmt=GEM_GRAY;
     break;
   default:
-    error("invalid colorspace '%s'; must be 'rgba', 'yuv' or 'grey'",
+    pd_error(nullptr, "invalid colorspace '%s'; must be 'rgba', 'yuv' or 'grey'",
           cs.c_str());
     return;
   }

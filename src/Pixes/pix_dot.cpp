@@ -293,12 +293,12 @@ void pix_dot :: sizeMess(int width, int height)
   if(width>0) {
     dots_width=width;
   } else {
-    error("width must be > 0!");
+    pd_error(nullptr, "width must be > 0!");
   }
   if(height>0) {
     dots_height=height;
   } else {
-    error("height must be > 0!");
+    pd_error(nullptr, "height must be > 0!");
   }
   m_useScale=false;
   alreadyInit=0;
@@ -354,7 +354,7 @@ void pix_dot :: processRGBAImage(imageStruct &image)
 
     pattern = (U32 *)malloc(DOTMAX * dot_hsize * dot_hsize * sizeof(U32));
     if (pattern == NULL) {
-      error("couldn't make RGBA pattern");
+      pd_error(nullptr, "couldn't make RGBA pattern");
       return;
     }
 
@@ -418,7 +418,7 @@ void pix_dot :: processYUVImage(imageStruct &image)
 
     pattern = (U32 *)malloc(DOTMAX * dot_hsize * dot_hsize * sizeof(U32));
     if (pattern == NULL) {
-      error("couldn't make YUV pattern");
+      pd_error(nullptr, "couldn't make YUV pattern");
       return;
     }
 
@@ -485,7 +485,7 @@ void pix_dot :: processGrayImage(imageStruct &image)
 
     pattern = (U32 *)malloc(DOTMAX * dot_hsize * dot_hsize * sizeof(U32));
     if (pattern == NULL) {
-      error("couldn't make luma pattern");
+      pd_error(nullptr, "couldn't make luma pattern");
       return;
     }
 
@@ -528,7 +528,7 @@ void pix_dot :: processGrayImage(imageStruct &image)
 void pix_dot :: scaleMess(float state)
 {
   if(state<=0.f) {
-    error("scale-factor must not be < 0!");
+    pd_error(nullptr, "scale-factor must not be < 0!");
     return;
   }
   m_scale=state; /* used to be as (int)cast, but i have removed this...*/

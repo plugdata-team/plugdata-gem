@@ -359,7 +359,7 @@ bool GemWindow::createGemWindow(void)
       m_pimpl->mycontext = new gem::Context();
     } catch (GemException&x) {
       m_context=0;
-      error("%s", x.what());
+      pd_error(nullptr, "%s", x.what());
       return false;
     }
     m_context=m_pimpl->mycontext;
@@ -404,11 +404,11 @@ bool GemWindow::popContext(void)
 void GemWindow::render(void)
 {
   if(!makeCurrent()) {
-    error("unable to switch to current window (do you have one?), cannot render!");
+    pd_error(nullptr, "unable to switch to current window (do you have one?), cannot render!");
     return;
   }
   if(!pushContext()) {
-    error("unable to switch to current context, cannot render!");
+    pd_error(nullptr, "unable to switch to current context, cannot render!");
     return;
   }
   bang();
@@ -427,7 +427,7 @@ void GemWindow:: bufferMess(int buf)
     m_buffer=buf;
     break;
   default:
-    error("buffer can only be '1' (single) or '2' (double) buffered");
+    pd_error(nullptr, "buffer can only be '1' (single) or '2' (double) buffered");
     break;
   }
 }
@@ -478,7 +478,7 @@ void GemWindow::       printMess(void)
 {
   verbose(1, "@%p", this);
   if (!makeCurrent()) {
-    error("OpenGL has not been initialized yet");
+    pd_error(nullptr, "OpenGL has not been initialized yet");
     post("create a window first!");
     return;
   }

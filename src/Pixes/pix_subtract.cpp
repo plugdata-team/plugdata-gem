@@ -313,7 +313,7 @@ void pix_subtract :: processDualImage(imageStruct &image,
                                       imageStruct &right)
 {
   if (image.format!=right.format) {
-    error("pix_add: no method to combine (0x%X) and (0x%X)",
+    pd_error(nullptr, "pix_add: no method to combine (0x%X) and (0x%X)",
           image.format, right.format);
     return;
   }

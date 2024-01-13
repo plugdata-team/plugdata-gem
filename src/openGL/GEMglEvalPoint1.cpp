@@ -43,7 +43,7 @@ bool GEMglEvalPoint1 :: isRunnable(void)
   if(GLEW_VERSION_1_1) {
     return true;
   }
-  error("your system does not support OpenGL-1.1");
+  pd_error(nullptr, "your system does not support OpenGL-1.1");
   return false;
 }
 /////////////////////////////////////////////////////////

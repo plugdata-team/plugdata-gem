@@ -349,7 +349,7 @@ void pix_film :: openMess(std::string filename, int format,
   }
 
   if(!m_handle->open(fname, wantProps)) {
-    error("unable to open file: %s", filename.c_str());
+    pd_error(nullptr, "unable to open file: %s", filename.c_str());
     return;
   }
 
@@ -542,12 +542,12 @@ void pix_film :: postrender(GemState *state)
 void pix_film :: changeImage(int imgNum, int trackNum)
 {
   if (imgNum < 0) {
-    error("selection number must be > 0");
+    pd_error(nullptr, "selection number must be > 0");
     imgNum=0;
   }
 #if 0
   if (trackNum < 0) {
-    error("track number must be > 0");
+    pd_error(nullptr, "track number must be > 0");
     trackNum=0;
   }
 #endif
@@ -589,7 +589,7 @@ void pix_film :: csMess(t_symbol *s, bool immediately)
     }
     break;
   default:
-    error("colorspace must be 'RGBA', 'YUV' or 'Gray'");
+    pd_error(nullptr, "colorspace must be 'RGBA', 'YUV' or 'Gray'");
   }
 
   gem::Properties props;
@@ -629,7 +629,7 @@ void pix_film :: backendMess(t_symbol*s, int argc, t_atom*argv)
 {
   int i;
   if(gensym("loader") != s) {
-    error("'%s' is deprecated; please use '%s' instead", s->s_name, "loader");
+    pd_error(nullptr, "'%s' is deprecated; please use '%s' instead", s->s_name, "loader");
   }
   m_backends.clear();
   if(argc) {
@@ -642,10 +642,10 @@ void pix_film :: backendMess(t_symbol*s, int argc, t_atom*argv)
         if (num>=0 && m_ids.size() > 0) {
           m_backends.push_back(m_ids[num % m_ids.size()]);
         } else {
-          error("%s out of range: %d/%d", s->s_name, num, m_ids.size());
+          pd_error(nullptr, "%s out of range: %d/%d", s->s_name, num, m_ids.size());
         }
       } else {
-        error("%s must be symbolic or numeric", s->s_name);
+        pd_error(nullptr, "%s must be symbolic or numeric", s->s_name);
       }
     }
   } else {

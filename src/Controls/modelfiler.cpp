@@ -84,7 +84,7 @@ static void addProperties(gem::Properties&props, int argc, t_atom*argv)
   }
 
   if(argv->a_type != A_SYMBOL) {
-    error("no key given...");
+    pd_error(nullptr, "no key given...");
     return;
   }
   std::string key=std::string(atom_getsymbol(argv)->s_name);
@@ -112,7 +112,7 @@ static void addProperties(gem::Properties&props, int argc, t_atom*argv)
 void modelfiler :: setPropertyMess(t_symbol*, int argc, t_atom*argv)
 {
   if(!argc) {
-    error("no property specified!");
+    pd_error(nullptr, "no property specified!");
     return;
   }
   addProperties(m_readprops, argc, argv);
@@ -267,7 +267,7 @@ void modelfiler :: enumPropertyMess()
       m_infoOut.send("proplist", data);
     }
   } else {
-    error("cannot enumerate properties without a valid model loader");
+    pd_error(nullptr, "cannot enumerate properties without a valid model loader");
   }
 }
 
@@ -302,7 +302,7 @@ void modelfiler :: backendMess(t_symbol*s, int argc, t_atom*argv)
         t_symbol *b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
       } else {
-        error("%s must be symbolic", s->s_name);
+        pd_error(nullptr, "%s must be symbolic", s->s_name);
       }
     }
   } else {
@@ -345,7 +345,7 @@ void modelfiler :: openMess(const std::string&filename)
   gem::Properties wantProps = m_readprops;
 
   if(!m_loader) {
-    error("no model loader backends found");
+    pd_error(nullptr, "no model loader backends found");
     return;
   }
   if(!m_backends.empty()) {
@@ -356,7 +356,7 @@ void modelfiler :: openMess(const std::string&filename)
   canvas_makefilename(const_cast<t_canvas*>(getCanvas()),
                       const_cast<char*>(filename.c_str()), buf, MAXPDSTRING);
   if(!m_loader->open(buf, wantProps)) {
-    error("unable to read model '%s'", buf);
+    pd_error(nullptr, "unable to read model '%s'", buf);
     return;
   }
 
@@ -386,7 +386,7 @@ size_t modelfiler :: copyArrays(const std::string&name, const std::string*tablen
     return 0;
   std::string failed = checkArrays(tablenames, count);
   if(!failed.empty()) {
-    error("no such array '%s' for %s", failed.c_str(), name.c_str());
+    pd_error(nullptr, "no such array '%s' for %s", failed.c_str(), name.c_str());
     return 0;
   }
   const std::vector<std::vector<float> >&data = m_loader->getVector(name);
@@ -437,7 +437,7 @@ void modelfiler :: tableMess(t_symbol*s, int argc, t_atom*argv) {
   }
 
   if((argc != 1) && (argc != extensions.size()) && (argc != extensions.size() + 1)) {
-    error("'%s' requires %d array names", s->s_name, extensions.size());
+    pd_error(nullptr, "'%s' requires %d array names", s->s_name, extensions.size());
     return;
   }
   if(argc == extensions.size()) {

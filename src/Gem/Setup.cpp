@@ -152,8 +152,8 @@ static bool checkVersion(const char*dirname, const char*filename,
 
   bool result=gem::Version::versionCheck(major,minor);
   if(!result) {
-    error("GEM: binary/abstractions version mismatch!");
-    error("GEM:   continue at your own risk...");
+    pd_error(nullptr, "GEM: binary/abstractions version mismatch!");
+    pd_error(nullptr, "GEM:   continue at your own risk...");
     verbose(0, "GEM: binary is %d.%d, but Gem abstractions are %s",
             GEM_VERSION_MAJOR, GEM_VERSION_MINOR, gotversion.c_str());
     verbose(0,
@@ -212,9 +212,9 @@ static void addownpath(const char*filename)
       qpath += mypath;
       qpath += "'";
     } else {
-      error("GEM: unable to find Gem's abstractions");
+      pd_error(nullptr, "GEM: unable to find Gem's abstractions");
     }
-    error("GEM: please manually add Gem path%s to Pd's search path",
+    pd_error(nullptr, "GEM: please manually add Gem path%s to Pd's search path",
           qpath.c_str());
   }
 
@@ -289,7 +289,7 @@ void caseinsensitive_error(const char*gem)
    * however, much of Gem's loading is done via CTORs and the gem::setup() only finishes
    * the init phase; so we probably can never get rid of wrongly-spelled libraries ever.
    */
-  error("GEM: rejecting incorrect spelling '%s' for cross-platform reasons: use 'Gem'!",
+  pd_error(nullptr, "GEM: rejecting incorrect spelling '%s' for cross-platform reasons: use 'Gem'!",
         gem);
 }
 };

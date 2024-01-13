@@ -71,7 +71,7 @@ bool fragment_program :: isRunnable()
     return true;
   }
 
-  error("need ARB (or NV) fragment_program extension for shaders");
+  pd_error(nullptr, "need ARB (or NV) fragment_program extension for shaders");
   return false;
 }
 

@@ -64,16 +64,16 @@ static t_float* checkarray(t_symbol *s, int &length)
   if (!(a = reinterpret_cast<t_garray*>(pd_findbyclass(s,
                                         garray_class))))    {
     if (*s->s_name) {
-      error("vertex_tabread: %s: no such array", s->s_name);
+      pd_error(nullptr, "vertex_tabread: %s: no such array", s->s_name);
     }
     return 0;
   } else if (!garray_getfloatwords(a, &length, &fp))   {
-    error("%s: bad template for vertex_tabread", s->s_name);
+    pd_error(nullptr, "%s: bad template for vertex_tabread", s->s_name);
     return 0;
   }
 
   if (length==0) {
-    error("vertex_tabread: table %s is zero-lengthed", s->s_name);
+    pd_error(nullptr, "vertex_tabread: table %s is zero-lengthed", s->s_name);
     return 0;
   }
   if(!fp)
@@ -147,31 +147,31 @@ void vertex_tabread :: tableMess(int argc, t_atom*argv)
   switch(argc) {
   case 4:
     if((argv+3)->a_type!=A_SYMBOL) {
-      error("only symbolic table-names are accepted");
+      pd_error(nullptr, "only symbolic table-names are accepted");
       return;
     }
     Ttable=atom_getsymbol(argv+3);
   case 3:
     if((argv+2)->a_type!=A_SYMBOL) {
-      error("only symbolic table-names are accepted");
+      pd_error(nullptr, "only symbolic table-names are accepted");
       return;
     }
     Ntable=atom_getsymbol(argv+2);
   case 2:
     if((argv+1)->a_type!=A_SYMBOL) {
-      error("only symbolic table-names are accepted");
+      pd_error(nullptr, "only symbolic table-names are accepted");
       return;
     }
     Ctable=atom_getsymbol(argv+1);
   case 1:
     if((argv+0)->a_type!=A_SYMBOL) {
-      error("only symbolic table-names are accepted");
+      pd_error(nullptr, "only symbolic table-names are accepted");
       return;
     }
     Vtable=atom_getsymbol(argv+0);
     break;
   default:
-    error("table must have 1, 2, 3 or 4 arguments");
+    pd_error(nullptr, "table must have 1, 2, 3 or 4 arguments");
     return;
   }
 

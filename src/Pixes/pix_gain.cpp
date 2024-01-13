@@ -363,7 +363,7 @@ void pix_gain :: vecGainMess(int argc, t_atom *argv)
     m_gain[chRed] = m_gain[chGreen] = m_gain[chBlue] = m_gain[chAlpha] =
                                         atom_getfloat(argv);
   } else {
-    error("not enough gain values");
+    pd_error(nullptr, "not enough gain values");
     return;
   }
   m_gain[chRed] = atom_getfloat(&argv[0]);

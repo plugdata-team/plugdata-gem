@@ -91,7 +91,7 @@ void world_light :: lightOnOffMess(int state)
 void world_light :: debugMess(int state)
 {
 #ifndef GEM_HAVE_GLU
-  error("Gem has been compiled without GLU - disabled light debugging");
+  pd_error(nullptr, "Gem has been compiled without GLU - disabled light debugging");
 #endif
   m_debug = state;
   m_change = 1;
@@ -129,7 +129,7 @@ void world_light :: lightColorMess(t_symbol*s, int argc, t_atom*argv)
     lightColorMess(red, red, red, 1.f);
     break;
   default:
-    error("\"%s\" must be 1, 3 or 4 parameters", s->s_name);
+    pd_error(nullptr, "\"%s\" must be 1, 3 or 4 parameters", s->s_name);
   }
 }
 

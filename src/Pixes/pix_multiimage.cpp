@@ -81,12 +81,12 @@ void pix_multiimage :: openMess(t_symbol *filename, int baseImage,
   /*
   if (!topImage)
   {
-      error("requires an int for number of images");
+      pd_error(nullptr, "requires an int for number of images");
       return;
   }
   */
   if (baseImage > topImage) {
-    error("Top range less than base image");
+    pd_error(nullptr, "Top range less than base image");
     return;
   }
   if (skipRate < 1) {
@@ -134,7 +134,7 @@ void pix_multiimage :: openMess(t_symbol *filename, int baseImage,
   }
 
   if (!strPtr[i]) {
-    error("Unable to find * in file name");
+    pd_error(nullptr, "Unable to find * in file name");
     return;
   }
 
@@ -256,11 +256,11 @@ void pix_multiimage :: changeImage(int imgNum)
   }
 
   if (imgNum >= m_numImages) {
-    error("selection number too high: %d (max num is %d)", imgNum,
+    pd_error(nullptr, "selection number too high: %d (max num is %d)", imgNum,
           m_numImages);
     return;
   } else if (imgNum < 0) {
-    error("selection number must be > 0");
+    pd_error(nullptr, "selection number must be > 0");
     return;
   }
   m_curImage = imgNum;
@@ -293,7 +293,7 @@ void pix_multiimage :: cleanImages()
           ptr = ptr->next;
         }
         if (!ptr) {
-          error("Unable to find image cache!");
+          pd_error(nullptr, "Unable to find image cache!");
         } else {
           ptr->next = m_loadedCache->next;
           delete m_loadedCache;

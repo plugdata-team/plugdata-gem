@@ -32,7 +32,7 @@ part_velcone :: part_velcone(t_floatarg xpos, t_floatarg ypos,
                              t_floatarg zpos, t_floatarg rad)
   : m_radius(rad)
 {
-  error("this is obsolete, use [part_velocity cone <x> <y> <z> <r>] instead");
+  pd_error(nullptr, "this is obsolete, use [part_velocity cone <x> <y> <z> <r>] instead");
   m_pos[0] = xpos;
   m_pos[1] = ypos;
   m_pos[2] = zpos;

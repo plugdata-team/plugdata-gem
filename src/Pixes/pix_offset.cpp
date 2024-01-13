@@ -323,7 +323,7 @@ void pix_offset :: vecOffsetMess(int argc, t_atom *argv)
   } else if (argc == 3) {
     m_offset[chAlpha] = 0;
   } else {
-    error("not enough offset values");
+    pd_error(nullptr, "not enough offset values");
     return;
   }
   m_offset[chRed]   = static_cast<int>(255*atom_getfloat(&argv[0]));

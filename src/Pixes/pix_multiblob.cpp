@@ -334,7 +334,7 @@ blobSizeMess
 void pix_multiblob :: blobSizeMess(t_float blobSize)
 {
   if((blobSize < 0.0)||(blobSize > 1.0)) {
-    error("blobsize %f out of range (0..1)!", blobSize);
+    pd_error(nullptr, "blobsize %f out of range (0..1)!", blobSize);
     return;
   }
   m_blobsize = blobSize/100.0;
@@ -346,7 +346,7 @@ threshMess
 void pix_multiblob :: threshMess(t_float thresh)
 {
   if((thresh < 0.0)||(thresh > 1.0)) {
-    error("threshold %f out of range (0..1)!", thresh);
+    pd_error(nullptr, "threshold %f out of range (0..1)!", thresh);
   }
   m_threshold = CLAMP(thresh*255);
 }

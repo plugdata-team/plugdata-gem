@@ -214,8 +214,8 @@ void GemMan :: createContext(const char* disp)
   s_windowClock = clock_new(NULL,
                             reinterpret_cast<t_method>(GemMan::dispatchWinmessCallback));
   if (!m_windowContext && !createConstWindow(disp)) {
-    error("GEM: A serious error occurred creating const Context");
-    error("GEM: Continue at your own risk!");
+    pd_error(nullptr, "GEM: A serious error occurred creating const Context");
+    pd_error(nullptr, "GEM: Continue at your own risk!");
     m_windowContext = 0;
   } else {
     m_windowContext = 1;
@@ -595,7 +595,7 @@ void GemMan :: render(void *)
   //if we're trying to do crystal glasses stereo but don't have a stereo window
   //disable stereo and post a warning
   if(m_stereo == 3 && !stereoWindowTest) {
-    error("GEM: you've selected Crystal Glasses Stereo but your graphics card isn't set up for stereo, setting stereo=0");
+    pd_error(nullptr, "GEM: you've selected Crystal Glasses Stereo but your graphics card isn't set up for stereo, setting stereo=0");
     m_stereo = 0;
   } else if(stereoWindowTest) {
     //if we're not doing crystal eyes stereo but our window is enabled to do stereo
@@ -855,7 +855,7 @@ void GemMan :: render(void *)
     if(seconds>0.f) {
       GemMan::fps = (1 / (seconds * 1000.f)) * 1000.f;
     } else {
-      error("GEM: unable to profile");
+      pd_error(nullptr, "GEM: unable to profile");
     }
   }
 
@@ -891,7 +891,7 @@ void GemMan :: render(void *)
 void GemMan :: startRendering()
 {
   if (!m_windowState) {
-    error("GEM: Create window first!");
+    pd_error(nullptr, "GEM: Create window first!");
     return;
   }
 
@@ -1017,7 +1017,7 @@ int GemMan :: createWindow(const char* disp)
     post("GEM: creating gem-window on display %s",disp);
   }
   if (!createGemWindow(gfxInfo, myHints) ) {
-    error("GEM: Unable to create window");
+    pd_error(nullptr, "GEM: Unable to create window");
     return(0);
   }
   /*
@@ -1037,12 +1037,12 @@ int GemMan :: createWindow(const char* disp)
 
   if (GLEW_OK != err) {
     if(GLEW_ERROR_GLX_VERSION_11_ONLY == err) {
-      error("GEM: failed to init GLEW (glx): continuing anyhow - please report any problems to the gem-dev mailinglist!");
+      pd_error(nullptr, "GEM: failed to init GLEW (glx): continuing anyhow - please report any problems to the gem-dev mailinglist!");
     } else if (GLEW_ERROR_GL_VERSION_10_ONLY) {
-      error("GEM: failed to init GLEW: your system only supports openGL-1.0");
+      pd_error(nullptr, "GEM: failed to init GLEW: your system only supports openGL-1.0");
       return(0);
     } else {
-      error("GEM: failed to init GLEW");
+      pd_error(nullptr, "GEM: failed to init GLEW");
       return(0);
     }
   }
@@ -1156,7 +1156,7 @@ int GemMan::createConstWindow(const char* disp)
   myHints.fsaa = GemMan::fsaa;
 
   if (!createGemWindow(constInfo, myHints) ) {
-    error("GEM: Error creating const context");
+    pd_error(nullptr, "GEM: Error creating const context");
     constInfo.have_constContext=0;
     gfxInfo.have_constContext=0;
     return(0);
@@ -1287,7 +1287,7 @@ void GemMan :: frameRate(float framespersecond)
     return;
   }
   if (framespersecond < 0.) {
-    error("GEM: Invalid frame rate: %f", framespersecond);
+    pd_error(nullptr, "GEM: Invalid frame rate: %f", framespersecond);
     framespersecond = 20;
   }
   s_deltime = 1000. / framespersecond;
@@ -1378,7 +1378,7 @@ GLenum GemMan :: requestLight(int specific)
     while(s_lights[i]) {
       i++;
       if (i >= NUM_LIGHTS) {
-        error("GEM: Unable to allocate light");
+        pd_error(nullptr, "GEM: Unable to allocate light");
         return(static_cast<GLenum>(0));
       }
     }
@@ -1411,7 +1411,7 @@ GLenum GemMan :: requestLight(int specific)
     retLight = GL_LIGHT7;
     break;
   default :
-    error("GEM: Unable to allocate world_light");
+    pd_error(nullptr, "GEM: Unable to allocate world_light");
     return(static_cast<GLenum>(0));
   }
   return(retLight);
@@ -1451,12 +1451,12 @@ void GemMan :: freeLight(GLenum lightNum)
     i = 7;
     break;
   default:
-    error("GEM: Error freeing a light - bad number");
+    pd_error(nullptr, "GEM: Error freeing a light - bad number");
     return;
   }
   s_lights[i]--;
   if (s_lights[i] < 0) {
-    error("GEM: light ref count below zero: %d", i);
+    pd_error(nullptr, "GEM: light ref count below zero: %d", i);
     s_lights[i] = 0;
   }
 }

@@ -102,7 +102,7 @@ static void addProperties(gem::Properties&props, int argc, t_atom*argv)
   }
 
   if(argv->a_type != A_SYMBOL) {
-    error("no key given...");
+    pd_error(nullptr, "no key given...");
     return;
   }
   std::string key=std::string(atom_getsymbol(argv)->s_name);
@@ -130,7 +130,7 @@ static void addProperties(gem::Properties&props, int argc, t_atom*argv)
 void model :: setPropertyMess(t_symbol*, int argc, t_atom*argv)
 {
   if(!argc) {
-    error("no property specified!");
+    pd_error(nullptr, "no property specified!");
     return;
   }
   addProperties(m_writeprops, argc, argv);
@@ -285,7 +285,7 @@ void model :: enumPropertyMess()
       m_infoOut.send("proplist", data);
     }
   } else {
-    error("cannot enumerate properties without a valid model loader");
+    pd_error(nullptr, "cannot enumerate properties without a valid model loader");
   }
 }
 
@@ -405,7 +405,7 @@ void model :: drawMess(int type)
 void model :: drawMess(std::string name)
 {
   if(0==m_drawTypes.size()) {
-    error("unable to change drawstyle");
+    pd_error(nullptr, "unable to change drawstyle");
     return;
   }
 
@@ -416,7 +416,7 @@ void model :: drawMess(std::string name)
     error ("unknown draw style '%s'... possible values are:", name.c_str());
     it=m_drawTypes.begin();
     while(m_drawTypes.end() != it) {
-      error("\t %s", it->first.c_str());
+      pd_error(nullptr, "\t %s", it->first.c_str());
       ++it;
     }
     return;
@@ -445,7 +445,7 @@ void model :: backendMess(t_symbol*s, int argc, t_atom*argv)
         t_symbol *b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
       } else {
-        error("%s must be symbolic", s->s_name);
+        pd_error(nullptr, "%s must be symbolic", s->s_name);
       }
     }
   } else {
@@ -488,7 +488,7 @@ void model :: openMess(const std::string&filename)
   gem::Properties wantProps = m_writeprops;
 
   if(!m_loader) {
-    error("no model loader backends found");
+    pd_error(nullptr, "no model loader backends found");
     return;
   }
   m_loader->close();
@@ -502,7 +502,7 @@ void model :: openMess(const std::string&filename)
   canvas_makefilename(const_cast<t_canvas*>(getCanvas()),
                       const_cast<char*>(filename.c_str()), buf, MAXPDSTRING);
   if(!m_loader->open(buf, wantProps)) {
-    error("unable to read model '%s'", buf);
+    pd_error(nullptr, "unable to read model '%s'", buf);
     return;
   }
 
@@ -707,7 +707,7 @@ void model :: getVBOarray()
           copyArray(*vboArray[i].data, m_color);
           break;
         default:
-          error("VBO type %d not supported\n",vboArray[i].type);
+          pd_error(nullptr, "VBO type %d not supported\n",vboArray[i].type);
         }
       }
       m_loader->unsetRefresh();
