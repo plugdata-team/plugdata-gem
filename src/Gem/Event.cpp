@@ -277,6 +277,7 @@ typedef struct _event_queue_item {
 typedef struct _gem_event_queue_t {
   gem_event_queue_item_t*first;
   gem_event_queue_item_t*last;
+    t_clock *clock;
 }  gem_event_queue_t;
 
 gem_event_queue_t*event_queue = NULL;
@@ -320,6 +321,8 @@ static void deleteEvent( gem_event_queue_item_t* event)
   delete event;
 }
 
+static void eventClock(void *x);
+
 static void addEvent(gem_event_t type, const char*string, int x, int y,
                      int state, int axis, int value, int which)
 {
@@ -327,6 +330,7 @@ static void addEvent(gem_event_t type, const char*string, int x, int y,
     event_queue=new gem_event_queue_t;
     event_queue->first=NULL;
     event_queue->last =NULL;
+    event_queue->clock=clock_new(NULL, reinterpret_cast<t_method>(eventClock));
   }
   gem_event_queue_item_t*item=createEvent(type, string, x, y, state, axis,
                                           value, which);
@@ -337,6 +341,7 @@ static void addEvent(gem_event_t type, const char*string, int x, int y,
     event_queue->last->next=item;
   }
   event_queue->last=item;
+  clock_delay(event_queue->clock, 0);
 }
 
 void dequeueEvents(void)
@@ -406,6 +411,10 @@ void dequeueEvents(void)
   }
 }
 
+static void eventClock(void *x)
+{
+  dequeueEvents();
+}
 
 /////////////////////////////////////////////////////////
 // Trigger events

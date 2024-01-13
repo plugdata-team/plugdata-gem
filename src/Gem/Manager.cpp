@@ -263,7 +263,7 @@ void GemMan :: initGem()
   m_mat_specular[3] = 1.0;
   m_mat_shininess = 100.0;
 
-  //s_clock = clock_new(NULL, reinterpret_cast<t_method>(&GemMan::render));
+  s_clock = clock_new(NULL, reinterpret_cast<t_method>(&GemMan::render));
 
   GemSIMD simd_init;
 
@@ -557,6 +557,8 @@ static inline void setColorMask(color_t color)
 
 void GemMan :: render(void *)
 {
+  gemWinMakeCurrent(getWindowInfo());
+    
   int profiling=m_profile;
   t_symbol*chain1=gensym("__gem_render");
   t_symbol*chain2=gensym("__gem_render_osd");
@@ -878,7 +880,7 @@ void GemMan :: render(void *)
   }
 
   if (!s_hit && (0.0 != deltime)) {
-    //clock_delay(s_clock, deltime);
+    clock_delay(s_clock, deltime);
   }
 
   glReportError();
@@ -927,7 +929,7 @@ void GemMan :: stopRendering()
   }
 
   m_rendering = 0;
-  //clock_unset(s_clock);
+  clock_unset(s_clock);
   s_hit = 1;
 
   // clean out all of the gemheads
@@ -1082,7 +1084,7 @@ void GemMan :: destroyWindowSoon()
 {
   GemMan::pleaseDestroy=true;
   /* jump to the render() to destroy the window asap */
-  //clock_delay(s_clock, 0.0);
+  clock_delay(s_clock, 0.0);
 }
 void GemMan :: destroyWindow()
 {
