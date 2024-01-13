@@ -28,7 +28,7 @@ WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 #endif
 
 #include <string.h>
-#include <functional>
+
 /*-----------------------------------------------------------------
   -------------------------------------------------------------------
   CLASS

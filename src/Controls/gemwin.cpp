@@ -30,6 +30,7 @@
 
 #include "Utils/GemMath.h"
 #include "Gem/Manager.h"
+#include <functional>
 
 CPPEXTERN_NEW_WITH_ONE_ARG(gemwin, t_floatarg, A_DEFFLOAT);
 
