@@ -22,6 +22,7 @@
 #include "gemwin.h"
 
 #include "Gem/GemGL.h"
+#include "Base/GemWinCreate.h"
 
 #ifdef __APPLE__
 # include <Carbon/Carbon.h>
@@ -261,6 +262,8 @@ void gemwin :: dimensionsMess(int width, int height)
   }
   GemMan::m_width = width;
   GemMan::m_height = height;
+    
+  gemWinResize(GemMan::getWindowInfo(), width, height);
 }
 /////////////////////////////////////////////////////////
 // offsetMess

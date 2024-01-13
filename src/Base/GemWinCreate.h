@@ -52,6 +52,8 @@ GEM_EXTERN extern void destroyGemWindow(WindowInfo &info);
 // Set the cursor
 GEM_EXTERN extern int cursorGemWindow(WindowInfo &info, int state);
 
+GEM_EXTERN extern void gemWinResize(WindowInfo& info, int width, int height);
+
 //////////
 // Set the topmost position
 GEM_EXTERN extern int topmostGemWindow(WindowInfo &info, int state);
