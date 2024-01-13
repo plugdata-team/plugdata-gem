@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(Gem VERSION 1.0.0 LANGUAGES C CXX)
+project(Gem LANGUAGES C CXX)
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 set(GEM_SOURCE_PATH "./src")
 
