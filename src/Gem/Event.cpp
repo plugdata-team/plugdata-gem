@@ -348,7 +348,7 @@ void dequeueEvents(void)
   }
   gem_event_queue_item_t*events = event_queue->first;
   if(NULL==events) {
-    pd_error(nullptr, "dequeue empty queue");
+    //pd_error(nullptr, "dequeue empty queue");
     return;
   }
   while(events) {
