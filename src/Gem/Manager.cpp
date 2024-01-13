@@ -213,13 +213,15 @@ void GemMan :: createContext(const char* disp)
 
   s_windowClock = clock_new(NULL,
                             reinterpret_cast<t_method>(GemMan::dispatchWinmessCallback));
-  if (!m_windowContext && !createConstWindow(disp)) {
+    
+    /* Do we need a const context?
+    if (!m_windowContext && !createConstWindow(disp)) {
     pd_error(nullptr, "GEM: A serious error occurred creating const Context");
     pd_error(nullptr, "GEM: Continue at your own risk!");
     m_windowContext = 0;
   } else {
     m_windowContext = 1;
-  }
+  } */
   setResizeCallback(GemMan::resizeCallback, NULL);
 }
 
