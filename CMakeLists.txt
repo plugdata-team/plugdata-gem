@@ -617,5 +617,6 @@ file(GLOB GEM_SOURCES
 add_subdirectory(glew/build/cmake)
 
 add_library(Gem STATIC ${GEM_SOURCES})
-target_include_directories(Gem PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src")
+target_include_directories(Gem PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include")
 target_link_libraries(Gem PRIVATE glew)
+target_compile_options(Gem PRIVATE -fvisibility=default)
