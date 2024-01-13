@@ -37,15 +37,14 @@ std::vector<std::string>getFilenameListing(const std::string&pattern)
   LPVOID lpErrorMessage;
 
   std::string::size_type filePos = pattern.rfind('\\');
-  if (filePos != std::string::npos) {
+  if (filePos != std::string::npos)
     ++filePos;
-  } else {
+  else {
     filePos = pattern.rfind('/');
-    if (filePos != std::string::npos) {
+    if (filePos != std::string::npos)
       ++filePos;
-    } else {
+    else
       filePos = pattern.length();
-    }
   }
   std::string dirname = pattern.substr(0, filePos);
 

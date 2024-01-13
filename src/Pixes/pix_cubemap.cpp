@@ -17,6 +17,7 @@
 
 #include "pix_cubemap.h"
 
+#include "Gem/Manager.h"
 #include "Gem/Image.h"
 #include <string.h>
 
@@ -481,7 +482,7 @@ void pix_cubemap :: mapMess(int unit)
   m_map=unit;
 }
 
-void pix_cubemap :: rightImageMess(t_symbol* s, int argc, t_atom *argv)
+void pix_cubemap :: rightImageMess(t_symbol *s, int argc, t_atom *argv)
 {
   int id=-1;
   if(gensym("gem_imageX+")==s) {
@@ -512,5 +513,6 @@ void pix_cubemap :: rightImageMess(t_symbol* s, int argc, t_atom *argv)
     }
   } else {
     error("wrong righthand arguments...");
+    ::error("post: %d", argc);
   }
 }

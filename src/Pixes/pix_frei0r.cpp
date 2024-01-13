@@ -32,6 +32,11 @@
 # define snprintf _snprintf
 # define close _close
 
+/*
+ * Apple used to use CFBundle's to load FF plugins
+ * currently this only crashes (on OSX-10.4 and OSX-10.5)
+ * we therefore use dlopen() on OSX as well
+ */
 #elif defined __APPLE__ && 0
 # include <mach-o/dyld.h>
 # include <unistd.h>
@@ -42,8 +47,6 @@
 #endif /* __APPLE__ */
 
 #include <string.h>
-
-#include "Gem/GemGL.h"
 
 
 #ifndef HAVE_STRNLEN
@@ -61,61 +64,6 @@ static size_t f0r_strnlen(const char* str, size_t maxlen)
   return len;
 }
 #endif
-
-namespace {
-  static std::vector<std::string>s_frei0r_paths;
-  void frei0r_paths_initialize(void) {
-    std::vector<std::string>paths;
-    const char*f0path = getenv("FREI0R_PATH");
-    if (f0path) {
-      std::string frei0r_path = f0path;
-
-#ifdef _WIN32
-      const char *separator = ";";
-#else
-      const char *separator = ":";
-#endif
-      size_t start;
-      size_t end = 0;
-      while ((start = frei0r_path.find_first_not_of(separator, end)) != std::string::npos) {
-        end = frei0r_path.find(separator, start);
-        paths.push_back(frei0r_path.substr(start, end - start));
-      }
-    } else {
-      /* no FREI0R_PATH...fall back to the defaults */
-      static const char* const frei0r_pathlist[] = {
-        "/usr/local/lib/frei0r-1/",
-        "/usr/lib/frei0r-1/",
-        /* hmm, i guess these are only valid for 64bit archs, but how do we catch them? */
-        "/usr/local/lib64/frei0r-1/",
-        "/usr/lib64/frei0r-1/",
-#define MULTIARCH_TRIPLET "x86_64-linux-gnu"
-#ifdef MULTIARCH_TRIPLET
-        /* Debian's multiarch */
-        "/usr/local/lib/" MULTIARCH_TRIPLET "/frei0r-1/",
-        "/usr/lib/" MULTIARCH_TRIPLET "/frei0r-1/",
-#endif
-        0
-      };
-
-      f0path = getenv("HOME");
-      if(f0path) {
-        std::string p(f0path);
-        paths.push_back(p + "/.frei0r-1/lib/");
-        paths.push_back(p + "/.local/lib/frei0r-1/");
-#ifdef MULTIARCH_TRIPLET
-        /* Debian's multiarch */
-        paths.push_back(p + "/.local/lib/" MULTIARCH_TRIPLET "/frei0r-1/");
-#endif
-      }
-      for(int i=0; frei0r_pathlist[i]; i++) {
-        paths.push_back(frei0r_pathlist[i]);
-      }
-    }
-
-    s_frei0r_paths = paths;
-  }
-};
 
 
 class pix_frei0r::F0RPlugin
@@ -155,7 +103,7 @@ public:
       err=f0r_init();
     }
     if (err<0) {
-      pd_error(0, "[pix_frei0r] failed to initialize plugin");
+      ::error("[pix_frei0r] failed to initialize plugin");
       return false;
     }
 
@@ -169,10 +117,13 @@ public:
     case (F0R_PLUGIN_TYPE_FILTER):
       break;
     default:
-      pd_error(0, "[pix_frei0r] only supports sources/filters, no mixers!");
+      ::error("[pix_frei0r] only supports sources/filters, no mixers!");
       return false;
     }
 
+#ifdef __GNUC__
+# warning check color type
+#endif
     m_color = info.color_model;
 #ifdef __GNUC__
 # warning check compatibility
@@ -209,24 +160,6 @@ public:
 
       ::post("parm%02d[%s]: %s", i+1, pinfo.name, pinfo.explanation);
     }
-
-    /* check color-space */
-    bool compat_color = true;
-    switch(m_color) {
-    case F0R_COLOR_MODEL_PACKED32:
-      break;
-    case F0R_COLOR_MODEL_RGBA8888:
-      compat_color = (GEM_RGBA == GEM_RAW_RGBA);
-      break;
-    case F0R_COLOR_MODEL_BGRA8888:
-      compat_color = (GEM_RGBA == GEM_RAW_BGRA);
-      break;
-    default:
-      compat_color = false;
-      break;
-    }
-    if(!compat_color)
-      ::post("pix_frei0r: currently only plugins using the RGBA colorspace are properly supported");
 
     return true;
   }
@@ -308,7 +241,7 @@ public:
     if(f0r_deinit) {
       int err=f0r_deinit();
       if(err) {
-        ::pd_error(0, "[%s] f0r_deinit() failed with %d", m_name.c_str(), err);
+        ::error("[%s] f0r_deinit() failed with %d", m_name.c_str(), err);
       }
     }
   }
@@ -423,7 +356,7 @@ public:
 
 static std::map<const t_symbol*, std::string>s_class2filename;
 
-CPPEXTERN_NEW_WITH_ONE_ARG(pix_frei0r,  t_symbol*, A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(pix_frei0r,  t_symbol *, A_DEFSYM);
 
 /////////////////////////////////////////////////////////
 //
@@ -441,7 +374,6 @@ pix_frei0r :: pix_frei0r(t_symbol*s)
   //  throw(GemException("Gem has been compiled without Frei0r-support!"));
   int can_rgba=0;
   m_image.setCsizeByFormat(GEM_RGBA);
-  m_converterImage.setCsizeByFormat(GEM_RGBA);
 
   if(!s || s==&s_) {
     m_canopen=true;
@@ -554,19 +486,6 @@ void pix_frei0r :: openMess(t_symbol*s)
   }
 }
 
-namespace
-{
-void swapBytes(imageStruct &image)
-{
-  size_t pixelnum=image.xsize*image.ysize;
-  unsigned int *pixels=(unsigned int*)image.data;
-  while(pixelnum--) {
-    unsigned int p = __builtin_bswap32(*pixels);
-    *pixels++ = p;
-  }
-}
-};
-
 /////////////////////////////////////////////////////////
 // processImage
 //
@@ -581,17 +500,12 @@ void pix_frei0r :: processRGBAImage(imageStruct &image)
   m_image.xsize=image.xsize;
   m_image.ysize=image.ysize;
   m_image.reallocate();
-  if(GL_UNSIGNED_INT_8_8_8_8 == m_image.type) {
-    swapBytes(image);
-  }
+
   m_plugin->process(time, image, m_image);
   time++;
 
   image.data   = m_image.data;
-  if(GL_UNSIGNED_INT_8_8_8_8 == image.type) {
-    swapBytes(image);
-  }
-  image.not_owned = true;
+  image.notowned = true;
   image.setCsizeByFormat(m_image.format);
 }
 
@@ -686,7 +600,7 @@ void pix_frei0r :: parmMess(int key, int argc, t_atom *argv)
     error("param#%02d('%s') is of UNKNOWN type", key, name);
     break;
   }
-  setPixModified();
+
 }
 
 static const int offset_pix_=strlen("pix_");
@@ -699,14 +613,14 @@ static void*frei0r_loader_new(t_symbol*s, int argc, t_atom*argv)
   }
   ::verbose(2, "frei0r_loader: %s",s->s_name);
   try {
+    Obj_header *obj = new (pd_new(pix_frei0r_class),(void *)NULL) Obj_header;
     const char*realname=s->s_name+offset_pix_; /* strip of the leading 'pix_' */
-    const int typespecs[] = {};
-    const unsigned int numtypespecs = sizeof(typespecs) / sizeof(*typespecs);
-    gem::CPPExtern_proxy proxy(pix_frei0r_class, s->s_name, s, argc, argv,
-                               numtypespecs, typespecs, 1);
-    argc = proxy.getNumArgs();
-    proxy.setObject(new pix_frei0r(gensym(realname)));
-    return proxy.initialize();
+    CPPExtern::m_holder = &obj->pd_obj;
+    CPPExtern::m_holdname=s->s_name;
+    obj->data = new pix_frei0r(gensym(realname));
+    CPPExtern::m_holder = NULL;
+    CPPExtern::m_holdname=NULL;
+    return(obj);
   } catch (GemException&e) {
     ::verbose(2, "frei0r_loader: failed! (%s)", e.what());
     return 0;
@@ -714,8 +628,7 @@ static void*frei0r_loader_new(t_symbol*s, int argc, t_atom*argv)
   return 0;
 }
 bool pix_frei0r :: loader(const t_canvas*canvas,
-                          const std::string&classname, const std::string&path,
-                          bool legacy)
+                          const std::string&classname, const std::string&path)
 {
   if(strncmp("pix_", classname.c_str(), offset_pix_)) {
     return false;
@@ -724,21 +637,12 @@ bool pix_frei0r :: loader(const t_canvas*canvas,
   std::string filename = pluginname;
   gem::RTE::RTE*rte=gem::RTE::RTE::getRuntimeEnvironment();
   if(rte) {
-    if (legacy) {
+    if (path.empty()) {
       filename=rte->findFile(pluginname, GemDylib::getDefaultExtension(),
                              canvas);
     } else {
-      if (path.empty()) {
-        for(size_t i=0; i<s_frei0r_paths.size(); i++) {
-          if (!s_frei0r_paths[i].empty())
-            if (loader(canvas, classname, s_frei0r_paths[i], legacy))
-              return true;
-        }
-        return false;
-      } else {
-        filename=rte->findFile(path+"/"+pluginname,
-                               GemDylib::getDefaultExtension(), canvas);
-      }
+      filename=rte->findFile(path+"/"+pluginname,
+                             GemDylib::getDefaultExtension(), canvas);
     }
   }
   pix_frei0r::F0RPlugin*plugin=NULL;
@@ -753,7 +657,7 @@ bool pix_frei0r :: loader(const t_canvas*canvas,
     delete plugin;
     /* cache the filename that loads this plugin */
     s_class2filename[gensym(pluginname.c_str())]=filename;
-    /* register a new class */
+    /*  a new class */
     class_addcreator(reinterpret_cast<t_newmethod>(frei0r_loader_new),
                      gensym(classname.c_str()), A_GIMME, 0);
     return true;
@@ -762,9 +666,9 @@ bool pix_frei0r :: loader(const t_canvas*canvas,
 }
 
 static int frei0r_loader(const t_canvas *canvas, const char *classname,
-                         const char *path, bool legacy)
+                         const char *path)
 {
-  return pix_frei0r::loader(canvas, classname, path?path:"", legacy);
+  return pix_frei0r::loader(canvas, classname, path?path:"");
 }
 
 /////////////////////////////////////////////////////////
@@ -776,10 +680,10 @@ void pix_frei0r :: obj_setupCallback(t_class *classPtr)
 {
   class_addanything(classPtr,
                     reinterpret_cast<t_method>(&pix_frei0r::parmCallback));
-  CPPEXTERN_MSG1(classPtr, "load", openMess, t_symbol*);
+  class_addmethod  (classPtr,
+                    reinterpret_cast<t_method>(&pix_frei0r::openCallback), gensym("load"),
+                    A_SYMBOL, A_NULL);
   gem_register_loader(frei0r_loader);
-  gem_register_loader_nopath(frei0r_loader);
-  frei0r_paths_initialize();
 }
 
 void pix_frei0r :: parmCallback(void *data, t_symbol*s, int argc,
@@ -791,4 +695,9 @@ void pix_frei0r :: parmCallback(void *data, t_symbol*s, int argc,
   } else {
     GetMyClass(data)->parmMess(std::string(s->s_name), argc, argv);
   }
+}
+
+void pix_frei0r :: openCallback(void *data, t_symbol*name)
+{
+  GetMyClass(data)->openMess(name);
 }

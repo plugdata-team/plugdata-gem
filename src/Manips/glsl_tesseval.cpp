@@ -17,7 +17,7 @@
 
 #include "glsl_tesseval.h"
 
-CPPEXTERN_NEW_WITH_ONE_ARG(glsl_tesseval, t_symbol*, A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(glsl_tesseval, t_symbol *, A_DEFSYM);
 
 /////////////////////////////////////////////////////////
 //
@@ -27,7 +27,7 @@ CPPEXTERN_NEW_WITH_ONE_ARG(glsl_tesseval, t_symbol*, A_DEFSYMBOL);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-glsl_tesseval :: glsl_tesseval(t_symbol* filename)
+glsl_tesseval :: glsl_tesseval(t_symbol *filename)
   : glsl_vertex()
 {
   openMess(filename);
@@ -54,7 +54,7 @@ bool glsl_tesseval :: isRunnable()
     return true;
   }
 
-  error("need OpenGL-4.0 to run GLSL tessellation");
+  error("need OpenGL-4.0 to run GLSL tesselation");
   return false;
 }
 
@@ -69,7 +69,7 @@ void glsl_tesseval :: printInfo()
     return;
   }
   if(GLEW_VERSION_4_0) {
-    post("tessellation evaluation shader - Hardware Info");
+    post("tesselation evaluation shader - Hardware Info");
     post("=============================================");
 
     GLSL_GETPOSTINT( MAX_TESS_GEN_LEVEL );

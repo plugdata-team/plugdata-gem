@@ -22,15 +22,12 @@
 CPPEXTERN_NEW_WITH_GIMME(modelfiler);
 
 
-namespace
-{
-std::string checkArrays(const std::string*tablenames, size_t count)
-{
+namespace {
+std::string checkArrays(const std::string*tablenames, size_t count) {
   gem::RTE::Array a;
   for(size_t i=0; i<count; i++) {
-    if(!a.name(tablenames[i])) {
+    if(!a.name(tablenames[i]))
       return tablenames[i];
-    }
   }
   return std::string();
 }
@@ -80,14 +77,14 @@ static gem::any atom2any(t_atom*ap)
   }
   return result;
 }
-static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom*argv)
+static void addProperties(gem::Properties&props, int argc, t_atom*argv)
 {
   if(!argc) {
     return;
   }
 
   if(argv->a_type != A_SYMBOL) {
-    pd_error(obj, "no key given...");
+    error("no key given...");
     return;
   }
   std::string key=std::string(atom_getsymbol(argv)->s_name);
@@ -118,7 +115,7 @@ void modelfiler :: setPropertyMess(t_symbol*, int argc, t_atom*argv)
     error("no property specified!");
     return;
   }
-  addProperties(this, m_readprops, argc, argv);
+  addProperties(m_readprops, argc, argv);
 
   if(m_loader) {
     m_loader->setProperties(m_readprops);
@@ -132,7 +129,7 @@ void modelfiler :: getPropertyMess(t_symbol*, int argc, t_atom*argv)
     m_readprops.clear();
 
     for(i=0; i<argc; i++) {
-      addProperties(this, m_readprops, 1, argv+i);
+      addProperties(m_readprops, 1, argv+i);
     }
 
   } else {
@@ -276,7 +273,7 @@ void modelfiler :: enumPropertyMess()
 
 void modelfiler :: setPropertiesMess(t_symbol*, int argc, t_atom*argv)
 {
-  addProperties(this, m_readprops, argc, argv);
+  addProperties(m_readprops, argc, argv);
 }
 
 void modelfiler :: applyProperties()
@@ -302,7 +299,7 @@ void modelfiler :: backendMess(t_symbol*s, int argc, t_atom*argv)
   if(argc) {
     for(int i=0; i<argc; i++) {
       if(A_SYMBOL == argv->a_type) {
-        t_symbol* b=atom_getsymbol(argv+i);
+        t_symbol *b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
       } else {
         error("%s must be symbolic", s->s_name);
@@ -313,6 +310,8 @@ void modelfiler :: backendMess(t_symbol*s, int argc, t_atom*argv)
     if(m_loader) {
       std::vector<gem::any>atoms;
       gem::any value;
+      t_atom at;
+      t_atom*ap=&at;
       gem::Properties props;
       std::vector<std::string> backends;
       props.set("backends", value);
@@ -382,105 +381,49 @@ void modelfiler :: openMess(const std::string&filename)
   PRINTSUCCESS(normals);
 }
 
-namespace {
-  float*getVector(gem::plugins::modelloader*loader
-                  , size_t group, const std::string name
-                  , size_t &dimen, size_t &size
-    ) {
-    gem::plugins::modelloader::mesh *m=loader->getMesh(group);
-    if(!m)
-      return nullptr;
-    if("vertices" == name) {
-      size=m->size;
-      dimen=3;
-      return m->vertices;
-    }
-    if("normals" == name) {
-      size=m->size;
-      dimen=3;
-      return m->normals;
-    }
-    if("colors" == name) {
-      size=m->size;
-      dimen=4;
-      return m->colors;
-    }
-    if("texcoords" == name) {
-      size=m->size;
-      dimen=2;
-      return m->texcoords;
-    }
+size_t modelfiler :: copyArrays(const std::string&name, const std::string*tablenames, size_t count) {
+  if((count > 0) && tablenames[0].empty())
     return 0;
-  }
-};
-
-size_t modelfiler :: copyArrays(const std::string&name, const std::string*tablenames, size_t count)
-{
-  if((count > 0) && tablenames[0].empty()) {
-    return 0;
-  }
   std::string failed = checkArrays(tablenames, count);
   if(!failed.empty()) {
     error("no such array '%s' for %s", failed.c_str(), name.c_str());
     return 0;
   }
-
-  size_t totalsize=0;
-  size_t meshes = m_loader->getNumMeshes();
-  for(size_t m=0; m<meshes; m++) {
-    size_t dimen=0, meshsize=0;
-    float*data = getVector(m_loader, m, name, dimen, meshsize);
-    if(!data || !meshsize || (dimen!=count))
-      continue;
-    totalsize += meshsize;
-  }
-
-  if(!totalsize) {
-    return 0;
-  }
-
-
+  const std::vector<std::vector<float> >&data = m_loader->getVector(name);
   std::vector<gem::RTE::Array> tabs;
+
+  size_t size = data.size();
+  if(!size)
+    return size;
+
   for(size_t i=0; i<count; i++) {
     gem::RTE::Array a(tablenames[i]);
-    a.resize(totalsize);
+    a.resize(size);
     tabs.push_back(a);
   }
-
-
-  size_t offset=0;
-
-  for(size_t m=0; m<meshes; m++) {
-    size_t dimen=0, meshsize=0;
-    float*data = getVector(m_loader, m, name, dimen, meshsize);
-    if(!data || !meshsize || (dimen!=count))
-      continue;
-    for(size_t i=0; i<meshsize; i++) {
-      for(size_t j=0; j<count; j++) {
-        tabs[j][offset+i] = data[i*dimen+j];
-      }
+  for(size_t i=0; i<size; i++) {
+    for(size_t j=0; j<count; j++) {
+      tabs[j][i] = data[i][j];
     }
-    offset += meshsize;
   }
-  return totalsize;
+
+  return size;
 }
 
 
-void modelfiler :: tableMess(t_symbol*s, int argc, t_atom*argv)
-{
+void modelfiler :: tableMess(t_symbol*s, int argc, t_atom*argv) {
   const std::string tabletype = s->s_name;
   std::vector<std::string>extensions;
-  std::string*names = 0;
+  std::string*names;
 
   if(tabletype == "position" || tabletype == "normal") {
     extensions.push_back("X");
     extensions.push_back("Y");
     extensions.push_back("Z");
-    if("position" == tabletype) {
+    if("position" == tabletype)
       names = m_position;
-    } else {
+    else
       names = m_normal;
-    }
   } else if (tabletype == "texture") {
     extensions.push_back("U");
     extensions.push_back("V");
@@ -491,11 +434,6 @@ void modelfiler :: tableMess(t_symbol*s, int argc, t_atom*argv)
     extensions.push_back("B");
     extensions.push_back("A");
     names = m_color;
-  }
-
-  if (!names) {
-    error("invalid tabletype '%s'", s->s_name);
-    return;
   }
 
   if((argc != 1) && (argc != extensions.size()) && (argc != extensions.size() + 1)) {

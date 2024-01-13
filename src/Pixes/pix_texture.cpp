@@ -293,7 +293,6 @@ void pix_texture :: render(GemState *state)
   int do_rectangle = (m_rectangle)?canRectangle:0;
   int newfilm = 0;
   pixBlock*img=NULL;
-  GLint internalformat = GL_RGBA;
 
   if(m_pbo && (m_numPbo != m_oldNumPbo)) {
     /* the PBO settings have changed, invalidate the old PBO */
@@ -335,15 +334,12 @@ void pix_texture :: render(GemState *state)
       m_rebuildList = true;
     }
 
-    img->image.copy2ImageStruct(&m_imagebuf);
-    switch(m_imagebuf.type) {
-    case GL_FLOAT:
-    case GL_DOUBLE:
-      internalformat =  GL_RGBA32F;
-      break;
-    default:
-      internalformat = GL_RGBA;
-    }
+    m_imagebuf.xsize =img->image.xsize;
+    m_imagebuf.ysize =img->image.ysize;
+    m_imagebuf.csize =img->image.csize;
+    m_imagebuf.format=img->image.format;
+    m_imagebuf.type  =img->image.type;
+    m_imagebuf.data  =img->image.data;
 
     x_2 = powerOfTwo(m_imagebuf.xsize);
     y_2 = powerOfTwo(m_imagebuf.ysize);
@@ -430,7 +426,8 @@ void pix_texture :: render(GemState *state)
     //(skip Alpha since it isn't used)
     const bool do_yuv = m_yuv && GLEW_APPLE_ycbcr_422;
     if (!do_yuv && m_imagebuf.format == GEM_YUV) {
-      m_imagebuf.setCsizeByFormat(GL_RGB);
+      m_imagebuf.format=GL_RGB;
+      m_imagebuf.csize=3;
       m_imagebuf.reallocate();
       if(img) {
         m_imagebuf.fromYUV422(img->image.data);
@@ -457,11 +454,10 @@ void pix_texture :: render(GemState *state)
 
       }
       //if the texture is a power of two in size then there is no need to subtexture
-      glTexImage2D(m_textureType, /* target */
-                   0, /* level */
-                   internalformat, /* internalformat */
-                   m_imagebuf.xsize, m_imagebuf.ysize,
-                   0, /* border */
+      glTexImage2D(m_textureType, 0,
+                   m_imagebuf.csize,
+                   m_imagebuf.xsize,
+                   m_imagebuf.ysize, 0,
                    m_imagebuf.format,
                    m_imagebuf.type,
                    m_imagebuf.data);
@@ -537,7 +533,7 @@ void pix_texture :: render(GemState *state)
         if ( !do_rectangle ) {
           glTexImage2D( m_textureType, 0,
                         //m_buffer.csize,
-                        internalformat,
+                        GL_RGBA,
                         m_buffer.xsize,
                         m_buffer.ysize, 0,
                         m_buffer.format,
@@ -548,7 +544,7 @@ void pix_texture :: render(GemState *state)
         } else {//this deals with rectangle textures that are h*w
           glTexImage2D(m_textureType, 0,
                        //  m_buffer.csize,
-                       internalformat,
+                       GL_RGBA,
                        m_imagebuf.xsize,
                        m_imagebuf.ysize, 0,
                        m_imagebuf.format,
@@ -914,7 +910,7 @@ void pix_texture :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG (classPtr, "extTexture", extTextureMess);
 
   class_addcreator(reinterpret_cast<t_newmethod>(create_pix_texture),
-                   gensym("pix_texture2"), A_GIMME, A_NULL);
+                   gensym("pix_texture2"), A_NULL);
 }
 
 void pix_texture :: extTextureMess(t_symbol*s, int argc, t_atom*argv)

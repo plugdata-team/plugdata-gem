@@ -36,7 +36,6 @@ part_head :: part_head(t_floatarg numParts)
     numParts = 1000.f;
   }
   m_particleGroup = pGenParticleGroups(1, (int)numParts);
-  m_particlestate = pStateCreate();
 }
 
 /////////////////////////////////////////////////////////
@@ -59,7 +58,6 @@ void part_head :: renderParticles(GemState *state)
   if (m_particleGroup < 0) {
     return;
   }
-  pStateActivate(m_particlestate);
 
   // The original default was 50.f milliseconds (20 fps)
   pTimeStep((m_tickTime / 50.f) * m_speed);

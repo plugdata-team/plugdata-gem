@@ -27,9 +27,9 @@
 
 
 #include "pix_dump.h"
-#include "Gem/GemGL.h"
 
-CPPEXTERN_NEW(pix_dump);
+CPPEXTERN_NEW_WITH_TWO_ARGS(pix_dump, t_floatarg, A_DEFFLOAT, t_floatarg,
+                            A_DEFFLOAT);
 
 /////////////////////////////////////////////////////////
 //
@@ -39,13 +39,38 @@ CPPEXTERN_NEW(pix_dump);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-pix_dump :: pix_dump() :
+pix_dump :: pix_dump(t_floatarg fx, t_floatarg fy) :
   m_dataOut(0),
-  m_buffer(0), m_bufsize(0),
+  xsize(0), ysize(0),
+  m_xsize(0), m_ysize(0), m_csize(3),
+  m_buffer(0),
+  m_bufsize(0),
+  oldimagex(0), oldimagey(0),
+  m_xstep(1), m_ystep(1),
+  m_data(0),
   m_bytemode(false),
   m_mode(GEM_RGBA)
 {
-  m_image.data = 0;
+  xsize = static_cast<int>(fx);
+  ysize = static_cast<int>(fy);
+
+  if (xsize < 0) {
+    xsize = 0;
+  }
+  if (ysize < 0) {
+    ysize = 0;
+  }
+
+  m_xsize = xsize;
+  m_ysize = ysize;
+
+  oldimagex = xsize;
+  oldimagey = ysize;
+
+  m_bufsize = m_xsize * m_ysize * m_csize;
+
+  m_buffer = new t_atom[m_bufsize];
+
   m_dataOut = outlet_new(this->x_obj, &s_list);
 }
 
@@ -56,8 +81,7 @@ pix_dump :: pix_dump() :
 pix_dump :: ~pix_dump()
 {
   outlet_free(m_dataOut);
-  delete [] m_buffer;
-  m_buffer = 0;
+  delete[]m_buffer;
 }
 
 /////////////////////////////////////////////////////////
@@ -66,116 +90,75 @@ pix_dump :: ~pix_dump()
 /////////////////////////////////////////////////////////
 void pix_dump :: processImage(imageStruct &image)
 {
-  size_t bufsize = image.xsize * image.ysize * image.csize;
-  image.copy2ImageStruct(&m_image);
-  if(bufsize > m_bufsize) {
+  int x = m_xsize, y = m_ysize, c = m_csize;
+
+  if (image.xsize != oldimagex) {
+    oldimagex = image.xsize;
+    m_xsize = ((!xsize) || (xsize > oldimagex))?oldimagex:xsize;
+  }
+  if (image.ysize != oldimagey) {
+    oldimagey = image.ysize;
+    m_ysize = ((!ysize) || (ysize > oldimagey))?oldimagey:ysize;
+  }
+
+  if (image.csize != m_csize) {
+    m_csize = image.csize;
+  }
+
+  if ( (m_xsize != x) || (m_ysize != y) || (m_csize != c) ) {
     // resize the image buffer
     if(m_buffer) {
       delete [] m_buffer;
-      m_buffer = 0;
     }
-    m_bufsize = bufsize;
+    m_bufsize = m_xsize * m_ysize * m_csize;
     m_buffer = new t_atom[m_bufsize];
+
+    m_xstep = m_csize * (static_cast<float>(image.xsize)/static_cast<float>
+                         (m_xsize));
+    m_ystep = m_csize * (static_cast<float>(image.ysize)/static_cast<float>
+                         (m_ysize)) * image.xsize;
   }
+
+  m_data = image.data;
 }
-void pix_dump :: processFloat32(imageStruct &image)
+
+/////////////////////////////////////////////////////////
+// processYUVImage
+//
+/////////////////////////////////////////////////////////
+void pix_dump :: processYUVImage(imageStruct &image)
 {
-  processImage(image);
+  int x = m_xsize, y = m_ysize, c = m_csize;
+
+  if (image.xsize != oldimagex) {
+    oldimagex = image.xsize;
+    m_xsize = ((!xsize) || (xsize > oldimagex))?oldimagex:xsize;
+  }
+  if (image.ysize != oldimagey) {
+    oldimagey = image.ysize;
+    m_ysize = ((!ysize) || (ysize > oldimagey))?oldimagey:ysize;
+  }
+
+  if (image.csize != m_csize) {
+    m_csize = image.csize;
+  }
+
+  if ( (m_xsize != x) || (m_ysize != y) || (m_csize != c) ) {
+    // resize the image buffer
+    if(m_buffer) {
+      delete [] m_buffer;
+    }
+    m_bufsize = m_xsize * m_ysize * m_csize;
+    m_buffer = new t_atom[m_bufsize];
+
+    m_xstep = m_csize * (static_cast<float>(image.xsize)/static_cast<float>
+                         (m_xsize));
+    m_ystep = m_csize * (static_cast<float>(image.ysize)/static_cast<float>
+                         (m_ysize)) * image.xsize;
+  }
+
+  m_data = image.data;
 }
-void pix_dump :: processFloat64(imageStruct &image)
-{
-  processImage(image);
-}
-
-
-namespace {
-  template<typename T>
-  static inline
-  size_t data4_to_atoms(t_atom*dest, const T*src, size_t n, t_float scale, const int channels[4]) {
-    size_t count = 0;
-    while(n--) {
-      for(size_t i=0; i<4; i++) {
-        int ch = channels[i];
-        if(ch<0)continue;
-        t_float v = static_cast<t_float>(src[channels[ch]]) * scale;
-        SETFLOAT(dest, v);
-        dest++;
-        count++;
-      }
-      src+=4;
-    }
-    return count;
-  }
-  template<typename T>
-  static inline
-  size_t data_to_atoms(t_atom*dest, const T*src, size_t N, t_float scale) {
-    size_t count = 0;
-    for(size_t n=0; n<N; n++) {
-      t_float v = static_cast<t_float>(*src++) * scale;
-      SETFLOAT(dest+n, v);
-      count++;
-    }
-    return count;
-  }
-  template<typename T>
-  static inline
-  size_t pix2atoms(t_atom*atoms, int mode, t_float scale,
-                   const imageStruct&image,
-                   size_t x0, size_t y0, size_t cols, size_t rows)
-  {
-    size_t count = 0;
-    const T*pixels = static_cast<const T*>(static_cast<const void*>(image.data));
-    size_t width = image.ysize;
-    size_t height = image.xsize;
-
-    const int extrachannel = (GEM_RGBA==mode)?1:0;
-    const int channelsRGBA[] = {chRed, chGreen, chBlue, extrachannel?chAlpha:-1};
-    const int channelsUYVY[] = {chU, chY0, chV, extrachannel?chY1:-1};
-    if(x0 > width || (y0 > height))
-      return 0;
-    if (x0 + cols > width)
-      cols = width - x0;
-    if (y0 + rows > height)
-      rows = height - y0;
-
-    switch(image.format) {
-    case GEM_GRAY:
-      for(size_t r=y0; r<rows; r++) {
-        const T*data = pixels + width*r + x0;
-        size_t n = data_to_atoms(atoms, data, cols, scale);
-        count += n;
-        atoms += n;
-      }
-      break;
-    case GEM_YUV:
-      for(size_t r=y0; r<rows; r++) {
-        const T*data = pixels + (width*r + x0) * 2;
-        size_t n = data4_to_atoms(atoms, data, cols>>1, scale, channelsUYVY);
-        count += n;
-        atoms += n;
-      }
-      break;
-    case GEM_RGB:
-      /* TODO: honor chRed,chGreen/chBlue */
-      for(size_t r=y0; r<rows; r++) {
-        const T*data = pixels + (width*r + x0) * 3;
-        size_t n = data_to_atoms(atoms, data, cols * 3, scale);
-        count += n;
-        atoms += n;
-      }
-      break;
-    case GEM_RGBA:
-      for(size_t r=y0; r<rows; r++) {
-        const T*data = pixels + (width*r + x0) * 4;
-        size_t n = data4_to_atoms(atoms, data, cols, scale, channelsRGBA);
-        count += n;
-        atoms += n;
-      }
-      break;
-    }
-    return count;
-  }
-};
 
 /////////////////////////////////////////////////////////
 // trigger
@@ -183,7 +166,7 @@ namespace {
 /////////////////////////////////////////////////////////
 void pix_dump :: trigger()
 {
-  if (!m_image.data) {
+  if (!m_data) {
     return;
   }
 
@@ -191,35 +174,183 @@ void pix_dump :: trigger()
   int i = 0, j=0;
 
   int roi_x1=0;
-  int roi_x2=m_image.xsize;
+  int roi_x2=m_xsize;
   int roi_y1=0;
-  int roi_y2=m_image.ysize;
+  int roi_y2=m_ysize;
 
-  t_float scale = m_bytemode?1:(1./255.);
+  unsigned char *buffer = m_data;
 
   if ( m_doROI ) {
-    roi_x1=m_roi.x1*(0.5+m_image.xsize);
-    roi_x2=m_roi.x2*(0.5+m_image.xsize);
-    roi_y1=m_roi.y1*(0.5+m_image.ysize);
-    roi_y2=m_roi.y2*(0.5+m_image.ysize);
-  }
+    roi_x1=m_roi.x1*(0.5+m_xsize);
+    roi_x2=m_roi.x2*(0.5+m_xsize);
+    roi_y1=m_roi.y1*(0.5+m_ysize);
+    roi_y2=m_roi.y2*(0.5+m_ysize);
 
-  size_t count = 0;
-  switch(m_image.type) {
-  case GL_FLOAT:
-    count = pix2atoms<GLfloat>(m_buffer, m_mode, 1., m_image,
-                               roi_x1, roi_y1, roi_x2-roi_x1, roi_x2-roi_x1);
+    buffer = m_data + m_csize*(( i / (roi_x2-roi_x1) + roi_y1 ) * m_xsize +
+                               (i % (roi_x2-roi_x1)) + roi_x1);
+  }
+  n=roi_x1;
+  m=roi_y1;
+
+  int picturesize = (roi_x2-roi_x1)*(roi_y2-roi_y1);
+
+  unsigned char *data, *line;
+
+  data = line = buffer;
+  switch(m_csize) {
+  case 4:
+    while (picturesize-- > 0) {
+      if (!m_bytemode) {
+        float r, g, b;
+        r = static_cast<float>(data[chRed]) / 255.f;
+        SETFLOAT(&m_buffer[i], r);
+        i++;
+        g = static_cast<float>(data[chGreen]) / 255.f;
+        SETFLOAT(&m_buffer[i], g);
+        i++;
+        b = static_cast<float>(data[chBlue]) / 255.f;
+        SETFLOAT(&m_buffer[i], b);
+        i++;
+        if ( m_mode == GEM_RGBA ) {
+          float a = static_cast<float>(data[chAlpha]) / 255.f;
+          SETFLOAT(&m_buffer[i], a);
+          i++;
+        }
+      } else {
+        unsigned char r, g, b;
+        r = static_cast<unsigned char>(data[chRed]);
+        SETFLOAT(&m_buffer[i], r);
+        i++;
+        g = static_cast<unsigned char>(data[chGreen]);
+        SETFLOAT(&m_buffer[i], g);
+        i++;
+        b = static_cast<unsigned char>(data[chBlue]);
+        SETFLOAT(&m_buffer[i], b);
+        i++;
+        if ( m_mode == GEM_RGBA ) {
+          unsigned char a = static_cast<unsigned char>(data[chAlpha]);
+          SETFLOAT(&m_buffer[i], a);
+          i++;
+        }
+      }
+      j++;
+      if ( m_doROI ) {
+        data = m_data + m_csize*(( j / (roi_x2-roi_x1) + roi_y1 ) * m_xsize +
+                                 (j % (roi_x2-roi_x1)) + roi_x1) ;
+      } else {
+        data+=4;
+      }
+    }
     break;
-  case GL_DOUBLE:
-    count = pix2atoms<GLdouble>(m_buffer, m_mode, 1., m_image,
-                                roi_x1, roi_y1, roi_x2-roi_x1, roi_x2-roi_x1);
-    break;
+  case 2:
+    while (n < m_ysize) {
+      while (m < m_xsize/2) {
+        if (!m_bytemode) {
+          float y,u,v;
+          u = static_cast<float>(data[0]) / 255.f;
+          SETFLOAT(&m_buffer[i], u);
+          i++;
+          y = static_cast<float>(data[1]) / 255.f;
+          SETFLOAT(&m_buffer[i], y);
+          i++;
+          v = static_cast<float>(data[2]) / 255.f;
+          SETFLOAT(&m_buffer[i], v);
+          i++;
+          if ( m_mode == GEM_RGBA ) {
+            float y1 = static_cast<float>(data[3]) / 255.f;
+            SETFLOAT(&m_buffer[i], y1);
+            i++;
+          }
+        } else {
+          unsigned char y,u,v;
+          u = static_cast<unsigned char>(data[0]);
+          SETFLOAT(&m_buffer[i], u);
+          i++;
+          y = static_cast<unsigned char>(data[1]);
+          SETFLOAT(&m_buffer[i], y);
+          i++;
+          v = static_cast<unsigned char>(data[2]);
+          SETFLOAT(&m_buffer[i], v);
+          i++;
+          if ( m_mode == GEM_RGBA ) {
+            unsigned char y1 = static_cast<unsigned char>(data[3]);
+            SETFLOAT(&m_buffer[i], y1);
+            i++;
+          }
+        }
+        m++;
+        data = line + static_cast<int>(m_xstep * static_cast<float>(m));
+      }
+      m = 0;
+      n++;
+      line = m_data + static_cast<int>(m_ystep*n);
+      data = line;
+    }
+  case 1:
   default:
-    count = pix2atoms<unsigned char>(m_buffer, m_mode, scale, m_image,
-                                     roi_x1, roi_y1, roi_x2-roi_x1, roi_x2-roi_x1);
-  }
-  outlet_list(m_dataOut, gensym("list"), count, m_buffer);
+    int datasize=m_xsize*m_ysize*m_csize/4;
+    int leftover=m_xsize*m_ysize*m_csize-datasize*4;
+    while (datasize--) {
+      if ( !m_bytemode ) {
+        float v;
+        v = static_cast<float>(data[0]) / 255.f;
+        SETFLOAT(&m_buffer[i], v);
+        v = static_cast<float>(data[1]) / 255.f;
+        SETFLOAT(&m_buffer[i+1], v);
+        v = static_cast<float>(data[2]) / 255.f;
+        SETFLOAT(&m_buffer[i+2], v);
+        i+=3;
+        if ( m_mode == GEM_RGBA ) {
+          v = static_cast<float>(data[3]) / 255.f;
+          SETFLOAT(&m_buffer[i], v);
+          i++;
+        }
+        if ( m_doROI ) {
+          j++;
+          data = m_data + m_csize*(( j / (roi_x2-roi_x1) + roi_y1 ) * m_xsize +
+                                   (j % (roi_x2-roi_x1)) + roi_x1) ;
+        } else {
+          data+=4;
+        }
+      } else {
+        unsigned char v;
+        v = static_cast<unsigned char>(data[0]);
+        SETFLOAT(&m_buffer[i], v);
+        v = static_cast<unsigned char>(data[1]);
+        SETFLOAT(&m_buffer[i+1], v);
+        v = static_cast<unsigned char>(data[2]);
+        SETFLOAT(&m_buffer[i+2], v);
+        i+=3;
+        if ( m_mode == GEM_RGBA ) {
+          v = static_cast<unsigned char>(data[3]);
+          SETFLOAT(&m_buffer[i], v);
+          i++;
+        }
+        if ( m_doROI ) {
+          j++;
+          data = m_data + m_csize*(( j / (roi_x2-roi_x1) + roi_y1 ) * m_xsize +
+                                   (j % (roi_x2-roi_x1)) + roi_x1) ;
+        } else {
+          data+=4;
+        }
+      }
+    }
 
+    if ( !m_bytemode ) {
+      while (leftover--) {
+        float v = static_cast<float>(*data++) / 255.f;
+        SETFLOAT(&m_buffer[i], v);
+        i++;
+      }
+    } else {
+      while (leftover--) {
+        unsigned char v = static_cast<unsigned char>(*data++);
+        SETFLOAT(&m_buffer[i], v);
+        i++;
+      }
+    }
+  }
+  outlet_list(m_dataOut, gensym("list"), i, m_buffer);
 }
 
 /////////////////////////////////////////////////////////

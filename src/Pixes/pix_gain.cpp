@@ -69,14 +69,15 @@ void pix_gain :: processRGBAImage(imageStruct &image)
 {
   int datasize =  image.xsize * image.ysize;
   unsigned char *pixels = image.data;
-  short R = static_cast<int>(256 * m_gain[chRed]);
-  short G = static_cast<int>(256 * m_gain[chGreen]);
-  short B = static_cast<int>(256 * m_gain[chBlue]);
-  short A = static_cast<int>(256 * m_gain[chAlpha]);
+  short R,G,B,A;
+  int red,green,blue;
+  R = static_cast<int>(256 * m_gain[chRed]);
+  G = static_cast<int>(256 * m_gain[chGreen]);
+  B = static_cast<int>(256 * m_gain[chBlue]);
+  A = static_cast<int>(256 * m_gain[chAlpha]);
 
   if(m_saturate) {
     while(datasize--) {
-      int red,green,blue;
       red =   (pixels[chRed  ] * R)>>8;
       pixels[chRed  ] = CLAMP(red);
       green = (pixels[chGreen] * G)>>8;
@@ -201,16 +202,16 @@ void pix_gain :: processRGBAMMX(imageStruct &image)
     return;
   }
 
-  int pixsize = (image.ysize * image.xsize)>>1;
+   int pixsize = (image.ysize * image.xsize)>>1;
 #if defined __APPLE__ && defined BYTE_ORDER && defined LITTLE_ENDIAN && (BYTE_ORDER == LITTLE_ENDIAN)
 # warning this should be fixed in chRed,...
-  __m64 gain_64 = _mm_setr_pi16(A, R, G, B);
+   __m64 gain_64 = _mm_setr_pi16(A, R, G, B);
 #else
-  __m64 gain_64 = _mm_setr_pi16(R, G, B, A);
+   __m64 gain_64 = _mm_setr_pi16(R, G, B, A);
 #endif
-  __m64*data_p= reinterpret_cast<__m64*>(image.data);
-  __m64 null_64 = _mm_setzero_si64();
-  __m64 a0,a1;
+   __m64*data_p= reinterpret_cast<__m64*>(image.data);
+   __m64 null_64 = _mm_setzero_si64();
+   __m64 a0,a1;
 
   while(pixsize--) {
     a1 = data_p[0];
@@ -251,11 +252,11 @@ void pix_gain :: processYUVAltivec(imageStruct &image)
   } bitBuffer;
 
 
-  vector signed short d, hiImage, loImage, YImage, UVImage;
+   vector signed short d, hiImage, loImage, YImage, UVImage;
   vector unsigned char zero = vec_splat_u8(0);
-  vector signed int UVhi,UVlo,Yhi,Ylo;
-  vector signed short c,gain;
-  vector unsigned int bitshift;
+   vector signed int UVhi,UVlo,Yhi,Ylo;
+   vector signed short c,gain;
+   vector unsigned int bitshift;
   vector unsigned char *inData = (vector unsigned char*) image.data;
 
 
@@ -348,60 +349,6 @@ void pix_gain :: processYUVAltivec(imageStruct &image)
 }
 #endif /* __VEC__ */
 
-
-void pix_gain :: processFloat32(imageStruct &image)
-{
-  size_t datasize = image.xsize * image.ysize;
-  float *pixels = (float*)image.data;
-  float red = m_gain[chRed], green = m_gain[chGreen], blue = m_gain[chBlue];
-  float alpha = m_gain[chAlpha], gray = m_gain[chGray];
-  float Y = m_gain[1];
-  float U = m_gain[2];
-  float V = m_gain[3];
-
-
-  switch(image.format) {
-  case GEM_RGBA:
-    while(datasize--) {
-      pixels[chRed] *= red;
-      pixels[chGreen] *= green;
-      pixels[chBlue] *= blue;
-      pixels[chAlpha] *= alpha;
-      pixels += 4;
-    }
-    break;
-  case GEM_RGB:
-    while(datasize--) {
-      pixels[chRed] *= red;
-      pixels[chGreen] *= green;
-      pixels[chBlue] *= blue;
-      pixels += 4;
-    }
-    break;
-  case GEM_YUV:
-    datasize>>=1;
-    while(datasize--) {
-      pixels[chU] *= U;
-      pixels[chY0] *= Y;
-      pixels[chV] *= V;
-      pixels[chY1] *= Y;
-      pixels += 4;
-    }
-    break;
-  case GEM_GRAY:
-    while(datasize--) {
-      pixels[chGray] *= gray;
-      pixels += 1;
-    }
-    break;
-  default:
-    error("cannot handle 0x%X/float image", image.format);
-    break;
-  }
-}
-
-
-
 /////////////////////////////////////////////////////////
 // vecGainMess
 //
@@ -463,7 +410,7 @@ void pix_gain :: obj_setupCallback(t_class *classPtr)
                   reinterpret_cast<t_method>(&pix_gain::saturateMessCallback),
                   gensym("saturate"), A_FLOAT, A_NULL);
 }
-void pix_gain :: vecGainMessCallback(void *data, t_symbol*, int argc,
+void pix_gain :: vecGainMessCallback(void *data, t_symbol *, int argc,
                                      t_atom *argv)
 {
   GetMyClass(data)->vecGainMess(argc, argv);

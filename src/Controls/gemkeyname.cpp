@@ -33,7 +33,7 @@ gemkeyname :: gemkeyname()
   m_outKeyState = outlet_new(this->x_obj, 0);
   m_outKeyVal = outlet_new(this->x_obj, 0);
 
-  // register event callback
+  //  event callback
   setKeyboardCallback(&gemkeyname::keynameCallback, this);
 }
 

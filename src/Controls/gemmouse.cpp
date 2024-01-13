@@ -19,6 +19,7 @@
 #include "gemmouse.h"
 
 #include "Gem/Event.h"
+#include "Gem/Manager.h"
 
 CPPEXTERN_NEW_WITH_GIMME(gemmouse);
 
@@ -53,7 +54,7 @@ gemmouse :: gemmouse(int argc, t_atom*argv) :
     m_scaleMode =BOTH;
   }
 
-  // register event callback
+  //  event callback
   setMotionCallback(&gemmouse::mouseMotionCallback, this);
   setButtonCallback(&gemmouse::mouseButtonCallback, this);
   setWheelCallback(&gemmouse::mouseWheelCallback, this);

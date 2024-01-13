@@ -122,7 +122,7 @@ teapot :: ~teapot()
 // render
 //
 /////////////////////////////////////////////////////////
-void teapot :: renderShape(GemState *state)
+void teapot :: render(GemState *state)
 {
   GLenum type = m_drawType;
   switch(m_drawType){

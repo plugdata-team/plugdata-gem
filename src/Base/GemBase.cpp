@@ -22,7 +22,7 @@
  * states:
  *
  * INIT: a context has just been created; initialize the object for this context
- * DISABLED: the object is not usable in this context
+ * DISABLED: the object is not useable in this context
  * ENABLED: the object can run in this context; however, no context-ressources have been allocated yet (needs startRendering())
  * RENDERING: startRendering() has been called and we can render this object just fine...
  * MODIFIED: the object has been modified, and need to free it's context-ressources (stopRendering()) and request new ones (startRendering())
@@ -272,7 +272,7 @@ void GemBase :: obj_setupCallback(t_class *classPtr)
   _CallbackClass_gemContext _CallbackClassInstance_gemContext (classPtr);
 
 }
-void GemBase :: gem_MessCallback(void *data, t_symbol* s, int argc,
+void GemBase :: gem_MessCallback(void *data, t_symbol *s, int argc,
                                  t_atom *argv)
 {
   if (argc==2 && argv->a_type==A_POINTER && (argv+1)->a_type==A_POINTER) {

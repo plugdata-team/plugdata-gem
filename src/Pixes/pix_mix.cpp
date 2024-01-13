@@ -219,18 +219,18 @@ void pix_mix :: processYUV_Altivec (imageStruct &image, imageStruct &right)
   } charBuffer;
 
   //vector unsigned char c;
-  vector signed short gainAdd, hiImage, loImage,hiRight,loRight,
-         YImage, UVImage, UVRight, UVTemp, YTemp;
-  vector unsigned char zero = vec_splat_u8(0);
+   vector signed short gainAdd, hiImage, loImage,hiRight,loRight,
+           YImage, UVImage, UVRight, UVTemp, YTemp;
+   vector unsigned char zero = vec_splat_u8(0);
   //vector signed short szero = vec_splat_s16(0);
-  vector unsigned char c,one;
-  vector signed int UVhi,UVlo,Yhi,Ylo;
-  vector signed int UVhiR,UVloR,YhiR,YloR;
-  vector signed short gainSub,gain,gainR,d;
-  vector unsigned int bitshift;
+   vector unsigned char c,one;
+   vector signed int UVhi,UVlo,Yhi,Ylo;
+   vector signed int UVhiR,UVloR,YhiR,YloR;
+   vector signed short gainSub,gain,gainR,d;
+   vector unsigned int bitshift;
   vector unsigned char *inData = (vector unsigned char*) image.data;
   vector unsigned char *rightData = (vector unsigned char*) right.data;
-  vector unsigned char tempImage;//,tempRight;
+   vector unsigned char tempImage;//,tempRight;
 
   //Write the pixel (pair) to the transfer buffer
   charBuffer.elements[0] = 2;

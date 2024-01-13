@@ -16,11 +16,10 @@
 
 #include "pix_snap.h"
 
+#include "Gem/Manager.h"
 #include "Gem/Cache.h"
 #include "Gem/State.h"
 #include "Gem/Settings.h"
-#include "Utils/GLUtil.h"
-
 
 CPPEXTERN_NEW_WITH_GIMME(pix_snap);
 
@@ -32,11 +31,10 @@ CPPEXTERN_NEW_WITH_GIMME(pix_snap);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-pix_snap :: pix_snap(int argc, t_atom *argv)
-  : m_originalImage(NULL)
-  , m_x(0), m_y(0), m_width(0), m_height(0)
-  , m_numPbo(0), m_curPbo(0), m_pbo(NULL)
-  , m_reqType(0)
+pix_snap :: pix_snap(int argc, t_atom *argv) :
+  m_originalImage(NULL),
+  m_x(0), m_y(0), m_width(0), m_height(0),
+  m_numPbo(0), m_curPbo(0), m_pbo(NULL)
 
 {
   m_pixBlock.image = m_imageStruct;
@@ -122,9 +120,7 @@ void pix_snap :: snapMess(void)
   // release previous data
   if (m_originalImage)  {
     if (m_originalImage->xsize != m_width ||
-        m_originalImage->ysize != m_height ||
-        m_originalImage->type != m_reqType ||
-        0) {
+        m_originalImage->ysize != m_height) {
       m_originalImage->clear();
       delete m_originalImage;
       m_originalImage = NULL;
@@ -138,21 +134,11 @@ void pix_snap :: snapMess(void)
     m_originalImage->xsize = m_width;
     m_originalImage->ysize = m_height;
     m_originalImage->setCsizeByFormat(GEM_RGBA);
-    if(m_reqType)
-      m_originalImage->type = m_reqType;
-    m_reqType = m_originalImage->type;
-
-    const char* type_name = gem::utils::gl::pixtype2name(m_reqType);
-    if(type_name) {
-      post("type: %s", type_name);
-    } else {
-      post("type: %d (0x%X)", m_reqType, m_reqType);
-    }
-
     // FIXXXME: upsidedown should default be 'true'
     m_originalImage->upsidedown = false;
 
-    m_originalImage->allocate();
+    m_originalImage->allocate(m_originalImage->xsize * m_originalImage->ysize *
+                              m_originalImage->csize);
 
     makePbo=true;
   }
@@ -174,21 +160,10 @@ void pix_snap :: snapMess(void)
       m_pbo=new GLuint[m_numPbo];
       glGenBuffersARB(m_numPbo, m_pbo);
       int i=0;
-      size_t size = m_originalImage->xsize*m_originalImage->ysize*m_originalImage->csize;
-      switch(m_originalImage->type) {
-      case GL_FLOAT:
-        size *= sizeof(GLfloat);
-        break;
-      case GL_DOUBLE:
-        size *= sizeof(GLdouble);
-        break;
-      default:
-        break;
-      }
       for(i=0; i<m_numPbo; i++) {
         glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, m_pbo[i]);
         glBufferDataARB(GL_PIXEL_PACK_BUFFER_ARB,
-                        size,
+                        m_originalImage->xsize*m_originalImage->ysize*m_originalImage->csize,
                         0, GL_STREAM_READ_ARB);
       }
       glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, 0);
@@ -327,20 +302,6 @@ void pix_snap :: pboMess(int num)
   setModified();
 }
 
-void pix_snap :: typeMess(std::string type) {
-  if("BYTE" == type) {
-    m_reqType = 0;
-  } else if ("FLOAT" == type) {
-    m_reqType = GL_FLOAT;
-  } else if ("DOUBLE" == type) {
-    m_reqType = GL_DOUBLE;
-  } else {
-    error("invalid type '%s': must be 'BYTE', 'FLOAT' or 'DOUBLE'", type.c_str());
-    return;
-  }
-}
-
-
 /////////////////////////////////////////////////////////
 // static member functions
 //
@@ -351,10 +312,7 @@ void pix_snap :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG0(classPtr, "bang", snapMess);
 
   CPPEXTERN_MSG2(classPtr, "vert_size", sizeMess, int, int);
-  CPPEXTERN_MSG2(classPtr, "dimen", sizeMess, int, int);
   CPPEXTERN_MSG2(classPtr, "vert_pos",  posMess, int, int);
-  CPPEXTERN_MSG2(classPtr, "offset", posMess, int, int);
 
   CPPEXTERN_MSG1(classPtr, "pbo",  pboMess, int);
-  CPPEXTERN_MSG1(classPtr, "type",  typeMess, std::string);
 }

@@ -162,7 +162,7 @@ PBuffer::PBuffer(int width,int height,int flags)
       throw("your system lacks PBuffer support!");
     }
   } catch(const char *err) {
-    pd_error(0, "PBuffer::PBuffer(): %s",err);
+    error("PBuffer::PBuffer(): %s",err);
     pbuffer = glXGetCurrentDrawable();
     context = old_context;
   }
@@ -198,7 +198,7 @@ void PBuffer::enable()
   data->old_context = glXGetCurrentContext();
 
   if(!glXMakeCurrent(data->display,data->pbuffer,data->context)) {
-    pd_error(0, "PBuffer::enable(): glXMakeCurrent() failed");
+    error("PBuffer::enable(): glXMakeCurrent() failed");
   }
 }
 
@@ -207,7 +207,7 @@ void PBuffer::enable()
 void PBuffer::disable()
 {
   if(!glXMakeCurrent(data->display,data->old_pbuffer,data->old_context)) {
-    pd_error(0, "PBuffer::disable(): glXMakeCurrent() failed");
+    error("PBuffer::disable(): glXMakeCurrent() failed");
   }
 }
 #elif defined __APPLE__
@@ -235,7 +235,7 @@ void reportError (char * strError)
 {
   //gErrorTime = getElapsedTime ();
   //sprintf (gErrorMessage, "Error: %s (at time: %0.1f secs)", strError, gErrorTime);
-  pd_error (0, "Error: %s", strError);
+  error ("Error: %s", strError);
 }
 
 // ---------------------------------
@@ -504,7 +504,7 @@ PBuffer::PBuffer(int width,int height,int flags) : width(width),
       throw("wglShareLists() failed");
     }
   } catch(const char *err) {
-    pd_error(0, "GemPBuffer: %s",err);
+    error("GemPBuffer: %s",err);
     hdc = old_hdc;
     context = old_context;
   }
@@ -536,7 +536,7 @@ void PBuffer::enable()
   data->old_context = wglGetCurrentContext();
 
   if(!wglMakeCurrent(data->hdc,data->context)) {
-    pd_error(0, "PBuffer::disable(): wglMakeCurrent() failed");
+    error("PBuffer::disable(): wglMakeCurrent() failed");
   }
 }
 
@@ -545,7 +545,7 @@ void PBuffer::enable()
 void PBuffer::disable()
 {
   if(!wglMakeCurrent(data->old_hdc,data->old_context)) {
-    pd_error(0, "PBuffer::disable(): wglMakeCurrent() failed");
+    error("PBuffer::disable(): wglMakeCurrent() failed");
   }
 }
 #else
@@ -561,7 +561,7 @@ PBuffer::PBuffer(int width,int height,int flags)
   , height(height)
   , data(nullptr)
 {
-  pd_error(0, "PBuffer::PBuffer(): no PBuffer support");
+  error("PBuffer::PBuffer(): no PBuffer support");
 }
 
 PBuffer::~PBuffer()
@@ -570,12 +570,12 @@ PBuffer::~PBuffer()
 
 void PBuffer::enable()
 {
-  pd_error(0, "PBuffer::enable(): no PBuffer support");
+  error("PBuffer::enable(): no PBuffer support");
 }
 
 void PBuffer::disable()
 {
-  pd_error(0, "PBuffer::disable(): no PBuffer support");
+  error("PBuffer::disable(): no PBuffer support");
 }
 
 #endif /* OS */

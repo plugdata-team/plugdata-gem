@@ -16,8 +16,6 @@
 #define _INCLUDE__GEM_GEOS_SCOPEXYZ__H_
 
 #include "Base/GemShape.h"
-#include "Gem/VertexBuffer.h"
-
 
 /*-----------------------------------------------------------------
   -------------------------------------------------------------------
@@ -66,11 +64,10 @@ protected:
 
   //////////
   // the number of points
-  unsigned int m_blocksize;
+  unsigned int m_requestedLength, m_realLength;
   unsigned int m_length;
-  virtual void  doLengthMess(unsigned int length);
+  virtual void  doLengthMess(unsigned int length=0);
   virtual void  lengthMess(int length);
-  virtual void  setBlocksize(unsigned int length);
 
   virtual void  bangMess();
 
@@ -78,7 +75,7 @@ protected:
 
   //////////
   // The vertices
-  gem::VertexBuffer m_vertices;
+  t_sample*m_vertices;
 
   t_inlet*m_inX, *m_inY, *m_inZ;
 

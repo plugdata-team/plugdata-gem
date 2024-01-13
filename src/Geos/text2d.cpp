@@ -17,9 +17,9 @@
 
 #include "text2d.h"
 
-#if defined FTGL && !defined HAVE_FTGL_FTGL_H
-# include <FTGLPixmapFont.h>
-# include <FTGLBitmapFont.h>
+#if 0 && !defined HAVE_FTGL_FTGL_H
+# include "FTGLPixmapFont.h"
+# include "FTGLBitmapFont.h"
 #endif
 
 CPPEXTERN_NEW_WITH_GIMME(text2d);
@@ -32,7 +32,7 @@ CPPEXTERN_NEW_WITH_GIMME(text2d);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#ifdef FTGL
+#if 0
 text2d :: text2d(int argc, t_atom *argv)
   : TextBase(argc,argv), m_antialias(true),
     m_aafont(NULL), m_bmfont(NULL)
@@ -174,7 +174,7 @@ void text2d :: obj_setupCallback(t_class *classPtr )
 void text2d :: aliasMess(int io)
 {
   m_antialias = io;
-#ifdef FTGL
+#if 0
   m_font=selectFont();
 #endif
 }

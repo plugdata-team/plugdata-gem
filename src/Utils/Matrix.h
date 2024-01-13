@@ -44,7 +44,7 @@ public:
   void identity(void);
 
   //////////
-  // Post multiply the matrix
+  // Post mulitply the matrix
   void multiply(Matrix *pMatrix);
 
   //////////

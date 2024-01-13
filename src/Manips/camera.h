@@ -14,11 +14,18 @@ LOG
 #define _INCLUDE__GEM_MANIPS_CAMERA_H_
 
 #include "Base/GemBase.h"
-#include "RTE/Outlet.h"
+#include "Gem/Manager.h"
 #include <stdlib.h>
 #include <math.h>
 
 #include "Utils/Vector.h"
+
+#define PI      3.1415926535897932384626433832795
+
+#ifndef _WIN32
+using namespace std;
+#endif
+
 
 /*-----------------------------------------------------------------
 -------------------------------------------------------------------
@@ -54,31 +61,37 @@ protected:
   // When rendering occurs
   virtual void    render(GemState *state);
 
-  void     bang(void);
-  void     resetState();
-
   //////////
   // Angles changed
-  void     hAngleMess(t_float val);
-  void     vAngleMess(t_float val);
-  void     distanceMess(t_float val);
+  void            hAngleMess(float val);
+  void            vAngleMess(float val);
+  void            distanceMess(float val);
 
-  void     speedMess(t_float val);
-  void     lookXMess(t_float val);
-  void     lookYMess(t_float val);
-  void     lookZMess(t_float val);
-  void     forwardMess(t_float val);
-  void     reverseMess(t_float val);
-  void     leftMess(t_float val);
-  void     rightMess(t_float val);
-  void     upMess(t_float val);
-  void     downMess(t_float val);
-  void     modeMess(bool val);
+  //////////
+  // roll value changed
+  void            rollMess(float val);
 
-  t_float m_left, m_right, m_up, m_down, m_forward, m_reverse;
-  bool m_mode;
-  t_float m_speed;
-  t_float hAngle, vAngle, distance;
+  //////////
+  // value changed
+  void            forwardMess(float val);
+  void            reverseMess(float val);
+
+  //////////
+  // Pitch value changed
+  void            leftMess(bool val);
+  void            rightMess(bool val);
+  void            slideLeftMess(bool val);
+  void            slideRightMess(bool val);
+  //////////
+  // roll value changed
+  void            upMess(bool val);
+  void            downMess( bool val );
+  void            resetState();
+
+  int     left, right, up, down, forward, reverse, m_mode;
+  float   lookX, lookY, lookZ, m_speed;
+  float   hAngle, vAngle, distance;
+  int     slideLeft, slideRight;
 
   // This changes the position, view, and up vector of the camera.
   // (Used for initialization)
@@ -90,10 +103,15 @@ protected:
   void RotateView(float angle, float x, float y, float z);
 
   // This will move the camera forward or backward depending on the speed
-  void MoveCamera(t_float speed );
-  void SlideCamera(t_float speed );
-  void calcCameraVals(void);
-  void calcUpVector(void);
+  void MoveCamera( float speed );
+  void SlideCamera( float speed );
+  void calcCameraVals( void );
+  void calcUpVector( void );
+  void incHRot( float val );
+  void decHRot( float val );
+  void incVRot( float val );
+  void decVRot( float val );
+
 
 private:
 
@@ -101,7 +119,26 @@ private:
   CVector3 m_vView;                       // The camera's View
   CVector3 m_vUpVector;                   // The camera's UpVector
   CVector3 m_vSlide;                      // The camera's slide
-  gem::RTE::Outlet       m_infoOut;
+
+  //////////
+  // static member functions
+  static void     hAngleMessCallback(void *data, t_float val);
+  static void     vAngleMessCallback(void *data, t_float val);
+  static void     distanceMessCallback(void *data, t_float val);
+  static void     speedMessCallback(void *data, t_float val);
+  static void     forwardMessCallback(void *data, t_float val);
+  static void     reverseMessCallback(void *data, t_float val);
+  static void     leftMessCallback(void *data, t_float val);
+  static void     rightMessCallback(void *data, t_float val);
+  static void     slideLeftMessCallback(void *data, t_float val);
+  static void     slideRightMessCallback(void *data, t_float val);
+  static void     upMessCallback(void *data, t_float val);
+  static void     downMessCallback(void *data, t_float val);
+  static void     resetMessCallback(void *);
+  static void     modeMessCallback(void *data, t_float val);
+  static void     lookXMessCallback(void *data, t_float val);
+  static void     lookYMessCallback(void *data, t_float val);
+  static void     lookZMessCallback(void *data, t_float val);
 };
 
 #endif  // for header file

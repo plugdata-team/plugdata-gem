@@ -75,19 +75,16 @@ protected:
   // returns true, if a new backend could be found
   virtual bool restart(void);
 
-  virtual bool  deviceMess(std::string);
-  virtual bool  deviceMess(int dev);
-  virtual bool  deviceMess(t_symbol*, int, t_atom*);
+  virtual void  deviceMess(std::string);
+  virtual void  deviceMess(int dev);
 
-  // Set the driver architecture
-  virtual bool  driverMess(int dev);
-  virtual bool  driverMess(std::string);
-  virtual bool  driverMess(t_symbol*, int, t_atom*);
-  virtual void  driverMess(void);
-
-  virtual void  openMess(t_symbol*, int, t_atom*);
   virtual void  closeMess(void);
   virtual void  resetMess(void);
+
+  // Set the driver architecture; (probably this makes only sense under linux right now: you can choose between video4linux(0) and video1394(1))
+  virtual void  driverMess(int dev);
+  virtual void  driverMess(std::string);
+  virtual void  driverMess(void);
 
   // List the available devices
   virtual void  enumerateMess();
@@ -155,15 +152,32 @@ private:
   //////////
   // static member functions
 
+  static void deviceMessCallback(void *data, t_symbol*,int,t_atom*);
+  static void driverMessCallback(void *data, t_symbol*,int,t_atom*);
+
+  static void enumerateMessCallback(void *data);
+
+  static void closeMessCallback(void *data);
+  static void openMessCallback(void *data, t_symbol*, int, t_atom*);
+  static void runningMessCallback(void *data, t_float dev);
+
+
+
+  static void enumPropertyMessCallback(void *data);
+  static void getPropertyMessCallback(void *data, t_symbol*,int, t_atom*);
 
   static void dialogMessCallback(void *data, t_symbol*,int,t_atom*);
 
-  static void getPropertyMessCallback(void *data, t_symbol*,int, t_atom*);
   static void setPropertyMessCallback(void *data, t_symbol*,int, t_atom*);
   static void setPropertiesMessCallback(void *data, t_symbol*,int, t_atom*);
+  static void applyPropertiesMessCallback(void *data);
+  static void clearPropertiesMessCallback(void *data);
 
-  static void dimenMessCallback(void *data, t_symbol* s, int ac, t_atom *av);
+  static void asynchronousMessCallback(void *data, t_float);
+
+  static void dimenMessCallback(void *data, t_symbol *s, int ac, t_atom *av);
   static void channelMessCallback(void *data, t_symbol*,int,t_atom*);
+  static void normMessCallback(void *data, t_symbol*format);
   static void modeMessCallback(void *data, t_symbol*,int,t_atom*);
   static void colorMessCallback(void *data, t_symbol*,int,t_atom*);
   static void qualityMessCallback(void *data, t_float dev);

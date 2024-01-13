@@ -478,7 +478,9 @@ void videoBase :: usleep(unsigned long usec)
   //  long  sec_ = usec\1000000;
   sleep.tv_sec=sec_;
   sleep.tv_usec=usec_;
-  select(0,0,0,0,&sleep);
+    
+  // TODO: why?
+  //select(0,0,0,0,&sleep);
 }
 
 pixBlock* videoBase :: getFrame(void)

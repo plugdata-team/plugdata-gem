@@ -14,6 +14,7 @@
 #define _INCLUDE__GEM_GEOS_RIPPLE_H_
 
 #include "Base/GemShape.h"
+#include "Gem/Manager.h"
 #include <string.h>
 #include <math.h>
 

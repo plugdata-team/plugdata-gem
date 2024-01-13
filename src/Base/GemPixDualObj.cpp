@@ -68,7 +68,7 @@ inline int c99_snprintf(char* str, size_t size, const char* format, ...)
 /////////////////////////////////////////////////////////
 GemPixDualObj :: GemPixDualObj()
   : m_cacheRight(NULL),
-    m_pixRight(NULL),// was disabled by DH 8/5/02
+    m_pixRight(NULL),// was dsiabled by DH 8/5/02
     m_pixRightValid(-1),
     org_pixRightValid(-1),
     m_inlet(NULL)
@@ -124,7 +124,7 @@ void GemPixDualObj :: render(GemState *state)
     found=true; FUN_RGBA; break;                        \
   case GL_LUMINANCE:                                    \
     found=true; FUN_GRAY; break;                        \
-  case GL_YUV422_GEM:                                \
+  case GL_YCBCR_422_GEM:                                \
     found=true; FUN_YUV ; break;                        \
   default:break;}
 
@@ -167,7 +167,7 @@ void GemPixDualObj :: processImage(imageStruct &image)
                        PROCESS_DUALIMAGE(Gray, YUV),
                        PROCESS_DUALIMAGE_SIMD(Gray));
     break;
-  case GL_YUV422_GEM:
+  case GL_YCBCR_422_GEM:
     PROCESS_COLORSPACE(PROCESS_DUALIMAGE(YUV, RGBA),
                        PROCESS_DUALIMAGE_SIMD(YUV),
                        PROCESS_DUALIMAGE(YUV, Gray));
@@ -197,7 +197,7 @@ std::string format2string(GLenum fmt)
   case GL_LUMINANCE:
     result = "Gray";
     break;
-  case GL_YUV422_GEM:
+  case GL_YCBCR_422_GEM:
     result = "YUV";
     break;
   default:
@@ -273,7 +273,7 @@ void GemPixDualObj :: obj_setupCallback(t_class *classPtr)
                   reinterpret_cast<t_method>(&GemPixDualObj::gem_rightMessCallback),
                   gensym("gem_right"), A_GIMME, A_NULL);
 }
-void GemPixDualObj :: gem_rightMessCallback(void *data, t_symbol* s,
+void GemPixDualObj :: gem_rightMessCallback(void *data, t_symbol *s,
     int argc, t_atom *argv)
 {
   if (argc==1 && argv->a_type==A_FLOAT) {

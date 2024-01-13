@@ -19,7 +19,7 @@
 
 #include "pix_convert.h"
 
-CPPEXTERN_NEW_WITH_ONE_ARG(pix_convert, t_symbol*, A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(pix_convert, t_symbol*, A_DEFSYM);
 
 /////////////////////////////////////////////////////////
 //
@@ -56,7 +56,6 @@ void pix_convert :: processImage(imageStruct &image)
   if (image.format==m_image.format) {
     return;
   }
-  m_image.setCsizeByFormat();
   if(!m_image.convertFrom(&image)) {
     post("no method for this format !!!");
     post("if you know how to convert this format (0x%X) to (0x%X),\n"
@@ -65,7 +64,7 @@ void pix_convert :: processImage(imageStruct &image)
     return;
   }
   image.data = m_image.data;
-  image.not_owned = true;
+  image.notowned = true;
   image.setCsizeByFormat(m_image.format);
 
 }

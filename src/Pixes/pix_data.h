@@ -68,21 +68,16 @@ protected:
 
   //////////
   void                    xPos(t_float pos);
+
+  //////////
   void                    yPos(t_float pos);
-  void                    listMess(t_symbol* s, int argc, t_atom* argv);
 
   //////////
   t_float                 m_position[2];
 
   //////////
   void                    qualityMess(int q);
-  enum QualityType   { NONE, LINEAR2D };
-  QualityType m_quality;
-
-  //////////
-  void                    normalizeMess(int r);
-  enum NormalizeType   { RAW, NORMALIZED };
-  NormalizeType m_normalize;
+  int m_quality;
 
   //////////
   // The color outlet

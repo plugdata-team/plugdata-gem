@@ -9,7 +9,7 @@
 //    Copyright (c) 2011 Cyrille Henry
 //    Copyright (c) 2014 Antoine Villeret
 //    Copyright (c) 2014 jprtzk
-//    Copyright (c) 2012-2015 IOhannes m zmÃ¶lnig. forum::fÃ¼r::umlÃ¤ute. IEM. zmoelnig@iem.at
+//    Copyright (c) 2012-2015 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
 //    For information on usage and redistribution, and for a DISCLAIMER OF ALL
 //    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 //
@@ -17,6 +17,7 @@
 
 #include "gemvertexbuffer.h"
 
+#include "Gem/Manager.h"
 #include "Utils/Functions.h"
 
 #ifdef _MSC_VER
@@ -93,9 +94,7 @@ void gemvertexbuffer :: renderShape(GemState *state)
   if(m_position.render()) {
     glVertexPointer(m_position.dimen, GL_FLOAT, 0, 0);
     glEnableClientState(GL_VERTEX_ARRAY);
-    if(!vb_size) {
-      vb_size=m_position.size;
-    }
+    if(!vb_size)vb_size=m_position.size;
   }
   if(m_texture.render()) {
     glTexCoordPointer(m_texture.dimen, GL_FLOAT, 0, 0);

@@ -18,10 +18,10 @@
 
 
 #include "RTE/RTE.h"
-#include <m_pd.h>
+#include "m_pd.h"
 #if defined HAVE_S_STUFF_H
 extern "C" {
-# include <s_stuff.h>
+# include "s_stuff.h"
 }
 #else
 # warning s_stuff.h missing
@@ -183,13 +183,10 @@ bool RTE::addSearchPath(const std::string&path, void* ctx)
   if(modern) {
     t_atom ap[2];
     const char *inptr = path.c_str();
-    char encoded[MAXPDSTRING];
+    char encoded[MAXPDSTRING * 4];
     char*outptr = encoded;
-    if(!inptr) { /* nothing to add */
-      return false;
-    }
     *outptr++='+';
-    while(*inptr && ((outptr+2) < (encoded+MAXPDSTRING))) {
+    while(inptr && ((outptr+2) < (encoded+(MAXPDSTRING * 4)))) {
       *outptr++ = *inptr++;
       if ('+'==inptr[-1]) {
         *outptr++='+';

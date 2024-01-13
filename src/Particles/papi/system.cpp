@@ -122,8 +122,6 @@ inline void _PUnLock()
 #else
 // This is the global state.
 _ParticleState __ps;
-_ParticleState*__psptr = &__ps;
-
 
 inline void _PLock()
 {
@@ -878,16 +876,4 @@ PARTICLEDLL_API int pGetGroupCount()
   }
 
   return _ps.pgrp->p_count;
-}
-
-
-PARTICLEDLL_API _ParticleState* pStateCreate() {
-  return new _ParticleState();
-}
-PARTICLEDLL_API void pStateDestroy(_ParticleState*ps) {
-  if(ps)
-    delete ps;
-}
-PARTICLEDLL_API void pStateActivate(_ParticleState*ps) {
-  __psptr = ps;
 }

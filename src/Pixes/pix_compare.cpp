@@ -234,10 +234,11 @@ void pix_compare :: processYUV_MMX(imageStruct &image, imageStruct &right)
 void pix_compare :: processYUV_Altivec(imageStruct &image,
                                        imageStruct &right)
 {
-  int h,w,i,j;
+   int h,w,i,j,width;
 
   h = image.ysize;
   w = image.xsize/8;
+  width = image.xsize/8;
 
   //check to see if the buffer isn't 16byte aligned (highly unlikely)
   if (image.ysize*image.xsize % 16 != 0) {
@@ -245,13 +246,15 @@ void pix_compare :: processYUV_Altivec(imageStruct &image,
     return;
   }
 
-  vector unsigned short UVres1, Yres1, UVres2,Yres2;//interleave;
-  vector unsigned short hiImage, loImage;
-  vector bool short     Ymask1;
-  vector unsigned char  one = vec_splat_u8(1);
+   vector unsigned short      UVres1, Yres1, UVres2,
+           Yres2;//interleave;
+   vector unsigned short      hiImage, loImage;
+   vector bool short          Ymask1;
+   vector unsigned char       one = vec_splat_u8(1);
 
-  vector unsigned char *inData = (vector unsigned char*) image.data;
-  vector unsigned char *rightData = (vector unsigned char*) right.data;
+  vector unsigned char        *inData = (vector unsigned char*) image.data;
+  vector unsigned char        *rightData = (vector unsigned char*)
+      right.data;
 
 #ifndef PPC970
   //setup the cache prefetch -- A MUST!!!

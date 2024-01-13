@@ -18,9 +18,7 @@
 #include "Base/GemBase.h"
 #include "Gem/Properties.h"
 #include "Gem/VertexBuffer.h"
-#include "Gem/model.h"
 #include "RTE/Outlet.h"
-#include "plugins/modelloader.h"
 
 #include <map>
 
@@ -44,7 +42,6 @@ namespace plugins
 {
 class modelloader;
 };
-
 };
 
 class GEM_EXTERN model : public GemBase
@@ -55,7 +52,7 @@ public:
 
   //////////
   // Constructor
-  model(t_symbol* filename);
+  model(t_symbol *filename);
 
 protected:
 
@@ -74,19 +71,25 @@ protected:
   virtual void setPropertiesMess(t_symbol*, int, t_atom*);
   virtual void applyProperties(void);
 
+  //////////
+  // When a rescale is received
   virtual void  rescaleMess(bool state);
+  //////////
+  // When a reverse is received
   virtual void  reverseMess(bool state);
+  //////////
+  // Which texture type (linear, spheric)
   virtual void  textureMess(int state);
+  //////////
+  // Set smoothing factor
   virtual void  smoothMess(t_float fsmooth);
+  //////////
+  // Set material mode
   virtual void  materialMess(int material);
-
-  virtual void blendMess(bool blend);
-  virtual void linewidthMess(t_float linewidth);
 
   //////////
   // Set groups to render
   virtual void    groupMess(int group);
-  virtual void    groupsMess(t_symbol*, int, t_atom*);
 
   //////////
   // draw type
@@ -101,23 +104,24 @@ protected:
   virtual void  render(GemState *state);
   virtual void  startRendering();
 
+  void copyArray(const std::vector<std::vector<float> >&tab,
+                 gem::VertexBuffer&vb);
+  void copyAllArrays();
+  void getVBOarray();
+  void createVBO(void);
+
   gem::plugins::modelloader*m_loader;
-  gem::modelGL*m_loaded;
+  bool m_loaded, m_size_change_flag;
 
   gem::Properties m_readprops, m_writeprops;
+
+  gem::VertexBuffer m_position, m_texture, m_color, m_normal;
 
   gem::RTE::Outlet m_infoOut;
   std::vector<std::string> m_backends;
 
   GLenum m_drawType;
   std::map<std::string, GLenum>m_drawTypes;
-  bool m_blend;
-  GLfloat m_linewidth;
-  enum gem::modelGL::texturetype m_texType;
-  enum gem::modelGL::rescale m_rescale;
-
-  std::vector<unsigned int> m_group;
-  bool m_useMaterial;
 };
 
 #endif  // for header file

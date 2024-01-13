@@ -54,6 +54,10 @@ public:
   virtual ~pix_snap(void);
 
   //////////
+  // When a snap is received
+  virtual void  snapMess(void);
+
+  //////////
   // Do the rendering
   virtual void  render(GemState *state);
 
@@ -61,7 +65,13 @@ public:
   // Clear the dirty flag on the pixBlock
   virtual void  postrender(GemState *state);
 
-  virtual void  snapMess(void);
+  //////////
+  // When a size message is received
+  virtual void  sizeMess(int width, int height);
+
+  //////////
+  // When a position message is received
+  virtual void  posMess(int x, int y);
 
   //////////
   // Clean up the image
@@ -78,18 +88,13 @@ public:
 
   //////////
   // The position & dimension
-  virtual void  posMess(int x, int y);
   int m_x, m_y;
-  virtual void  sizeMess(int width, int height);
   int m_width, m_height;
 
   /* using PBOs for (hopefully) optimized pixel transfers */
   void pboMess(int num_pbos);
   GLint m_numPbo, m_curPbo;
   GLuint *m_pbo;                   // IDs of PBO
-
-  virtual void  typeMess(std::string);
-  GLuint m_reqType;
 };
 
 #endif  // for header file

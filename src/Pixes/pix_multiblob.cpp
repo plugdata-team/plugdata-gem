@@ -323,7 +323,6 @@ void pix_multiblob :: processImage(imageStruct &image)
 {
   // store the image in greyscale
   // since the algorithm is destructive we do it in a sandbox...
-  m_image.setCsizeByFormat();
   m_image.convertFrom(&image);
   doProcessing();
 }

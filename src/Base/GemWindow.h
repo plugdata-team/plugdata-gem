@@ -78,7 +78,6 @@ public:
   /* window resize/move */
   void dimension(unsigned int, unsigned int);
   void position (int, int);
-  void framebuffersize(unsigned int, unsigned int);
 
   /* INPUT */
 
@@ -109,7 +108,7 @@ public:
   virtual bool create(void) = 0;
 
   /* destroy an established context+infrastructuure *
-   * make sure that this gets called from your destroy() implementation
+   * make sure that this get's called from your destroy() implementation
    */
   void destroyGemWindow();
   /* create the current window
@@ -158,15 +157,6 @@ public:
    * but you can override this, if you want to
    */
   virtual void render(void);
-
-  /* activate this window
-   * this ensures that our context is the current one
-   * it's practically the same as render(), but skips
-   * dispatch(), swap();
-   * if output_state is <true> it will outputs 1/0 depending on the success
-   * otherwise no output is generated
-   */
-  virtual void activate(bool output_state);
 
   /* set/get the dimension of the context
    * setting is done by supplying arguments to the method;

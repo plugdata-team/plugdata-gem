@@ -136,10 +136,10 @@ void pix_offset :: processRGBAMMX(imageStruct &image)
   char  B = m_offset[chBlue];
   char  A = m_offset[chAlpha];
 
-  int pixsize = (image.ysize * image.xsize)>>1;
+   int pixsize = (image.ysize * image.xsize)>>1;
 
-  __m64 offset_64 = _mm_setr_pi8(R, G, B, A, R, G, B, A);
-  __m64*data_p= (__m64*)image.data;
+   __m64 offset_64 = _mm_setr_pi8(R, G, B, A, R, G, B, A);
+   __m64*data_p= (__m64*)image.data;
   _mm_empty();
 
   if(m_saturate) {
@@ -199,7 +199,7 @@ void pix_offset :: processGrayMMX(imageStruct &image)
 /* more optimized version - unrolled and load-hoisted */
 void pix_offset :: processYUVAltivec(imageStruct &image)
 {
-  int h,w,width,height;
+   int h,w,width,height;
   width = image.xsize/16; //for altivec
   height = image.ysize;
   //format is U Y V Y
@@ -209,11 +209,11 @@ void pix_offset :: processYUVAltivec(imageStruct &image)
     vector      signed short v;
   } transferBuffer;
 
-  vector signed short c, hi, lo;
-  vector signed short hi1, lo1;
-  vector signed short loadhi, loadhi1, loadlo, loadlo1;
-  vector unsigned char zero = vec_splat_u8(0);
-  vector unsigned char *inData = (vector unsigned char*) image.data;
+   vector signed short c, hi, lo;
+   vector signed short hi1, lo1;
+   vector signed short loadhi, loadhi1, loadlo, loadlo1;
+   vector unsigned char zero = vec_splat_u8(0);
+   vector unsigned char *inData = (vector unsigned char*) image.data;
 
   //Write the pixel (pair) to the transfer buffer
   //transferBuffer.i = (U << 24) | (Y << 16) | (V << 8 ) | Y;
@@ -375,7 +375,7 @@ void pix_offset :: obj_setupCallback(t_class *classPtr)
                   reinterpret_cast<t_method>(&pix_offset::saturateMessCallback),
                   gensym("saturate"), A_FLOAT, A_NULL);
 }
-void pix_offset :: vecOffsetMessCallback(void *data, t_symbol*, int argc,
+void pix_offset :: vecOffsetMessCallback(void *data, t_symbol *, int argc,
     t_atom *argv)
 {
   GetMyClass(data)->vecOffsetMess(argc, argv);

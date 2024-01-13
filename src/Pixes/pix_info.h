@@ -43,7 +43,7 @@ public:
 
   //////////
   // Constructor
-  pix_info(int, t_atom*);
+  pix_info();
 
 protected:
 
@@ -58,10 +58,9 @@ protected:
   //////////
   virtual void    render(GemState*);
 
-  void showInfoRaw(pixBlock*img);
-  void showInfoCooked(pixBlock*img);
 
-  void symbolicMess(bool);
+  //////////
+  void            trigger();
 
   //////////
   // The color outlet
@@ -70,8 +69,6 @@ protected:
   t_outlet        *m_misc;          // type, upsidedown, notowned
   t_outlet        *m_pixblock;      // newimage, newfilm
   t_outlet        *m_data;          // data
-
-  bool m_symbolic; // use symbols for format/colorspace (in message mode)
 };
 
 #endif  // for header file

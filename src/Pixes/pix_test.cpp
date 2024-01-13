@@ -16,7 +16,7 @@
 #include "pix_test.h"
 #include "Gem/State.h"
 
-CPPEXTERN_NEW_WITH_GIMME(pix_test);
+CPPEXTERN_NEW(pix_test);
 
 namespace
 {
@@ -102,56 +102,6 @@ static void makeSMPTE_RGBA(unsigned int rows, unsigned int cols,
     data[chBlue ]=grey;
     data[chAlpha]=0xFF;
     data+=4;
-  }
-}
-static void makeSMPTE_RGB(unsigned int rows, unsigned int cols,
-                          unsigned char*DATA, float scale)
-{
-  unsigned char*data=DATA;
-  unsigned int r,c;
-  unsigned int row0, row1;
-
-  row0=0;
-  row1=rows*2/3;
-  for(r=row0; r<row1; r++) {
-    for(c=0; c<cols; c++) {
-      unsigned int idx=c*7/cols;
-      data[chRed  ]=bars_RGBA[idx][0]*scale;
-      data[chGreen]=bars_RGBA[idx][1]*scale;
-      data[chBlue ]=bars_RGBA[idx][2]*scale;
-      data+=3;
-    }
-  }
-  row0=r;
-  row1=rows*3/4;
-  for(r=row0; r<row1; r++) {
-    for(c=0; c<cols; c++) {
-      unsigned int grey=c*255/cols;
-      data[chRed  ]=grey;
-      data[chGreen]=grey;
-      data[chBlue ]=grey;
-      data+=3;
-    }
-  }
-  row0=r;
-  row1=rows*5/6;
-  for(r=row0; r<row1; r++) {
-    for(c=0; c<cols; c++) {
-      unsigned int grey=255-c*255/cols;
-      data[chRed  ]=grey;
-      data[chGreen]=grey;
-      data[chBlue ]=grey;
-      data+=3;
-    }
-  }
-  row0=r;
-  row1=rows;
-  for(r=0; r<(row1-row0)*cols; r++) {
-    unsigned char grey=getRandom();
-    data[chRed  ]=grey;
-    data[chGreen]=grey;
-    data[chBlue ]=grey;
-    data+=3;
   }
 }
 void makeSMPTE_YUV(unsigned int rows, unsigned int cols,
@@ -249,41 +199,6 @@ void makeSMPTE_Grey(unsigned int rows, unsigned int cols,
 // Constructor
 //
 /////////////////////////////////////////////////////////
-pix_test :: pix_test(int argc, t_atom*argv)
-{
-  m_pix.image.xsize=m_pix.image.ysize=128;
-  switch(argc) {
-  case 0:
-    break;
-  case 1:
-    if(A_FLOAT == argv->a_type && ((int)atom_getfloat(argv))>0) {
-      m_pix.image.xsize=m_pix.image.ysize=atom_getfloat(argv);
-    } else {
-      error("usage: pix_test <width=height>]");
-    }
-    break;
-  case 2:
-    if(A_FLOAT == argv[0].a_type && A_FLOAT == argv[1].a_type) {
-      int i = atom_getfloat(argv);
-      if(i>0) {
-        m_pix.image.xsize = i;
-      }
-      i = atom_getfloat(argv+1);
-      if(i>0) {
-        m_pix.image.ysize = i;
-      }
-    } else {
-      error("usage: pix_test [<width> <height>]");
-    }
-    break;
-  default:
-    error("usage: pix_test [<width> [<height>]]");
-    break;
-  }
-
-  m_pix.image.setCsizeByFormat(GEM_RGBA);
-  m_pix.image.reallocate();
-}
 pix_test :: pix_test()
 {
   m_pix.image.xsize=m_pix.image.ysize=128;
@@ -314,10 +229,6 @@ void pix_test :: render(GemState*state)
     makeSMPTE_RGBA(m_pix.image.ysize, m_pix.image.ysize, m_pix.image.data,
                    scale);
     break;
-  case GEM_RGB:
-    makeSMPTE_RGB(m_pix.image.ysize, m_pix.image.ysize, m_pix.image.data,
-                  scale);
-    break;
   case GEM_YUV:
     makeSMPTE_YUV(m_pix.image.ysize, m_pix.image.ysize, m_pix.image.data,
                   scale);
@@ -343,30 +254,22 @@ void pix_test :: obj_setupCallback(t_class *classPtr)
 }
 void pix_test :: csMess(std::string cs)
 {
-  std::string color;
   unsigned int fmt=GEM_RGBA;
   char c=0;
-  int len = cs.size();
-  if(len>0) {
-    char col[5];
-    int i;
-    if(len > 4) {
-      len = 4;
-    }
-    for(i=0; i<len; i++) {
-      col[i] = tolower(cs[i]);
-    }
-    color = col;
+  if(cs.size()>0) {
+    c=tolower(cs[0]);
   }
-  if ("rgba" == color) {
+  switch(c) {
+  case 'r':
     fmt=GEM_RGBA;
-  } else if ("rgb" == color) {
-    fmt=GEM_RGB;
-  } else if ("yuv" == color) {
+    break;
+  case 'y':
     fmt=GEM_YUV;
-  } else if (("grey" == color) || ("gray" == color)) {
+    break;
+  case 'g':
     fmt=GEM_GRAY;
-  } else {
+    break;
+  default:
     error("invalid colorspace '%s'; must be 'rgba', 'yuv' or 'grey'",
           cs.c_str());
     return;

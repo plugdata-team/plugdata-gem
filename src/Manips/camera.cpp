@@ -13,12 +13,8 @@
 /////////////////////////////////////////////////////////
 
 #include "camera.h"
-#include "Gem/Manager.h"
-#include "Utils/Functions.h"
 
 CPPEXTERN_NEW_WITH_GIMME(camera);
-
-#define PI      3.1415926535897932384626433832795
 
 /////////////////////////////////////////////////////////
 //
@@ -29,17 +25,16 @@ CPPEXTERN_NEW_WITH_GIMME(camera);
 //
 /////////////////////////////////////////////////////////
 camera :: camera(int argc, t_atom *argv)
-  : m_left(0), m_right(0), m_up(0), m_down(0), m_forward(0), m_reverse(0)
-  , m_mode(false)
-  , m_speed(0.03)
-  , hAngle(90.0), vAngle(0.0), distance(4.0)
-  , m_infoOut(gem::RTE::Outlet(this))
+  : left(0), right(0), up(0), down(0), forward(0), reverse(0), m_mode(0),
+    lookX(0.0), lookY(0.0), lookZ(0.0), m_speed( 0.03f ),
+    hAngle(90.0f), vAngle(0.0f), distance(4.0f), slideLeft(0), slideRight(0)
 {
-  m_vPosition    = CVector3(0.0, 0.0, 0.0);  // Init the position to zero
-  m_vView        = CVector3(0.0, 0.0, 0.0);  // Init the view to a std starting view
-  m_vUpVector    = CVector3(0.0, 1.0, 0.0);  // Init the UpVector
+  m_vPosition    = CVector3(0.0, 0.0, 0.0);     // Init the position to zero
+  m_vView        = CVector3(0.0, 0.0,
+                            0.0);     // Init the view to a std starting view
+  m_vUpVector    = CVector3(0.0, 1.0, 0.0);     // Init the UpVector
   //  Position     View         Up Vector
-  PositionCamera(0, 0, 4,   0, 0, 0,   0, 1, 0 );
+  PositionCamera(0, 0.0, 4,   0, 0.0, 0,   0, 1, 0 );
 }
 
 ////////////////////////////////////////////////////////
@@ -53,43 +48,62 @@ camera :: ~camera()
 // render
 //
 /////////////////////////////////////////////////////////
-void camera :: bang()
+void camera :: render(GemState *)
 {
   // Initialize a variable for the cross product result
   //   CVector3 vCross = Cross(m_vView - m_vPosition, m_vUpVector);
 
   // Normalize the strafe vector
   // m_vSlide = Normalize(vCross);
-  distance += (m_speed/100.) * (m_reverse - m_forward);
 
-  t_float speedH = m_speed * (m_right - m_left) * (m_mode?-1.:1.);
-  t_float speedV = m_speed * (m_down - m_up) * (m_mode?-1.:1.);
-  hAngle = WRAP(hAngle + speedH, (t_float)360.);
-  vAngle = WRAP(vAngle + speedV, (t_float)360.);
+  if(forward) {
+    //MoveCamera(m_speed);
+    distance = distance - (m_speed/100);
+  }
+
+  if(reverse) {
+    // MoveCamera(-m_speed);
+    distance = distance + (m_speed/100);
+  }
+  if(left) {
+    if (m_mode) {
+      incHRot(m_speed);
+    } else {
+      decHRot(m_speed);
+    }
+  }
+  if(right) {
+    if (m_mode) {
+      decHRot(m_speed);
+    } else {
+      incHRot(m_speed);
+    }
+  }
+  if(up) {
+    if (m_mode) {
+      incVRot(m_speed);
+    } else {
+      decVRot(m_speed);
+    }
+  }
+  if(down) {
+    if (m_mode) {
+      decVRot(m_speed);
+    } else {
+      incVRot(m_speed);
+    }
+  }
 
   calcCameraVals();
-
-  std::vector<gem::any>data;
-  gem::any value;
-  data.clear();
-  data.push_back(value=m_vPosition.x);
-  data.push_back(value=m_vPosition.y);
-  data.push_back(value=m_vPosition.z);
-  data.push_back(value=m_vView.x);
-  data.push_back(value=m_vView.y);
-  data.push_back(value=m_vView.z);
-  data.push_back(value=m_vUpVector.x);
-  data.push_back(value=m_vUpVector.y);
-  data.push_back(value=m_vUpVector.z);
-  m_infoOut.send("list", data);
-}
-
-void camera :: render(GemState *)
-{
-  bang();
-  gem::utils::gl::gluLookAt(m_vPosition.x, m_vPosition.y, m_vPosition.z,
-                            m_vView.x, m_vView.y, m_vView.z,
-                            m_vUpVector.x, m_vUpVector.y, m_vUpVector.z);
+  GemMan::m_lookat[0] = m_vPosition.x;
+  GemMan::m_lookat[1] = m_vPosition.y;
+  GemMan::m_lookat[2] = m_vPosition.z;
+  GemMan::m_lookat[3] = m_vView.x;
+  GemMan::m_lookat[4] = m_vView.y;
+  GemMan::m_lookat[5] = m_vView.z;
+  GemMan::m_lookat[6] = m_vUpVector.x;
+  GemMan::m_lookat[7] = m_vUpVector.y;
+  GemMan::m_lookat[8] = m_vUpVector.z;
 }
 
 void camera :: resetState()
@@ -99,15 +113,48 @@ void camera :: resetState()
   PositionCamera(0, 0.0, 4,   0, 0.0, 0,   0, 1, 0 );
 }
 
-void camera :: vAngleMess(t_float val)
+void camera :: leftMess(bool val )
+{
+  if (m_mode) {
+    incHRot(m_speed);
+  } else {
+    decHRot(m_speed);
+  }
+}
+void camera :: rightMess(bool val )
+{
+  if (m_mode) {
+    decHRot(m_speed);
+  } else {
+    incHRot(m_speed);
+  }
+}
+void camera :: upMess(bool val )
+{
+  if (m_mode) {
+    incVRot(m_speed);
+  } else {
+    decVRot(m_speed);
+  }
+}
+void camera :: downMess(bool val )
+{
+  if (m_mode) {
+    decVRot(m_speed);
+  } else {
+    incVRot(m_speed);
+  }
+}
+
+void camera :: vAngleMess(float val)
 {
   vAngle = val;
 }
-void camera :: hAngleMess(t_float val)
+void camera :: hAngleMess(float val)
 {
   hAngle = val;
 }
-void camera :: distanceMess(t_float val)
+void camera :: distanceMess(float val)
 {
   distance = val;
 }
@@ -135,6 +182,46 @@ void camera :: calcUpVector()
 
   m_vUpVector.x = temp*(float)cos(hAngle * PI/180);
   m_vUpVector.z = temp*(float)sin(hAngle * PI/180);
+}
+
+/// Increase Horizontal rotation
+void camera :: incHRot(float incVal)
+{
+  hAngle += incVal;
+
+  if (hAngle > 360) {
+    hAngle -= 360;
+  }
+}
+
+/// Decrease Horizontal Rotation
+void camera :: decHRot(float decVal)
+{
+  hAngle -= decVal;
+
+  if (hAngle < 0) {
+    hAngle += 360;
+  }
+}
+
+/// Increase Vertical Rotation
+void camera :: incVRot(float incVal)
+{
+  vAngle += incVal;
+
+  if (vAngle > 360) {
+    vAngle -= 360;
+  }
+}
+
+/// Decrease Vertical Rotation
+void camera :: decVRot(float decVal)
+{
+  vAngle -= decVal;
+
+  if (vAngle < 0) {
+    vAngle += 360;
+  }
 }
 
 ///////////////////////////////// POSITION CAMERA \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*
@@ -202,7 +289,7 @@ void camera :: RotateView(float angle, float x, float y, float z)
 /////
 ///////////////////////////////// MOVE CAMERA \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*
 
-void camera :: MoveCamera(t_float speed)
+void camera :: MoveCamera(float speed)
 {
   // Get our view vector (The direction we are facing)
   CVector3 vVector = (m_vView - m_vPosition).normalize();
@@ -227,7 +314,7 @@ void camera :: MoveCamera(t_float speed)
 /////
 ///////////////////////////////// SLIDE CAMERA \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*
 
-void camera :: SlideCamera(t_float speed)
+void camera :: SlideCamera(float speed)
 {
   // Add the slide vector to our position
   m_vPosition.x += m_vSlide.x * speed;
@@ -244,66 +331,117 @@ void camera :: SlideCamera(t_float speed)
 /////////////////////////////////////////////////////////
 void camera :: obj_setupCallback(t_class *classPtr)
 {
-  CPPEXTERN_MSG0(classPtr, "bang", bang);
-  CPPEXTERN_MSG0(classPtr, "reset", resetState);
-
-  CPPEXTERN_MSG1(classPtr, "hAngle", hAngleMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "vAngle", vAngleMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "distance", distanceMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "speed", speedMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "lookX", lookXMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "lookY", lookYMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "lookZ", lookZMess, t_float);
-
-  CPPEXTERN_MSG1(classPtr, "forward", forwardMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "reverse", reverseMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "left", leftMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "right", rightMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "up", upMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "down", downMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "mode", modeMess, bool);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::hAngleMessCallback),
+                  gensym("hAngle"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::vAngleMessCallback),
+                  gensym("vAngle"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::distanceMessCallback),
+                  gensym("distance"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::speedMessCallback),
+                  gensym("speed"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::forwardMessCallback),
+                  gensym("forward"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::reverseMessCallback),
+                  gensym("reverse"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::leftMessCallback),
+                  gensym("left"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::rightMessCallback),
+                  gensym("right"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::upMessCallback),
+                  gensym("up"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::downMessCallback),
+                  gensym("down"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::resetMessCallback),
+                  gensym("reset"), A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::modeMessCallback),
+                  gensym("mode"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::lookXMessCallback),
+                  gensym("lookX"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::lookYMessCallback),
+                  gensym("lookY"), A_FLOAT, A_NULL);
+  class_addmethod(classPtr,
+                  reinterpret_cast<t_method>(&camera::lookZMessCallback),
+                  gensym("lookZ"), A_FLOAT, A_NULL);
 }
-void camera :: speedMess(t_float val)
+void camera :: hAngleMessCallback(void *data, t_float val)
 {
-  m_speed=val;
+  GetMyClass(data)->hAngleMess(val);
 }
-void camera :: forwardMess(t_float val)
+void camera :: vAngleMessCallback(void *data, t_float val)
 {
-  m_forward=val;
+  GetMyClass(data)->vAngleMess(val);
 }
-void camera :: reverseMess(t_float val)
+void camera :: distanceMessCallback(void *data, t_float val)
 {
-  m_reverse=val;
+  GetMyClass(data)->distanceMess(val);
 }
-void camera :: leftMess(t_float val)
+void camera :: speedMessCallback(void *data, t_float val)
 {
-  m_left=val;
+  GetMyClass(data)->m_speed=(val);
 }
-void camera :: rightMess(t_float val)
+void camera :: forwardMessCallback(void *data, t_float val)
 {
-  m_right=val;
+  GetMyClass(data)->forward=static_cast<int>(val);
 }
-void camera :: upMess(t_float val)
+void camera :: reverseMessCallback(void *data, t_float val)
 {
-  m_up=val;
+  GetMyClass(data)->reverse=static_cast<int>(val);
 }
-void camera :: downMess(t_float val)
+void camera :: leftMessCallback(void *data, t_float val)
 {
-  m_down=val;
+  GetMyClass(data)->left=static_cast<int>(val);
 }
-void camera :: modeMess(bool val)
+void camera :: rightMessCallback(void *data, t_float val)
 {
-  m_mode=val;
+  GetMyClass(data)->right=static_cast<int>(val);
 }
-void camera :: lookXMess(t_float val)
+void camera :: slideLeftMessCallback(void *data, t_float val)
 {
-  m_vView.x=val;
+  GetMyClass(data)->slideLeft=static_cast<int>(val);
 }
-void camera :: lookYMess(t_float val)
+void camera :: slideRightMessCallback(void *data, t_float val)
 {
-  m_vView.y=val;
+  GetMyClass(data)->slideRight=static_cast<int>(val);
 }
-void camera :: lookZMess(t_float val)
+void camera :: upMessCallback(void *data, t_float val)
 {
-  m_vView.z=val;
+  GetMyClass(data)->up=static_cast<int>(val);
+}
+void camera :: downMessCallback(void *data, t_float val)
+{
+  GetMyClass(data)->down=static_cast<int>(val);
+}
+void camera :: resetMessCallback(void *data)
+{
+  GetMyClass(data)->resetState();
+}
+void camera :: modeMessCallback(void *data, t_float val)
+{
+  GetMyClass(data)->m_mode=static_cast<int>(val);
+}
+void camera :: lookXMessCallback(void *data, t_float val)
+{
+  GetMyClass(data)->m_vView.x=(val);
+}
+void camera :: lookYMessCallback(void *data, t_float val)
+{
+  GetMyClass(data)->m_vView.y=(val);
+}
+void camera :: lookZMessCallback(void *data, t_float val)
+{
+  GetMyClass(data)->m_vView.z=(val);
 }

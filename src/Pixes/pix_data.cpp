@@ -29,7 +29,7 @@ CPPEXTERN_NEW_WITH_TWO_ARGS(pix_data, t_floatarg, A_DEFFLOAT, t_floatarg, A_DEFF
 //
 /////////////////////////////////////////////////////////
 pix_data :: pix_data(t_floatarg x, t_floatarg y) :
-  m_quality(NONE), m_normalize(NORMALIZED)
+  m_quality(0)
 {
   // create the new inlet for the X position
   inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
@@ -69,48 +69,37 @@ void pix_data :: trigger()
   t_float red, green, blue, alpha, grey;
 
 
-  t_float maxX= m_pixRight->image.xsize - 1;
-  t_float maxY= m_pixRight->image.ysize - 1;
+  t_float maxX= m_pixRight->image.xsize;
+  t_float maxY= m_pixRight->image.ysize;
 
-  t_float fxPos = m_position[0];
-  t_float fyPos = m_position[1];
-
-
-  if(NORMALIZED == m_normalize) {
-    fxPos *= (maxX+1);
-    fyPos *= (maxY+1);
-  }
-
-  if(!m_pixRight->image.upsidedown) {
-    fyPos = maxY - fyPos;
-  }
+  t_float fxPos = m_position[0] * maxX;
+  t_float fyPos = m_position[1] * maxY;
 
   if(fxPos<0) {
     fxPos=0;
   }
-  if(fxPos>=maxX) {
-    fxPos=maxX;
+  if(fxPos>=maxX-1) {
+    fxPos=maxX-1;
   }
   if(fyPos<0) {
     fyPos=0;
   }
-  if(fyPos>=maxY) {
-    fyPos=maxY;
+  if(fyPos>=maxY-1) {
+    fyPos=maxY-1;
   }
 
   int ixPos0 = 0+static_cast<int>(fxPos);
   int iyPos0 = 0+static_cast<int>(fyPos);
 
   switch(m_quality) {
-  default:
-  case LINEAR2D: {
+  default: {
     int ixPos1 = 1+static_cast<int>(fxPos);
     int iyPos1 = 1+static_cast<int>(fyPos);
 
-    if(ixPos1>=maxX) {
+    if(ixPos1>=maxX-1) {
       ixPos1=ixPos0;
     }
-    if(iyPos1>=maxY) {
+    if(iyPos1>=maxY-1) {
       iyPos1=iyPos0;
     }
 
@@ -138,25 +127,25 @@ void pix_data :: trigger()
     t_float xy10=   xFrac *(1-yFrac);
     t_float xy11=   xFrac *   yFrac ;
 
-#define INTERPOLATE_LIN2D(x) (xy00*x[0][0] + xy01*x[0][1] + xy10*x[1][0] + xy11*x[1][1])
-    red   = INTERPOLATE_LIN2D(r) / 255.;
-    green = INTERPOLATE_LIN2D(g) / 255.;
-    blue  = INTERPOLATE_LIN2D(b) / 255.;
-    alpha = INTERPOLATE_LIN2D(a) / 255.;
-    grey  = INTERPOLATE_LIN2D(G) / 255.;
+#define BILIN4(x) (xy00*x[0][0] + xy01*x[0][1] + xy10*x[1][0] + xy11*x[1][1])
+    red   = BILIN4(r) / 255.;
+    green = BILIN4(g) / 255.;
+    blue  = BILIN4(b) / 255.;
+    alpha = BILIN4(a) / 255.;
+    grey  = BILIN4(G) / 255.;
   }
   break;
-  case NONE: {
+  case 0: {
     unsigned char r, g, b, a, G;
     m_pixRight->image.getRGB(ixPos0, iyPos0, &r, &g, &b, &a);
     m_pixRight->image.getGrey(ixPos0, iyPos0, &G);
 
-#define INTERPOLATE_NONE(x) (x)
-    red   = INTERPOLATE_NONE(r) / 255.;
-    green = INTERPOLATE_NONE(g) / 255.;
-    blue  = INTERPOLATE_NONE(b) / 255.;
-    alpha = INTERPOLATE_NONE(a) / 255.;
-    grey  = INTERPOLATE_NONE(G) / 255.;
+#define NONLIN(x) (x)
+    red   = NONLIN(r) / 255.;
+    green = NONLIN(g) / 255.;
+    blue  = NONLIN(b) / 255.;
+    alpha = NONLIN(a) / 255.;
+    grey  = NONLIN(G) / 255.;
   }
   break;
   }
@@ -173,51 +162,22 @@ void pix_data :: trigger()
 
 void pix_data :: xPos(t_float f)
 {
-  m_position[0]=f;
+  m_position[0]=FLOAT_CLAMP(f);
 }
 void pix_data :: yPos(t_float f)
 {
-  m_position[1]=f;
+  m_position[1]=FLOAT_CLAMP(f);
 }
-void pix_data :: listMess(t_symbol* s, int argc, t_atom* argv)
-{
-  switch(argc) {
-  case 2:
-    m_position[0] = atom_getfloat(argv+0);
-    m_position[1] = atom_getfloat(argv+1);
-    trigger();
-    break;
-  default:
-    error("usage: list <xpos> <ypos>");
-  }
-}
-
 void pix_data :: qualityMess(int q)
 {
-  switch((int)q) {
-  case 0:
-    m_quality = NONE;
-    break;
-  case 1:
-    m_quality = LINEAR2D;
-    break;
-  default:
-    error("quality must be 0|1");
+  if(q>=0) {
+    m_quality=q;
+  } else {
+    error("qualiy must be 0|1");
   }
+
 }
-void pix_data :: normalizeMess(int q)
-{
-  switch((int)q) {
-  case 0:
-    m_normalize = RAW;
-    break;
-  case 1:
-    m_normalize = NORMALIZED;
-    break;
-  default:
-    error("normalize must be 0|1");
-  }
-}
+
 
 
 /////////////////////////////////////////////////////////
@@ -229,8 +189,6 @@ void pix_data :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG0(classPtr, "bang", trigger);
   CPPEXTERN_MSG1(classPtr, "xPos", xPos, t_float);
   CPPEXTERN_MSG1(classPtr, "yPos", yPos, t_float);
-  CPPEXTERN_MSG (classPtr, "list", listMess);
 
   CPPEXTERN_MSG1(classPtr, "quality", qualityMess, int);
-  CPPEXTERN_MSG1(classPtr, "normalize", normalizeMess, int);
 }

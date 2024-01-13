@@ -20,7 +20,6 @@ WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 
 #include "Base/GemBase.h"
 #include "Utils/GLUtil.h"
-#include <map>
 
 #define MAX_NUM_SHADERS 32
 
@@ -73,7 +72,7 @@ protected:
 
   //////////
   // parameters to the glsl-program
-  virtual void  paramMess(t_symbol*s, int argc, const t_atom*argv);
+  virtual void  paramMess(t_symbol*s, int argc, t_atom*argv);
 
   //////////
   // shader message
@@ -107,10 +106,25 @@ protected:
   gem::ContextData<GLhandleARB>m_programARB;
   GLhandleARB           m_shaderObjARB[MAX_NUM_SHADERS];
 
+  gem::ContextData<GLint>m_maxLength;
+
   //////////
   // Variables for the, uh, variables
-  struct t_uniform;
-  std::map<std::string, t_uniform>m_uniforms;
+  GLint m_uniformCount;
+  struct t_uniform {
+    t_symbol*name;
+    GLint size;
+    GLenum type;
+    GLint loc;
+    union {
+      GLfloat*f;
+      GLint*i;
+    } param;
+    GLint paramsize; /* how many elements does single parameter hold (e.g. vec2 => 2) */
+    GLint arraysize; /* array size (or 1) */
+    bool changed;
+  };
+  t_uniform*m_uniform;
 
   gem::ContextData<GLint>m_linked;
   int m_numShaders;
@@ -130,17 +144,12 @@ protected:
   virtual void outverticesMess(GLint);
   GLint  m_geoOutVertices;
 
-  std::map<std::string, std::vector<t_atom> >m_cachedParameters;
-
-  virtual void keepUniformsMess(bool);
-  bool m_keepUniforms; /* should we keep uniforms across reloading of shaders?)*/
-
 
 private:
 
   //////////
   // static member functions
-  static void paramMessCallback (void *data, t_symbol*, int, t_atom*);
+  static void paramMessCallback (void *data, t_symbol *, int, t_atom*);
 
   static void intypeMessCallback  (void *, t_symbol*, int, t_atom*);
   static void outtypeMessCallback  (void *, t_symbol*, int, t_atom*);

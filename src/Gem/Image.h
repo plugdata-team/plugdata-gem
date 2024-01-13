@@ -27,38 +27,29 @@ LOG
 // These should be used to reference the various color channels
 ///////////////////////////////////////////////////////////////////////////////
 
-/* raw types: the channel layout is as indicated by the code*/
-#define GEM_RAW_GRAY 0x1909 /* GL_LUMINANCE */
-#define GEM_RAW_UYVY 0x85B9 /* GL_YCBCR_422_APPLE */
-#define GEM_RAW_RGB 0x1907 /* GL_RGB */
-#define GEM_RAW_BGR 0x80E0 /* GL_BGR_EXT */
-#define GEM_RAW_RGBA 0x1908 /* GL_RGBA */
-#define GEM_RAW_BGRA 0x80E1 /* GL_BGRA_EXT */
-
-
 /* RGBA: on Apple this is really BGRA_EXT */
 #ifndef __APPLE__
-# define GEM_RGB  GEM_RAW_RGB
-# define GEM_RGBA GEM_RAW_RGBA
+# define GEM_RGBA 0x1908
 const int chRed   = 0;
 const int chGreen = 1;
 const int chBlue  = 2;
 const int chAlpha = 3;
 #else /* APPLE */
-# define GEM_RGB  GEM_RAW_BGR
-# define GEM_RGBA GEM_RAW_BGRA
+# define GEM_RGBA 0x80E1
 const int chAlpha = 0;
 const int chRed   = 1;
 const int chGreen = 2;
 const int chBlue  = 3;
 #endif
 
+#define GEM_RGB 0x1907
+
 /* Gray */
-#define GEM_GRAY GEM_RAW_GRAY
+#define GEM_GRAY 0x1909
 const int chGray  = 0;
 
 /* YUV422 */
-#define GEM_YUV GEM_RAW_UYVY
+#define GEM_YUV 0x85B9
 const int chU     = 0;
 const int chY0    = 1;
 const int chV     = 2;
@@ -115,8 +106,8 @@ struct GEM_EXTERN imageStruct {
   unsigned int format;
 
   /////////
-  // is this owned by us?
-  int not_owned;
+  // is this owned by us (? what about underscores ?)
+  int notowned;
 
   //////////
   // gets a pixel
@@ -144,6 +135,7 @@ struct GEM_EXTERN imageStruct {
   {
     data[Y * xsize * csize + X * csize + C] = VAL;
   }
+
 
   /////////
   // gets the color of a pixel
@@ -186,6 +178,9 @@ struct GEM_EXTERN imageStruct {
   virtual void refreshImage(imageStruct *to) const;
 
 
+  /* inplace swapping Red and Blue channel */
+  virtual void swapRedBlue(void);
+
   ///////////////////////////////////////////////////////////////////////////////
   // acquiring data including colour-transformations
   // should be accelerated if possible
@@ -211,7 +206,7 @@ struct GEM_EXTERN imageStruct {
   virtual bool fromABGR   (const unsigned char* orgdata);
   virtual bool fromARGB   (const unsigned char* orgdata);
   virtual bool fromGray   (const unsigned char* orgdata);
-  virtual bool fromGray   (const short*orgdata);
+  virtual bool fromGray   (const short* orgdata);
   virtual bool fromUYVY   (const unsigned char* orgdata);
   virtual bool fromYUY2   (const unsigned char* orgdata); // YUYV
   virtual bool fromYVYU   (const unsigned char* orgdata);
@@ -243,7 +238,7 @@ struct GEM_EXTERN imageStruct {
 
   // "data" points to the image.
   // the memory could(!) be reserved by this class or someone else
-  // "not_owned" should be set to "1", if "data" points to foreign memory
+  // "notowned" should be set to "1", if "data" points to foreign memory
   // "data" is not freed directly, when the destructor is called
   unsigned char *data;    // the pointer to the data
 private:
@@ -282,19 +277,26 @@ struct GEM_EXTERN pixBlock {
 
   //////////
   // is this a newimage since last time?
-  // (ie, has it been refreshed?)
+  //  ie, has it been refreshed
   bool newimage;
 
   //////////
   // keeps track of when new films are loaded
-  // (useful for rectangle_textures on macOS)
+  //  useful for rectangle_textures on OSX
   bool newfilm;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// image utility functions
+// imageStruct utility functions
 //
 ///////////////////////////////////////////////////////////////////////////////
+//////////
+// copies all of the data over and mallocs memory
+GEM_EXTERN extern void copy2Image(imageStruct *to, const imageStruct *from);
+
+//////////
+// assumes that it only has to refresh the data
+GEM_EXTERN extern void refreshImage(imageStruct *to, const imageStruct *from);
 
 GEM_EXTERN extern int getPixFormat(const char*);
 #endif // GEMPIXUTIL_H_

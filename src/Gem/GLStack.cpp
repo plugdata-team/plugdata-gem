@@ -135,7 +135,7 @@ void GLStack::push()
 
 
 /** pop the given matrix from the stack if the maximum has not been reached
- *   returns true on success and false otherwise (stack underflow)
+ *   returns true on success and false otherwise (stack underlow)
  * NOTE: needs valid openGL context
  */
 bool GLStack::pop(enum GemStackId id)

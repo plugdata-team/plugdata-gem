@@ -36,9 +36,8 @@ pix_motionblur :: pix_motionblur(int argc, t_atom*argv) :
   m_savedImage.setCsizeByFormat(GEM_RGBA);
   m_savedImage.reallocate();
   m_savedImage.setBlack();
-  if(argc) {
+  if(argc)
     motionblurMessage(0, argc, argv);
-  }
 }
 
 /////////////////////////////////////////////////////////
@@ -56,7 +55,8 @@ void pix_motionblur :: processRGBAImage(imageStruct &image)
 {
   int h,w,height,width;
   long src=0;
-  int R,R1,G,G1,B, B1; //too many for x86?  i really don't know or care
+   int R,R1,G,G1,B,
+           B1; //too many for x86?  i really don't know or care
   int rightGain,imageGain;
   unsigned char *pixels=image.data;
   unsigned char *saved = m_savedImage.data;
@@ -113,7 +113,18 @@ void pix_motionblur :: processRGBAImage(imageStruct &image)
 }
 void pix_motionblur :: processGrayImage(imageStruct &image)
 {
+  int h,w,height,width;
+  long src;
+   int G, G1; //too many for x86?  i really don't know or care
+  int rightGain,imageGain;
+  unsigned char *pixels=image.data;
+  int Gray;
+
+  src = 0;
+  Gray=chGray;
+
   unsigned char *saved = m_savedImage.data;
+
   m_savedImage.xsize=image.xsize;
   m_savedImage.ysize=image.ysize;
   m_savedImage.setCsizeByFormat(image.format);
@@ -123,17 +134,15 @@ void pix_motionblur :: processGrayImage(imageStruct &image)
   }
   saved=m_savedImage.data;
 
-  int rightGain = m_blur1;
-  int imageGain = m_blur0;
-  int height = image.ysize;
-  int width = image.xsize;
-  unsigned char *pixels=image.data;
+  rightGain = m_blur1;
+  imageGain = m_blur0;
+  height = image.ysize;
+  width = image.xsize;
 
-  long src = 0;
-  for (int h=0; h<height; h++) {
-    for(int w=0; w<width; w++) {
-      int G = pixels[src+chGray];
-      int G1 = saved[src+chGray];
+  for (h=0; h<height; h++) {
+    for(w=0; w<width; w++) {
+      G = pixels[src+chGray];
+      G1 = saved[src+chGray];
       G = G * imageGain;
       G1 = G1 * rightGain;
 
@@ -162,11 +171,12 @@ void pix_motionblur :: processYUVImage(imageStruct &image)
   }
   saved=m_savedImage.data;
 
-  long src,dst;
+  int h,w,hlength;
+   long src,dst;
 
-  int rightGain,imageGain;
-  int y1,y1a,y2,y2a,y1res,y2res,u,u1,v,v1;
-  int loadU,loadV,loadY1, loadY2,loadU1,loadV1,loadY1a, loadY2a;
+   int rightGain,imageGain;
+   int y1,y1a,y2,y2a,y1res,y2res,u,u1,v,v1;
+   int loadU,loadV,loadY1, loadY2,loadU1,loadV1,loadY1a, loadY2a;
 
   src = 0;
   dst = 0;
@@ -184,14 +194,14 @@ void pix_motionblur :: processYUVImage(imageStruct &image)
 
   rightGain = m_blur1;
   imageGain = m_blur0;
-  int hlength = image.xsize/2;
+  hlength = image.xsize/2;
 
-  //unroll this, add register temps and schedule the ops better to remove the
+  //unroll this, add  temps and schedule the ops better to remove the
   //data dependencies
 
   // JMZ: i am not sure whether i really understand what is going on here
-  for (int h=0; h<image.ysize-1; h++) {
-    for(int w=0; w<hlength; w++) {
+  for (h=0; h<image.ysize-1; h++) {
+    for(w=0; w<hlength; w++) {
       u  = loadU - 128;
       u1 = loadU1 >> 8;
       v = loadV - 128;
@@ -315,7 +325,10 @@ void pix_motionblur :: processGrayMMX(imageStruct &image)
 /* start of optimized motionblur */
 void pix_motionblur :: processYUVAltivec(imageStruct &image)
 {
+  int h,w,width;
+  signed short rightGain,imageGain;
   unsigned char *saved = m_savedImage.data;
+
   m_savedImage.xsize=image.xsize;
   m_savedImage.ysize=image.ysize;
   m_savedImage.setCsizeByFormat(image.format);
@@ -325,14 +338,14 @@ void pix_motionblur :: processYUVAltivec(imageStruct &image)
   }
   saved=m_savedImage.data;
 
-  int width = image.xsize/8;
+  width = image.xsize/8;
   /*
   // hmm: why does it read 235 ?
   rightGain = (signed short)(235. * m_motionblur);
   imageGain = (signed short) (255. - (235. * m_motionblur));
   */
-  signed short rightGain = m_blur1;
-  signed short imageGain = m_blur0;
+  rightGain = m_blur1;
+  imageGain = m_blur0;
 
   union {
     signed short        elements[8];
@@ -344,16 +357,18 @@ void pix_motionblur :: processYUVAltivec(imageStruct &image)
     vector      unsigned int v;
   } bitBuffer;
 
-  vector signed short gainAdd, hiImage, loImage,hiRight,loRight, YImage, UVImage;
-  // vector signed short loadhiImage, loadloImage,loadhiRight,loadloRight;
-  vector unsigned char loadImage, loadRight;
-  vector unsigned char zero = vec_splat_u8(0);
-  vector signed int UVhi,UVlo,Yhi,Ylo;
-  vector signed int UVhiR,UVloR,YhiR,YloR;
-  vector signed short gainSub,gain,gainR;//,d;
-  vector unsigned int bitshift;
+   vector signed short gainAdd, hiImage, loImage,hiRight,loRight,
+           YImage, UVImage;
+  //  vector signed short loadhiImage, loadloImage,loadhiRight,loadloRight;
+   vector unsigned char loadImage, loadRight;
+   vector unsigned char zero = vec_splat_u8(0);
+   vector signed int UVhi,UVlo,Yhi,Ylo;
+   vector signed int UVhiR,UVloR,YhiR,YloR;
+   vector signed short gainSub,gain,gainR;//,d;
+   vector unsigned int bitshift;
   vector unsigned char *inData = (vector unsigned char*) image.data;
   vector unsigned char *rightData = (vector unsigned char*) saved;
+
 
   shortBuffer.elements[0] = 128;
   shortBuffer.elements[1] = 0;
@@ -398,8 +413,8 @@ void pix_motionblur :: processYUVAltivec(imageStruct &image)
   loadImage = inData[0];
   loadRight = rightData[0];
 
-  for (int h=0; h<image.ysize; h++) {
-    for (int w=0; w<width; w++) {
+  for ( h=0; h<image.ysize; h++) {
+    for (w=0; w<width; w++) {
 # ifndef PPC970
       vec_dst( inData, prefetchSize, 0 );
       vec_dst( rightData, prefetchSize, 1 );

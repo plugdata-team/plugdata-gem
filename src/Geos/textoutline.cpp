@@ -17,8 +17,8 @@
 
 #include "textoutline.h"
 
-#if defined FTGL && !defined HAVE_FTGL_FTGL_H
-# include <FTGLOutlineFont.h>
+#if 0 && !defined HAVE_FTGL_FTGL_H
+# include "FTGLOutlineFont.h"
 #endif
 
 CPPEXTERN_NEW_WITH_GIMME(textoutline);
@@ -31,7 +31,7 @@ CPPEXTERN_NEW_WITH_GIMME(textoutline);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#ifdef FTGL
+#if 0
 textoutline :: textoutline(int argc, t_atom *argv)
   : TextBase(argc, argv)
 {

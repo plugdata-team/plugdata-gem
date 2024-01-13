@@ -44,7 +44,6 @@ public:
   //////////
   // Constructor
   pix_test();
-  pix_test(int argc, t_atom*argv);
 
 protected:
 

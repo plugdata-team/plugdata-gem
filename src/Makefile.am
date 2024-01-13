@@ -33,7 +33,7 @@ sublibs =
 # LIBADD or LDADD for convenience libraries?
 sublibs += Gem/libGem.la RTE/libRTE.la Utils/libUtils.la Base/libBase.la plugins/libplugins.la
 
-## Output: gets build directly from $(topsrcdir)
+## Output: get's build directly from $(topsrcdir)
 #if DISABLED
 #SUBDIRS+=Output
 #endif
@@ -110,7 +110,7 @@ FORCE:
 
 Version.cpp: version_current.h
 
-version_current.h: $(srcdir)/version.h.in $(wildcard $(sublibs))
+version_current.h: $(srcdir)/version.h.in $(sublibs)
 	$(SHELL) $(srcdir)/pkgversion.sh $< > $@
 
 DISTCLEANFILES += version_current.h

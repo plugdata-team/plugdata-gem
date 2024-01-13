@@ -17,7 +17,7 @@
 
 #include "glsl_tesscontrol.h"
 
-CPPEXTERN_NEW_WITH_ONE_ARG(glsl_tesscontrol, t_symbol*, A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(glsl_tesscontrol, t_symbol *, A_DEFSYM);
 
 /////////////////////////////////////////////////////////
 //
@@ -27,7 +27,7 @@ CPPEXTERN_NEW_WITH_ONE_ARG(glsl_tesscontrol, t_symbol*, A_DEFSYMBOL);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-glsl_tesscontrol :: glsl_tesscontrol(t_symbol* filename)
+glsl_tesscontrol :: glsl_tesscontrol(t_symbol *filename)
   : glsl_vertex()
 {
   openMess(filename);
@@ -54,7 +54,7 @@ bool glsl_tesscontrol :: isRunnable()
     return true;
   }
 
-  error("need OpenGL-4.0 to run GLSL tessellation");
+  error("need OpenGL-4.0 to run GLSL tesselation");
   return false;
 }
 
@@ -69,7 +69,7 @@ void glsl_tesscontrol :: printInfo()
     return;
   }
   if(GLEW_VERSION_4_0) {
-    post("tessellation control shader - Hardware Info");
+    post("tesselation control shader - Hardware Info");
     post("==========================================");
 
     GLSL_GETPOSTINT( MAX_TESS_GEN_LEVEL );

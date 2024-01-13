@@ -18,7 +18,6 @@
 #include "Base/GemBase.h"
 #include "Gem/Properties.h"
 #include "Gem/VertexBuffer.h"
-#include "Gem/model.h"
 #include "RTE/Outlet.h"
 
 #include <map>
@@ -53,7 +52,7 @@ public:
 
   //////////
   // Constructor
-  multimodel(t_symbol* filename, t_floatarg baseModel, t_floatarg topModel,
+  multimodel(t_symbol *filename, t_floatarg baseModel, t_floatarg topModel,
              t_floatarg skipRate);
 
 protected:
@@ -117,26 +116,20 @@ protected:
   void getVBOarray();
   void createVBO(void);
 
+  std::vector<gem::plugins::modelloader*>m_loaders;
   gem::plugins::modelloader*m_loader;
-  std::vector<gem::modelGL>m_loaded;
-  gem::modelGL*m_model; /* the currently active model */
+
+  bool m_size_change_flag;
+
   gem::Properties m_properties;
+
+  gem::VertexBuffer m_position, m_texture, m_color, m_normal;
 
   gem::RTE::Outlet m_infoOut;
   std::vector<std::string> m_backends;
 
-  bool m_update;
-
   GLenum m_drawType;
   std::map<std::string, GLenum>m_drawTypes;
-
-  bool m_blend;
-  GLfloat m_linewidth;
-  bool m_useMaterial;
-  enum gem::modelGL::texturetype m_texType;
-  enum gem::modelGL::rescale m_rescale;
-
-  std::vector<unsigned int> m_group;
 };
 
 #endif  // for header file

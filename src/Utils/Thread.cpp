@@ -6,7 +6,7 @@
 //
 // Implementation file
 //
-//    Copyright (c) 2012-2012 IOhannes m zmÃ¶lnig. forum::fur::umlÃ¤ute. IEM. zmoelnig@iem.at
+//    Copyright (c) 2012-2012 IOhannes m zmölnig. forum::fur::umläute. IEM. zmoelnig@iem.at
 //    For information on usage and redistribution, and for a DISCLAIMER OF ALL
 //    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 //
@@ -114,7 +114,7 @@ void gem::thread::usleep(unsigned long usec)
   //  long  sec_ = usec\1000000;
   sleep.tv_sec=sec_;
   sleep.tv_usec=usec_;
-  select(0,0,0,0,&sleep);
+  //select(0,0,0,0,&sleep);
 }
 
 

@@ -130,7 +130,7 @@ static int s_singleContext = 0;
 // dispatchGemWindowMessages
 //
 /////////////////////////////////////////////////////////
-void GemMan::dispatchWinmessCallback(void *owner)
+void GemMan::dispatchWinmessCallback()
 {
 #ifndef GEM_MULTICONTEXT
   if (!s_windowRun) {
@@ -147,11 +147,11 @@ void GemMan::dispatchWinmessCallback(void *owner)
 void GemMan::resizeCallback(int xSize, int ySize, void *)
 {
 #ifndef GEM_MULTICONTEXT
-
+    
+  gemWinMakeCurrent(GemMan::getWindowInfo());
+    
   float xDivy = (float)xSize / (float)ySize;
-  if (ySize == 0) {
-    xDivy = 1;
-  }
+  if (ySize == 0) xDivy = 1;
   GemMan::m_h = ySize;
   GemMan::m_w = xSize;
   GemMan::m_height = ySize;
@@ -214,8 +214,8 @@ void GemMan :: createContext(const char* disp)
   s_windowClock = clock_new(NULL,
                             reinterpret_cast<t_method>(GemMan::dispatchWinmessCallback));
   if (!m_windowContext && !createConstWindow(disp)) {
-    pd_error(0, "GEM: A serious error occurred creating const Context");
-    pd_error(0, "GEM: Continue at your own risk!");
+    error("GEM: A serious error occurred creating const Context");
+    error("GEM: Continue at your own risk!");
     m_windowContext = 0;
   } else {
     m_windowContext = 1;
@@ -263,7 +263,7 @@ void GemMan :: initGem()
   m_mat_specular[3] = 1.0;
   m_mat_shininess = 100.0;
 
-  s_clock = clock_new(NULL, reinterpret_cast<t_method>(&GemMan::render));
+  //s_clock = clock_new(NULL, reinterpret_cast<t_method>(&GemMan::render));
 
   GemSIMD simd_init;
 
@@ -335,12 +335,8 @@ void GemMan :: resetValues()
 
   // setup the transformation matrices
   float xDivy = (float)m_w / (float)m_h;
-  if (m_w == 0) {
-    xDivy = 1;
-  }
-  if (m_h == 0) {
-    xDivy = 1;
-  }
+  if (m_w == 0) xDivy = 1;
+  if (m_h == 0) xDivy = 1;
 
   if(GLEW_ARB_imaging) {
     glMatrixMode(GL_COLOR);
@@ -363,7 +359,7 @@ void GemMan :: resetValues()
   //   shouldn't this be called here?
   //  glLoadIdentity();
   gem::utils::gl::gluLookAt(m_lookat[0], m_lookat[1], m_lookat[2], m_lookat[3], m_lookat[4],
-                            m_lookat[5], m_lookat[6], m_lookat[7], m_lookat[8]);
+            m_lookat[5], m_lookat[6], m_lookat[7], m_lookat[8]);
 
   if (m_fogMode == FOG_OFF) {
     //  TODO:
@@ -599,7 +595,7 @@ void GemMan :: render(void *)
   //if we're trying to do crystal glasses stereo but don't have a stereo window
   //disable stereo and post a warning
   if(m_stereo == 3 && !stereoWindowTest) {
-    pd_error(0, "GEM: you've selected Crystal Glasses Stereo but your graphics card isn't set up for stereo, setting stereo=0");
+    error("GEM: you've selected Crystal Glasses Stereo but your graphics card isn't set up for stereo, setting stereo=0");
     m_stereo = 0;
   } else if(stereoWindowTest) {
     //if we're not doing crystal eyes stereo but our window is enabled to do stereo
@@ -613,9 +609,7 @@ void GemMan :: render(void *)
     int xSize = m_w / 2;
     int ySize = m_h;
     float xDivy = static_cast<float>(xSize) / static_cast<float>(ySize);
-    if (ySize == 0) {
-      xDivy = 1;
-    }
+    if (ySize == 0) xDivy = 1;
 
     // setup the left viewpoint
     glViewport(0, 0, xSize, ySize);
@@ -632,8 +626,8 @@ void GemMan :: render(void *)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gem::utils::gl::gluLookAt(m_lookat[0] - m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+              m_lookat[3], m_lookat[4],
+              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
 
     // render left view
     fillGemState(currentState);
@@ -660,8 +654,8 @@ void GemMan :: render(void *)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gem::utils::gl::gluLookAt(m_lookat[0] + m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+              m_lookat[3], m_lookat[4],
+              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
 
     // render right view
     fillGemState(currentState);
@@ -703,9 +697,7 @@ void GemMan :: render(void *)
     int xSize = m_w;
     int ySize = m_h;
     float xDivy = static_cast<float>(xSize) / static_cast<float>(ySize);
-    if (ySize == 0) {
-      xDivy = 1;
-    }
+    if (ySize == 0) xDivy = 1;
 
     color_t left_color=RED;
     color_t right_color=GREEN;
@@ -731,8 +723,8 @@ void GemMan :: render(void *)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gem::utils::gl::gluLookAt(m_lookat[0] - m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+              m_lookat[3], m_lookat[4],
+              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
 
     // render left view
     fillGemState(currentState);
@@ -759,8 +751,8 @@ void GemMan :: render(void *)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gem::utils::gl::gluLookAt(m_lookat[0] + m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+              m_lookat[3], m_lookat[4],
+              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
 
     // render right view
     fillGemState(currentState);
@@ -780,9 +772,7 @@ void GemMan :: render(void *)
     int xSize = m_w;
     int ySize = m_h;
     float xDivy = static_cast<float>(xSize) / static_cast<float>(ySize);
-    if (ySize == 0) {
-      xDivy = 1;
-    }
+    if (ySize == 0) xDivy = 1;
 
     // setup the left viewpoint
 
@@ -800,8 +790,8 @@ void GemMan :: render(void *)
 
     glLoadIdentity();
     gem::utils::gl::gluLookAt(m_lookat[0] - m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+              m_lookat[3], m_lookat[4],
+              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
 
     // render left view
     fillGemState(currentState);
@@ -828,8 +818,8 @@ void GemMan :: render(void *)
 
     glLoadIdentity();
     gem::utils::gl::gluLookAt(m_lookat[0] + m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+              m_lookat[3], m_lookat[4],
+              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
 
     // render right view
     fillGemState(currentState);
@@ -865,7 +855,7 @@ void GemMan :: render(void *)
     if(seconds>0.f) {
       GemMan::fps = (1 / (seconds * 1000.f)) * 1000.f;
     } else {
-      pd_error(0, "GEM: unable to profile");
+      error("GEM: unable to profile");
     }
   }
 
@@ -888,7 +878,7 @@ void GemMan :: render(void *)
   }
 
   if (!s_hit && (0.0 != deltime)) {
-    clock_delay(s_clock, deltime);
+    //clock_delay(s_clock, deltime);
   }
 
   glReportError();
@@ -901,7 +891,7 @@ void GemMan :: render(void *)
 void GemMan :: startRendering()
 {
   if (!m_windowState) {
-    pd_error(0, "GEM: Create window first!");
+    error("GEM: Create window first!");
     return;
   }
 
@@ -937,7 +927,7 @@ void GemMan :: stopRendering()
   }
 
   m_rendering = 0;
-  clock_unset(s_clock);
+  //clock_unset(s_clock);
   s_hit = 1;
 
   // clean out all of the gemheads
@@ -968,14 +958,7 @@ void GemMan :: windowInit()
   glClearDepth(1.0);
   glClearColor(m_clear_color[0], m_clear_color[1], m_clear_color[2],
                m_clear_color[3]);
-
-#ifdef __APPLE__
-  GLint swapInt = 1;
-# ifndef GEM_MULTICONTEXT
-  aglSetInteger ( gfxInfo.context, AGL_SWAP_INTERVAL, &swapInt);
-# endif /* GEM_MULTICONTEXT */
-#endif
-
+    
   /* i am not really sure whether it is a good idea to enable FSAA by default
    * this might slow down everything a lot;
    * JMZ: additionally, we should not enable it, without checking first,
@@ -1034,7 +1017,7 @@ int GemMan :: createWindow(const char* disp)
     post("GEM: creating gem-window on display %s",disp);
   }
   if (!createGemWindow(gfxInfo, myHints) ) {
-    pd_error(0, "GEM: Unable to create window");
+    error("GEM: Unable to create window");
     return(0);
   }
   /*
@@ -1048,17 +1031,18 @@ int GemMan :: createWindow(const char* disp)
     on the NVidia GeForce2MX and above, or the ATI Radeon and above.
   */
 
+  
   glewInitialized=false;
   GLenum err = glewInit();
 
   if (GLEW_OK != err) {
     if(GLEW_ERROR_GLX_VERSION_11_ONLY == err) {
-      pd_error(0, "GEM: failed to init GLEW (glx): continuing anyhow - please report any problems to the gem-dev mailinglist!");
+      error("GEM: failed to init GLEW (glx): continuing anyhow - please report any problems to the gem-dev mailinglist!");
     } else if (GLEW_ERROR_GL_VERSION_10_ONLY) {
-      pd_error(0, "GEM: failed to init GLEW: your system only supports openGL-1.0");
+      error("GEM: failed to init GLEW: your system only supports openGL-1.0");
       return(0);
     } else {
-      pd_error(0, "GEM: failed to init GLEW");
+      error("GEM: failed to init GLEW");
       return(0);
     }
   }
@@ -1099,7 +1083,7 @@ void GemMan :: destroyWindowSoon()
 {
   GemMan::pleaseDestroy=true;
   /* jump to the render() to destroy the window asap */
-  clock_delay(s_clock, 0.0);
+  //clock_delay(s_clock, 0.0);
 }
 void GemMan :: destroyWindow()
 {
@@ -1172,7 +1156,7 @@ int GemMan::createConstWindow(const char* disp)
   myHints.fsaa = GemMan::fsaa;
 
   if (!createGemWindow(constInfo, myHints) ) {
-    pd_error(0, "GEM: Error creating const context");
+    error("GEM: Error creating const context");
     constInfo.have_constContext=0;
     gfxInfo.have_constContext=0;
     return(0);
@@ -1227,9 +1211,7 @@ void GemMan :: swapBuffers()
     glFlush();
     // setup the transformation matrices
     float xDivy = static_cast<float>(m_w) / static_cast<float>(m_h);
-    if (m_h == 0) {
-      xDivy = 1;
-    }
+    if (m_h == 0) xDivy = 1;
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -1242,7 +1224,7 @@ void GemMan :: swapBuffers()
     // shouldn't this be called here?
     //          glLoadIdentity();
     gem::utils::gl::gluLookAt(m_lookat[0], m_lookat[1], m_lookat[2], m_lookat[3], m_lookat[4],
-                              m_lookat[5], m_lookat[6], m_lookat[7], m_lookat[8]);
+              m_lookat[5], m_lookat[6], m_lookat[7], m_lookat[8]);
   }
 #endif /* GEM_MULTICONTEXT */
 }
@@ -1305,7 +1287,7 @@ void GemMan :: frameRate(float framespersecond)
     return;
   }
   if (framespersecond < 0.) {
-    pd_error(0, "GEM: Invalid frame rate: %f", framespersecond);
+    error("GEM: Invalid frame rate: %f", framespersecond);
     framespersecond = 20;
   }
   s_deltime = 1000. / framespersecond;
@@ -1396,7 +1378,7 @@ GLenum GemMan :: requestLight(int specific)
     while(s_lights[i]) {
       i++;
       if (i >= NUM_LIGHTS) {
-        pd_error(0, "GEM: Unable to allocate light");
+        error("GEM: Unable to allocate light");
         return(static_cast<GLenum>(0));
       }
     }
@@ -1429,7 +1411,7 @@ GLenum GemMan :: requestLight(int specific)
     retLight = GL_LIGHT7;
     break;
   default :
-    pd_error(0, "GEM: Unable to allocate world_light");
+    error("GEM: Unable to allocate world_light");
     return(static_cast<GLenum>(0));
   }
   return(retLight);
@@ -1469,12 +1451,12 @@ void GemMan :: freeLight(GLenum lightNum)
     i = 7;
     break;
   default:
-    pd_error(0, "GEM: Error freeing a light - bad number");
+    error("GEM: Error freeing a light - bad number");
     return;
   }
   s_lights[i]--;
   if (s_lights[i] < 0) {
-    pd_error(0, "GEM: light ref count below zero: %d", i);
+    error("GEM: light ref count below zero: %d", i);
     s_lights[i] = 0;
   }
 }
@@ -1570,3 +1552,14 @@ WindowInfo &GemMan :: getConstWindowInfo()
   return(constInfo);
 }
 #endif /* GEM_MULTICONTEXT */
+
+
+void performGemRender()
+{
+    GemMan::render(nullptr);
+}
+
+void initGemWindow()
+{
+    GemMan::windowInit();
+}

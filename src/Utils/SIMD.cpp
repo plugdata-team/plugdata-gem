@@ -113,7 +113,7 @@ int GemSIMD :: simd_runtime_check(void)
   unsigned int    feature;
 #define _MMX_FEATURE_BIT        0x00800000
   /* on w32 we assume that there is only x86 */
-  /* _MSC_VER and __GNUC__ are different in how you inline assembler */
+  /* _MSC_VER and __GNUC__ are different in how you inline assember */
   __asm {
     push ebx
     push ecx
@@ -153,7 +153,7 @@ int GemSIMD :: simd_runtime_check(void)
 #  endif /* __VEC__ */
 
 # elif (defined(_X86_) || defined(__i386__) || defined(__i586__) || defined(__i686__))
-  __asm__("push %%ebx \n" /* ebx might be used as PIC register  :-(  */
+  __asm__("push %%ebx \n" /* ebx might be used as PIC   :-(  */
           "cpuid      \n"
           "pop  %%ebx \n"
           : "=a"(eax),"=d"(edx) : "a" (1): "cx");

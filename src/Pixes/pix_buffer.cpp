@@ -44,14 +44,14 @@ static gem::any atom2any(t_atom*ap)
   }
   return result;
 }
-static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom*argv)
+static void addProperties(gem::Properties&props, int argc, t_atom*argv)
 {
   if(!argc) {
     return;
   }
 
   if(argv->a_type != A_SYMBOL) {
-    pd_error(obj, "no key given...");
+    error("no key given...");
     return;
   }
   std::string key=std::string(atom_getsymbol(argv)->s_name);
@@ -82,14 +82,14 @@ static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom
 //
 /////////////////////////////////////////////////////////
 
-CPPEXTERN_NEW_WITH_TWO_ARGS(pix_buffer, t_symbol*,A_DEFSYMBOL,t_float,
+CPPEXTERN_NEW_WITH_TWO_ARGS(pix_buffer, t_symbol*,A_DEFSYM,t_float,
                             A_DEFFLOAT);
 
 /////////////////////////////////////////////////////////
 // Constructor
 //
 /////////////////////////////////////////////////////////
-pix_buffer :: pix_buffer(t_symbol* s,t_float f=100.0)
+pix_buffer :: pix_buffer(t_symbol *s,t_float f=100.0)
   : m_buffer(NULL),
     m_numframes(0),
     m_bindname(NULL),
@@ -411,7 +411,7 @@ void pix_buffer :: clearProperties(void)
 }
 void pix_buffer :: setProperties(t_symbol*s, int argc, t_atom*argv)
 {
-  addProperties(this, m_writeprops, argc, argv);
+  addProperties(m_writeprops, argc, argv);
 }
 
 /////////////////////////////////////////////////////////
@@ -422,7 +422,7 @@ void pix_buffer :: obj_setupCallback(t_class *classPtr)
 {
   class_addcreator(reinterpret_cast<t_newmethod>(create_pix_buffer),
                    gensym("pix_depot"),
-                   A_GIMME, A_NULL);
+                   A_DEFSYM, A_DEFFLOAT, A_NULL);
 
   CPPEXTERN_MSG1(classPtr, "resize", resizeMess, int);
   CPPEXTERN_MSG0(classPtr, "bang", bangMess);
@@ -480,14 +480,14 @@ void pix_buffer :: allocateMess(t_symbol*s, int argc, t_atom*argv)
     if((A_FLOAT==argv->a_type) && (A_FLOAT==(argv+1)->a_type)) {
       int i=atom_getint(argv);
       if(i<0) {
-        error("invalid dimensions: x=%d < 0", i);
+        error("invalid dimenstions: x=%d < 0", i);
         return;
       }
       x=(unsigned int)i;
 
       i=atom_getint(argv+1);
       if(i<0) {
-        error("invalid dimensions: y=%d < 0", i);
+        error("invalid dimenstions: y=%d < 0", i);
         return;
       }
       y=(unsigned int)i;
@@ -500,7 +500,7 @@ void pix_buffer :: allocateMess(t_symbol*s, int argc, t_atom*argv)
     if(A_FLOAT==argv->a_type) {
       int i=atom_getint(argv);
       if(i<0) {
-        error("invalid dimensions: x=%d < 0", i);
+        error("invalid dimenstions: x=%d < 0", i);
         return;
       }
       x=(unsigned int)i;

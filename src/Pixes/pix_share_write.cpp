@@ -69,7 +69,7 @@ pix_share_write :: pix_share_write(int argc, t_atom*argv) :
   memset(&shm_desc, 0, sizeof(shm_desc));
 #elif defined _WIN32
 #else
-  error("Gem has been compiled without shared memory support!")
+    error("Gem has been compiled without shared memory support!");
 #endif
   if(argc<1) {
     //~ throw(GemException("no ID given"));
@@ -383,7 +383,7 @@ void pix_share_write :: render(GemState *state)
     return;
   }
 
-#ifndef _WIN32
+#if 0
   if(shm_id>0) {
 #elif USE_SHM
   if(m_MapFile) {
@@ -425,7 +425,7 @@ void pix_share_write :: obj_setupCallback(t_class *classPtr)
                   gensym("set"), A_GIMME, A_NULL);
 }
 
-void pix_share_write :: setMessCallback(void *data, t_symbol* s, int argc,
+void pix_share_write :: setMessCallback(void *data, t_symbol *s, int argc,
                                         t_atom *argv)
 {
   if(argc) {

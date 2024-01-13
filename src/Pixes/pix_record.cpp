@@ -63,14 +63,14 @@ public:
     }
     return result;
   }
-  static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom*argv)
+  static void addProperties(gem::Properties&props, int argc, t_atom*argv)
   {
     if(!argc) {
       return;
     }
 
     if(argv->a_type != A_SYMBOL) {
-      pd_error(obj, "no key given...");
+      ::error("no key given...");
       return;
     }
     std::string key=std::string(atom_getsymbol(argv)->s_name);
@@ -174,7 +174,7 @@ bool pix_record :: addHandle( std::vector<std::string>available,
     if(std::find(m_ids.begin(), m_ids.end(), key)==m_ids.end()) {
       // not yet added, do so now!
       gem::plugins::record         *handle=NULL;
-      startpost("backend #%d='%s'\t", (int)m_allhandles.size(), key.c_str());
+      startpost("backend #%d='%s'\t", m_allhandles.size(), key.c_str());
       try {
         handle=gem::PluginFactory<gem::plugins::record>::getInstance(key);
       } catch (GemException&ex) {
@@ -213,10 +213,12 @@ void pix_record :: startRecording()
   }
 
   // find a handle for the current settings (filename, codec, props)
-  /* const std::string codec=m_codec; */
+  const std::string codec=m_codec;
   stopRecording();
 
+
   m_currentFrame = 0;
+  unsigned int i=0;
   // do not re-set the codec, if there is no need...
   /* m_handle->setCodec(codec); */
   if(m_handle->start(m_filename, m_props)) {
@@ -340,7 +342,7 @@ void pix_record :: enumPropertiesMess()
 }
 void pix_record :: setPropertiesMess(t_symbol*s, int argc, t_atom*argv)
 {
-  PIMPL::addProperties(this, m_props, argc, argv);
+  PIMPL::addProperties(m_props, argc, argv);
 }
 
 void pix_record :: clearPropertiesMess()
@@ -500,7 +502,7 @@ void pix_record :: autoMess(bool on)
   m_automatic=on;
 }
 
-void pix_record :: codecMessCallback(void *data, t_symbol* s, int argc,
+void pix_record :: codecMessCallback(void *data, t_symbol *s, int argc,
                                      t_atom *argv)
 {
   if(argc) {

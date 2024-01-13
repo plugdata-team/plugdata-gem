@@ -416,10 +416,6 @@ inline _ParticleState &_GetPState()
 {
   // This is the global state.
   extern _ParticleState __ps;
-  extern _ParticleState*__psptr;
-
-  if(__psptr)
-    return *__psptr;
 
   return __ps;
 }

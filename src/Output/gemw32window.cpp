@@ -55,13 +55,13 @@ static bool initGemWin(void)
   // Initialize QuickTime Media Layer
   err = InitializeQTML(0);
   if (err) {
-    pd_error(0, "GEM Man: Could not initialize quicktime: error %d\n", err);
+    error("GEM Man: Could not initialize quicktime: error %d\n", err);
     return false;
   }
   // Initialize QuickTime
   err = EnterMovies();
   if (err) {
-    pd_error(0, "GEM Man: Could not initialize quicktime: error %d\n", err);
+    error("GEM Man: Could not initialize quicktime: error %d\n", err);
     return false;
   }
   verbose(1, "Gem Man: QT init OK");
@@ -85,9 +85,8 @@ public:
     dc(NULL),
     context(NULL)
   {
-    if(fullscreen) {
+    if(fullscreen)
       border = false;
-    }
     try {
       create(hInstance, buffer, fullscreen, border, title, x, y, w, h);
     } catch(GemException&x) {
@@ -151,7 +150,7 @@ private:
       DEVMODE dmScreenSettings;                                                               // Device Mode
 
       if (!EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dmScreenSettings)) {
-        pd_error(0, "GEM: couldn't get screen capabilities!");
+        ::error("GEM: couldn't get screen capabilities!");
       } else {
         w = dmScreenSettings.dmPelsWidth;
         h = dmScreenSettings.dmPelsHeight;
@@ -177,7 +176,7 @@ private:
         dmScreenSettings.dmPelsHeight = h;
         if (ChangeDisplaySettings(&dmScreenSettings,
                                   CDS_FULLSCREEN)!=DISP_CHANGE_SUCCESSFUL) {
-          ::pd_error(0, "couldn't switch to fullscreen");
+          ::error("couldn't switch to fullscreen");
           fullscreen=false;
         }
       }
@@ -334,7 +333,7 @@ bool gemw32window:: create(void)
 
   static bool firstTime = true;
 
-  // Register the frame class
+  //  the frame class
   HINSTANCE hInstance = GetModuleHandle(NULL);
   if (!hInstance)  {
     error("GEM: Unable to get module instance");
@@ -354,7 +353,7 @@ bool gemw32window:: create(void)
     wndclass.lpszClassName = "GEM";
 
     if (!RegisterClass(&wndclass) )  {
-      error("GEM: Unable to register window class");
+      error("GEM: Unable to  window class");
       return false;
     }
     firstTime = false;
@@ -395,7 +394,6 @@ bool gemw32window:: create(void)
 
   UpdateWindow(m_win->win);
   dimension(w, h);
-  framebuffersize(w, h);
   position(x, y);
   return createGemWindow();
 }
@@ -613,16 +611,9 @@ LONG WINAPI gemw32window::event(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
   // keyboard action
   case WM_KEYUP:
-  case WM_KEYDOWN: {
-#define KEYBUFSIZE 256
-    char aKeyBuf[ KEYBUFSIZE ];
-    const char*keyname=(const char*)&wParam;
-    if (GetKeyNameTextA (lParam, (LPSTR) aKeyBuf, KEYBUFSIZE)) {
-      keyname = aKeyBuf;
-    }
-    key(devID, keyname, (int)wParam, (uMsg==WM_KEYDOWN));
+  case WM_KEYDOWN:
+    key(devID, (char*)&wParam, (int)wParam, (uMsg==WM_KEYDOWN));
     break;
-  }
   // resize event
   case WM_SIZE:
     m_width=LOWORD(lParam);

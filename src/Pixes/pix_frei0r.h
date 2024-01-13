@@ -60,7 +60,6 @@ protected:
   void        processRGBAImage(imageStruct &image);
 
   imageStruct m_image;
-  imageStruct m_converterImage;
   class F0RPlugin;
   F0RPlugin*m_plugin;
 
@@ -75,10 +74,11 @@ protected:
 
 private:
   static void parmCallback(void *data, t_symbol*s, int argc, t_atom*argv);
+  static void openCallback(void *data, t_symbol*s);
 
 public:
   static bool loader(const t_canvas *canvas, const std::string&classname,
-                     const std::string&path, bool legacy);
+                     const std::string&path);
 };
 
 #endif  // for header file

@@ -2,7 +2,7 @@
 
 GEM - Graphics Environment for Multimedia
 
-Load an asset (like .obj or .dxf)
+Load an asset (like .obj oder .dxf)
 (OS independent parent-class)
 
 Copyright (c) 2001-2012 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
@@ -118,82 +118,65 @@ public:
    */
   virtual void getProperties(gem::Properties&props) = 0;
 
-  /*
-   * a mesh
-   *
-   * vertex data:
-   * a set of vertices³, normals³, colors⁴ and texcoords²
-   * any of the pointers may be nullptr (in which case they are invalid)
-   * the pointers point to float-arrays of <size>*<dimen> length.
-   *
-   * material data:
-   * the various material colors (should be set to some sane default if missing)
+  /**
+   * data array (e.g. vertices)
+   * TODO: rename to ArrayData (or similar)
    */
-  struct color {
-    float r, g, b, a;
-  };
-  struct material {
-    struct color diffuse;
-    struct color specular;
-    struct color ambient;
-    struct color emissive;
-
-    float shininess;
-  };
-  struct mesh {
-    /* vertex data */
-    size_t size;
-    float*vertices; /* 3d */
-    float*normals; /* 3d */
-    float*colors; /* 4d */
-    float*texcoords; /* 2d */
-
-    /* material data */
-    struct material material;
+  class VBOarray
+  {
+  public:
+    std::vector<std::vector<float> >* data;
+    VertexBuffer::Type type;
   };
 
   /**
-   * get the named mesh
-   * if meshNum exceeds the available meshes, NULL is returned
+   * get a named vector (e.g. to pass it to VBO)
+   * TODO: return VBOarray
    */
-  virtual struct mesh*getMesh(size_t meshNum) = 0;
-  virtual size_t getNumMeshes(void) = 0;
+  virtual std::vector<std::vector<float> > getVector(std::string vectorName)
+    = 0;
 
   /**
-   * update the mesh data (for all meshes)
-   * the data pointers in previously obtained t_mesh'es stay valid
-   * (but the data they point to might change)
-   * returns TRUE if there was a change, FALSE otherwise
+   * get all vectors
+   * TODO: rename to getVectors()
    */
-  virtual bool updateMeshes(void) = 0;
+  virtual std::vector<VBOarray> getVBOarray() = 0;
+
+  /* returns TRUE if the array data has changed (and the VBO needs refresh) */
+  virtual bool needRefresh() = 0;
+  /* signal the loader that we have updated our local copy of the data (clear the needRefresh() flag)
+     TODO: shouldn't this be automatically called when getVBOarray() got called?
+   */
+  virtual void unsetRefresh() = 0;
+
 };
 
 namespace modelutils
 {
-#warning remove obsolete genTexture_Linear
-static void genTexture_Linear(std::vector<float>& tex,
-                              const std::vector<float>& pos,
-                              const float scale[2])
+static void genTexture_Linear(std::vector<std::vector<float> >& tex,
+                              const std::vector<std::vector<float> >& pos)
 {
   tex.clear();
-  const unsigned int size = pos.size()/3;
-  for (unsigned int i=0; i<size; i++) {
-    tex.push_back(scale[0] * (pos[3*i+0] + 1.0) / 2.0);
-    tex.push_back(scale[1] * (pos[3*i+2] + 1.0) / 2.0);
+  std::vector<float>vec;
+  unsigned int i;
+  for (i=0; i<pos.size(); i++) {
+    vec.clear();
+    vec.push_back((pos[i][0] + 1.0) / 2.0);
+    vec.push_back((pos[i][2] + 1.0) / 2.0);
+    tex.push_back(vec);
   }
 }
-#warning remove obsolete genTexture_Spheremap
-static void genTexture_Spheremap(std::vector<float>& tex,
-                                 const std::vector<float>& norm,
-                                 const float scale[2])
-
+static void genTexture_Spheremap(std::vector<std::vector<float> >& tex,
+                                 const std::vector<std::vector<float> >& norm)
 {
   tex.clear();
-  const unsigned int size = norm.size()/3;
-  for (unsigned int i=0; i<size; i++) {
-    float z = norm[3*i+0];  /* re-arrange for pole distortion */
-    float y = norm[3*i+1];
-    float x = norm[3*i+2];
+  std::vector<float>vec;
+  unsigned int i;
+  for (i=0; i<norm.size(); i++) {
+    vec.clear();
+    float z = norm[i][0];  /* re-arrange for pole distortion */
+    float y = norm[i][1];
+    float x = norm[i][2];
     float r = (float)sqrt((x * x) + (y * y));
     float rho = (float)sqrt((r * r) + (z * z));
     float theta = 0.f, phi = 0.f;
@@ -214,13 +197,11 @@ static void genTexture_Spheremap(std::vector<float>& tex,
         theta = (float)asin(y / r) + (M_PI / 2.0f);
       }
     }
-    tex.push_back(scale[0] * theta / M_PI);
-    tex.push_back(scale[1] * phi   / M_PI);
+    vec.push_back(theta / M_PI);
+    vec.push_back(phi   / M_PI);
+    tex.push_back(vec);
   }
 }
-  /* perform some openGL calls so that the given material takes effect */
-#warning remove obsolete render_material
-  void render_material(const gem::plugins::modelloader::material&material);
 }; // namespace ..::modelutils
 
 };

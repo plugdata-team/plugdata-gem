@@ -32,7 +32,7 @@ gemkeyboard :: gemkeyboard()
 {
   m_outKeyVal = outlet_new(this->x_obj, 0);
 
-  // register event callback
+  //  event callback
   setKeyboardCallback(&gemkeyboard::keyboardCallback, this);
 }
 

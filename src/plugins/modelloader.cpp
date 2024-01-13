@@ -179,23 +179,20 @@ public:
     return (NULL!=m_handle);
   }
 
-  virtual struct mesh*getMesh(size_t meshNum) {
+  std::vector<std::vector<float> > getVector(std::string vectorName)
+  {
     if (m_handle) {
-      return m_handle->getMesh(meshNum);
+      return m_handle->getVector(vectorName);
     }
-    return nullptr;
+    return std::vector<std::vector<float> >();
   }
-  virtual size_t getNumMeshes(void) {
+
+  std::vector<VBOarray> getVBOarray()
+  {
     if (m_handle) {
-      return m_handle->getNumMeshes();
+      return m_handle->getVBOarray();
     }
-    return 0;
-  }
-  virtual bool updateMeshes(void) {
-    if (m_handle) {
-      return m_handle->updateMeshes();
-    }
-    return false;
+    return std::vector<VBOarray>();
   }
 
   virtual void close(void)
@@ -213,6 +210,21 @@ public:
     }
 
     return m_canThread;
+  }
+
+  bool needRefresh()
+  {
+    if (m_handle) {
+      return m_handle->needRefresh();
+    }
+    return false;
+  }
+
+  void unsetRefresh()
+  {
+    if (m_handle) {
+      m_handle->unsetRefresh();
+    }
   }
 
   virtual bool enumProperties(gem::Properties&readable,
@@ -269,32 +281,4 @@ gem::plugins::modelloader*gem::plugins::modelloader::getInstance(void)
 {
   gem::plugins::modelloader*result=new modelloaderMeta();
   return result;
-}
-
-namespace {
-  GLfloat*color2gl(const gem::plugins::modelloader::color&c, GLfloat buf[4]) {
-    buf[0] = c.r;
-    buf[1] = c.g;
-    buf[2] = c.b;
-    buf[3] = c.a;
-    return buf;
-  }
-}
-
-void gem::plugins::modelutils::render_material(const gem::plugins::modelloader::material&m)
-{
-  GLfloat glcol[4];
-#define COLOR2FLOAT4(col) color2gl(col, glcol)
-  glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, COLOR2FLOAT4(m.diffuse));
-  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, COLOR2FLOAT4(m.specular));
-  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, COLOR2FLOAT4(m.ambient));
-  glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, COLOR2FLOAT4(m.emissive));
-  glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, m.shininess);
-#if 0
-  post("============== material ================");
-  post("diffuse  = %f/%f/%f/%f", m.diffuse.r, m.diffuse.g, m.diffuse.b, m.diffuse.a);
-  post("specular = %f/%f/%f/%f", m.specular.r, m.specular.g, m.specular.b, m.specular.a);
-  post("ambient  = %f/%f/%f/%f", m.ambient.r, m.ambient.g, m.ambient.b, m.ambient.a);
-  post("emissive = %f/%f/%f/%f", m.emissive.r, m.emissive.g, m.emissive.b, m.emissive.a);
-#endif
 }

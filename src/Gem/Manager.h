@@ -137,7 +137,8 @@ public:
   // Turn on/off topmost position
   static void         topmostOnOff(int state);
 
-
+  static void       windowInit(void);
+    
   //////////
   // Request a lighting value - it is yours until you free it.
   // The return can be 0, in which there are too many lights
@@ -247,12 +248,12 @@ private:
   static int        m_cursor;
   static int        m_topmost;
 
-  static void       windowInit(void);
+
   static void       windowCleanup(void);
   static void       resetValues(void);
 
   static void resizeCallback(int xsize, int ysize, void*);
-  static void dispatchWinmessCallback(void *owner);
+  static void dispatchWinmessCallback(void);
 
   //////////
   // check for supported openGL extensions we might need

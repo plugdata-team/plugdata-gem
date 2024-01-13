@@ -31,12 +31,12 @@
 #include <vector>
 #include <string>
 
-#ifdef FTGL
+#if 0
 # define FONT_SCALE 0.2/3.0
 # ifdef HAVE_FTGL_FTGL_H
-#  include <FTGL/ftgl.h>
-# elif defined HAVE_FTFONT_H
-#  include <FTFont.h>
+#  include "FTGL/ftgl.h"
+# else
+#  include "FTFont.h"
 # endif
 #else
 # define FONT_SCALE 1.0
@@ -211,7 +211,7 @@ protected:
 
   //////////
   // The font structure
-#ifdef FTGL
+#if 0
   FTFont                *m_font;
   /* this should delete (m_font) if it is notnull and recreate it.
    * a pointer to the new structure is returned (and is set to m_font).
@@ -246,7 +246,7 @@ private:
 
   //////////
   // Static member functions
-  static void   justifyMessCallback(void *data, t_symbol*, int, t_atom*);
+  static void   justifyMessCallback(void *data, t_symbol *, int, t_atom*);
 };
 
 #endif  // for header file

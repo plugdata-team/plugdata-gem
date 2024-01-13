@@ -50,7 +50,6 @@ void pix_rgba :: processImage(imageStruct &image)
   // note: [pix_yuv] and [pix_grey] inherit this function from [pix_rgba]
   // thus you shouldn't undefine anything below for performance reasons
 
-  m_image.setCsizeByFormat();
   if (image.format==m_image.format) {
     return;  // we don't need to convert as we are already there
   }
@@ -63,7 +62,7 @@ void pix_rgba :: processImage(imageStruct &image)
   }
 
   image.data   = m_image.data;
-  image.not_owned = true;
+  image.notowned = true;
   image.setCsizeByFormat(m_image.format);
 }
 

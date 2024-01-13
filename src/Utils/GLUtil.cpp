@@ -32,55 +32,15 @@
 
 #define _GL_UNDEFINED -1
 
-namespace {
-static const char* _gemglErrorString(GLenum err) {
-  switch(err) {
-  default: break;
-  case GL_NO_ERROR: return "no error";
-  case GL_INVALID_ENUM: return "invalid enumerant";
-  case GL_INVALID_VALUE: return "invalid value";
-  case GL_INVALID_OPERATION: return "invalid operation";
-  case GL_STACK_OVERFLOW: return "stack overflow";
-  case GL_STACK_UNDERFLOW: return "stack underflow";
-  case GL_OUT_OF_MEMORY: return "out of memory";
-  case GL_TABLE_TOO_LARGE: return "table too large";
-  case GL_INVALID_FRAMEBUFFER_OPERATION: return "invalid framebuffer operation";
-    //case GL_INVALID_FRAMEBUFFER_OPERATION_EXT: return "invalid framebuffer operation";
-
-  case GL_CONTEXT_LOST: return "context lost";
-  case GL_RELATIVE_LINE_TO_NV: return "relative line to nv";
-
-    /* GLU */
-#ifdef GLU_INVALID_ENUM
-  case GLU_INVALID_ENUM: return "invalid enumerant";
-#endif
-#ifdef GLU_INVALID_VALUE
-  case GLU_INVALID_VALUE: return "invalid value";
-#endif
-#ifdef GLU_OUT_OF_MEMORY
-  case GLU_OUT_OF_MEMORY: return "out of memory";
-#endif
-#ifdef GLU_INCOMPATIBLE_GL_VERSION
-  case GLU_INCOMPATIBLE_GL_VERSION: return "incompatible gl version";
-#endif
-#ifdef GLU_INVALID_OPERATION
-  case GLU_INVALID_OPERATION: return "invalid operation";
-#endif /* GLU */
-  }
-  return "unknown error";
-}
-
-};
-
 // if error dump gl errors to debugger string, return error
 GLenum gem::utils::gl::glReportError (bool verbose)
 {
   GLenum err = glGetError();
   if (verbose && GL_NO_ERROR != err) {
 #ifdef GEM_HAVE_GLU
-    post("GL[0x%X]: %s", err, (char*)gluErrorString(err));
+    post("GL[%d]: %s", err, (char*)gluErrorString(err));
 #else
-    post("GL[0x%X]: %s", err, _gemglErrorString(err));
+    post("GL: %d", err);
 #endif
 
   }
@@ -91,8 +51,6 @@ GLenum gem::utils::gl::glReportError (bool verbose)
     return err;
   }
 }
-
-
 
 #warning TODO: use gem::ContextData
 using namespace gem::utils::gl;
@@ -193,167 +151,84 @@ void GLuintMap::del(float f)
 #define __glPi 3.14159265358979323846
 static void normalize(float v[3])
 {
-  float r;
+    float r;
 
-  r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
-  if (r == 0.0) {
-    return;
-  }
+    r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
+    if (r == 0.0) return;
 
-  v[0] /= r;
-  v[1] /= r;
-  v[2] /= r;
+    v[0] /= r;
+    v[1] /= r;
+    v[2] /= r;
 }
 
 static void cross(float v1[3], float v2[3], float result[3])
 {
-  result[0] = v1[1]*v2[2] - v1[2]*v2[1];
-  result[1] = v1[2]*v2[0] - v1[0]*v2[2];
-  result[2] = v1[0]*v2[1] - v1[1]*v2[0];
+    result[0] = v1[1]*v2[2] - v1[2]*v2[1];
+    result[1] = v1[2]*v2[0] - v1[0]*v2[2];
+    result[2] = v1[0]*v2[1] - v1[1]*v2[0];
 }
 
-void gem::utils::gl::gluLookAt (GLdouble eyex, GLdouble eyey, GLdouble eyez, GLdouble centerx, GLdouble centery, GLdouble centerz, GLdouble upx, GLdouble upy, GLdouble upz)
-{
-  float forward[3], side[3], up[3];
-  GLfloat m[4][4];
+void gem::utils::gl::gluLookAt (GLdouble eyex, GLdouble eyey, GLdouble eyez, GLdouble centerx, GLdouble centery, GLdouble centerz, GLdouble upx, GLdouble upy, GLdouble upz) {
+    float forward[3], side[3], up[3];
+    GLfloat m[4][4];
 
-  forward[0] = centerx - eyex;
-  forward[1] = centery - eyey;
-  forward[2] = centerz - eyez;
+    forward[0] = centerx - eyex;
+    forward[1] = centery - eyey;
+    forward[2] = centerz - eyez;
 
-  up[0] = upx;
-  up[1] = upy;
-  up[2] = upz;
+    up[0] = upx;
+    up[1] = upy;
+    up[2] = upz;
 
-  normalize(forward);
+    normalize(forward);
 
-  /* Side = forward x up */
-  cross(forward, up, side);
-  normalize(side);
+    /* Side = forward x up */
+    cross(forward, up, side);
+    normalize(side);
 
-  /* Recompute up as: up = side x forward */
-  cross(side, forward, up);
+    /* Recompute up as: up = side x forward */
+    cross(side, forward, up);
 
-  for(size_t i=0; i<4; i++)
-    for(size_t j=0; j<4; j++) {
-      m[i][j] = (i==j)?1.:0.;
-    }
+    for(size_t i=0; i<4; i++)
+      for(size_t j=0; j<4; j++)
+        m[i][j] = (i==j)?1.:0.;
 
-  m[0][0] = side[0];
-  m[1][0] = side[1];
-  m[2][0] = side[2];
+    m[0][0] = side[0];
+    m[1][0] = side[1];
+    m[2][0] = side[2];
 
-  m[0][1] = up[0];
-  m[1][1] = up[1];
-  m[2][1] = up[2];
+    m[0][1] = up[0];
+    m[1][1] = up[1];
+    m[2][1] = up[2];
 
-  m[0][2] = -forward[0];
-  m[1][2] = -forward[1];
-  m[2][2] = -forward[2];
+    m[0][2] = -forward[0];
+    m[1][2] = -forward[1];
+    m[2][2] = -forward[2];
 
-  glMultMatrixf(&m[0][0]);
-  glTranslated(-eyex, -eyey, -eyez);
+    glMultMatrixf(&m[0][0]);
+    glTranslated(-eyex, -eyey, -eyez);
 }
 
 void gem::utils::gl::gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
 {
-  GLdouble m[4][4];
-  double sine, cotangent, deltaZ;
-  double radians = fovy / 2 * __glPi / 180;
+    GLdouble m[4][4];
+    double sine, cotangent, deltaZ;
+    double radians = fovy / 2 * __glPi / 180;
 
-  deltaZ = zFar - zNear;
-  sine = sin(radians);
-  if ((deltaZ == 0) || (sine == 0) || (aspect == 0)) {
-    return;
-  }
-  cotangent = cos(radians) / sine;
-  for(size_t i=0; i<4; i++)
-    for(size_t j=0; j<4; j++) {
-      m[i][j] = (i==j)?1.:0.;
+    deltaZ = zFar - zNear;
+    sine = sin(radians);
+    if ((deltaZ == 0) || (sine == 0) || (aspect == 0)) {
+	return;
     }
-  m[0][0] = cotangent / aspect;
-  m[1][1] = cotangent;
-  m[2][2] = -(zFar + zNear) / deltaZ;
-  m[2][3] = -1;
-  m[3][2] = -2 * zNear * zFar / deltaZ;
-  m[3][3] = 0;
-  glMultMatrixd(&m[0][0]);
+    cotangent = cos(radians) / sine;
+    for(size_t i=0; i<4; i++)
+      for(size_t j=0; j<4; j++)
+        m[i][j] = (i==j)?1.:0.;
+    m[0][0] = cotangent / aspect;
+    m[1][1] = cotangent;
+    m[2][2] = -(zFar + zNear) / deltaZ;
+    m[2][3] = -1;
+    m[3][2] = -2 * zNear * zFar / deltaZ;
+    m[3][3] = 0;
+    glMultMatrixd(&m[0][0]);
 }
-
-
-#define CASE2NAME(x) case x: return #x
-
-namespace gem { namespace utils { namespace gl {
-const char*pixtype2name (GLenum type) {
-  switch(type) {
-  CASE2NAME(GL_BYTE);
-  CASE2NAME(GL_UNSIGNED_BYTE);
-  CASE2NAME(GL_SHORT);
-  CASE2NAME(GL_UNSIGNED_SHORT);
-  CASE2NAME(GL_INT);
-  CASE2NAME(GL_UNSIGNED_INT);
-  CASE2NAME(GL_FLOAT);
-  CASE2NAME(GL_2_BYTES);
-  CASE2NAME(GL_3_BYTES);
-  CASE2NAME(GL_4_BYTES);
-  CASE2NAME(GL_DOUBLE);
-
-  CASE2NAME(GL_UNSIGNED_BYTE_3_3_2);
-  CASE2NAME(GL_UNSIGNED_BYTE_2_3_3_REV);
-
-  CASE2NAME(GL_UNSIGNED_SHORT_4_4_4_4);
-  CASE2NAME(GL_UNSIGNED_SHORT_5_5_5_1);
-  CASE2NAME(GL_UNSIGNED_SHORT_5_6_5);
-  CASE2NAME(GL_UNSIGNED_SHORT_5_6_5_REV);
-  CASE2NAME(GL_UNSIGNED_SHORT_4_4_4_4_REV);
-  CASE2NAME(GL_UNSIGNED_SHORT_1_5_5_5_REV);
-  CASE2NAME(GL_UNSIGNED_SHORT_8_8_APPLE);
-  CASE2NAME(GL_UNSIGNED_SHORT_8_8_REV_APPLE);
-
-  CASE2NAME(GL_UNSIGNED_INT_8_8_8_8);
-  CASE2NAME(GL_UNSIGNED_INT_10_10_10_2);
-  CASE2NAME(GL_UNSIGNED_INT_8_8_8_8_REV);
-  CASE2NAME(GL_UNSIGNED_INT_2_10_10_10_REV);
-  CASE2NAME(GL_UNSIGNED_INT_24_8);
-  CASE2NAME(GL_UNSIGNED_INT_S8_S8_8_8_NV);
-  CASE2NAME(GL_UNSIGNED_INT_8_8_S8_S8_REV_NV);
-  CASE2NAME(GL_UNSIGNED_INT_10F_11F_11F_REV);
-  CASE2NAME(GL_UNSIGNED_INT_5_9_9_9_REV);
-
-  default:
-    break;
-  }
-  return 0;
-}
-
-
-const char*pixformat2name (GLenum format) {
-  switch(format) {
-    CASE2NAME(GL_RED);
-    CASE2NAME(GL_GREEN);
-    CASE2NAME(GL_BLUE);
-    CASE2NAME(GL_ALPHA);
-    CASE2NAME(GL_RGB);
-    CASE2NAME(GL_RGBA);
-    CASE2NAME(GL_LUMINANCE);
-    CASE2NAME(GL_LUMINANCE_ALPHA);
-
-    CASE2NAME(GL_BGR);
-    CASE2NAME(GL_BGRA);
-
-#ifdef GL_ABGR_EXT
-    CASE2NAME(GL_ABGR_EXT);
-#endif
-#ifdef GL_ARGB_EXT
-    CASE2NAME(GL_ARGB_EXT);
-#endif
-#ifdef GL_YCBCR_422_APPLE
-    CASE2NAME(GL_YCBCR_422_APPLE);
-#else
-    CASE2NAME(GL_YUV422_GEM);
-#endif
-  default: break;
-  }
-  return 0;
-}
-}}}

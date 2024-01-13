@@ -44,9 +44,9 @@ pix_add :: ~pix_add()
 /////////////////////////////////////////////////////////
 void pix_add :: processRGBA_RGBA(imageStruct &image, imageStruct &right)
 {
-  int datasize = (image.xsize * image.ysize)>>3;
-  unsigned char *leftPix = image.data;
-  unsigned char *rightPix = right.data;
+   int datasize = (image.xsize * image.ysize)>>3;
+   unsigned char *leftPix = image.data;
+   unsigned char *rightPix = right.data;
 
   while (datasize--) {
     ADD8_NOALPHA(leftPix,rightPix);
@@ -75,7 +75,7 @@ void pix_add :: processRGBA_Gray(imageStruct &image, imageStruct &right)
   unsigned char *rightPix = right.data;
 
   while(datasize--)    {
-    int alpha = *rightPix++;
+     int alpha = *rightPix++;
     leftPix[chRed]   = CLAMP_HIGH(leftPix[chRed]   + alpha);
     leftPix[chGreen] = CLAMP_HIGH(leftPix[chGreen] + alpha);
     leftPix[chBlue]  = CLAMP_HIGH(leftPix[chBlue]  + alpha);
@@ -177,13 +177,13 @@ void pix_add :: processYUV_Altivec(imageStruct &image, imageStruct &right)
   } charBuffer;
 
   //vector unsigned char c;
-  vector signed short d, hiImage, loImage, YRight, UVRight, YImage,
-         UVImage, UVTemp, YTemp;
+   vector signed short d, hiImage, loImage, YRight, UVRight, YImage,
+           UVImage, UVTemp, YTemp;
   // vector unsigned char zero = vec_splat_u8(0);
-  vector unsigned char c,one;
+   vector unsigned char c,one;
   //  vector signed short zshort = vec_splat_s16(0);
-  unsigned char *inData = (vector unsigned char*) image.data;
-  unsigned char *rightData = (vector unsigned char*) right.data;
+  vector unsigned char *inData = (vector unsigned char*) image.data;
+  vector unsigned char *rightData = (vector unsigned char*) right.data;
 
   //Write the pixel (pair) to the transfer buffer
   charBuffer.elements[0] = 2;
@@ -304,8 +304,8 @@ void pix_add :: processDualImage(imageStruct &image, imageStruct &right)
   }
   int datasize = (image.xsize * image.ysize * image.csize)>>5;
   int restsize = image.xsize * image.ysize * image.csize - datasize;
-  unsigned char *leftPix  = image.data;
-  unsigned char *rightPix = right.data;
+   unsigned char *leftPix  = image.data;
+   unsigned char *rightPix = right.data;
 
   while (datasize--) {
     ADD8(leftPix,rightPix);

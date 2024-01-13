@@ -63,13 +63,13 @@ LOG
 
 inline double fast_sqrt(double x)
 {
-  double est = __frsqrte(x);
+  register double est = __frsqrte(x);
   return x * 0.5 * est * __fnmsub(est * est, x, 3.0);
 }
 
 inline float fast_sqrtf(float x)
 {
-  float est = (float)__frsqrte(x);
+  register float est = (float)__frsqrte(x);
   return x * 0.5f * est * __fnmsubs(est * est, x, 3.0f);
 }
 #endif /* __ppc__ */

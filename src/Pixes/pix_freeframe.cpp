@@ -33,24 +33,20 @@
 # include <windows.h>
 # define snprintf _snprintf
 # define close _close
-#else /* !_WIN32 */
-# define DL_OPEN 1
-#endif /* _WIN32 */
 
 /*
  * Apple used to use CFBundle's to load FF plugins
  * currently this only crashes (on OSX-10.4 and OSX-10.5)
  * we therefore use dlopen() on OSX as well
  */
-#if defined __APPLE__ && 0
-# define FREEFRAME_USE_BUNDLELOADER
-# include <CoreFoundation/CoreFoundation.h>
-#endif /* __APPLE__ */
-
-#ifdef DL_OPEN
+#elif defined __APPLE__ && 0
+# include <mach-o/dyld.h>
+# include <unistd.h>
+#else
+# define DL_OPEN
 # include <dlfcn.h>
 # include <unistd.h>
-#endif /* DL_OPEN */
+#endif /* __APPLE__ */
 
 #include <string.h>
 
@@ -69,6 +65,8 @@ static size_t ff_strnlen(const char* str, size_t maxlen)
 
   return len;
 }
+
+
 #endif
 
 
@@ -187,7 +185,6 @@ private:
     FFMixed call(FFUInt32 funcode)
     {
       FFMixed mixed;
-      mixed.PointerValue=0;
       return call(funcode, mixed);
     }
 
@@ -205,10 +202,11 @@ private:
 
   };
 
-  std::string m_name;
+
   FF_Main_FuncPtr m_plugin;
   FFInstance     *m_instance;
 
+  std::string m_name;
   std::string m_id;
 
   std::string m_description;
@@ -304,7 +302,6 @@ private:
   FFMixed callGlobal(FFUInt32 funcode)
   {
     FFMixed invalue;
-    invalue.PointerValue=0;
     return call(funcode, invalue, NULL);
   }
 
@@ -325,6 +322,8 @@ private:
       dlclose(m_dlhandle);
     }
     m_dlhandle=NULL;
+#endif
+#ifdef __APPLE__
 #endif
 #ifdef _WIN32
     if(m_w32handle) {
@@ -378,7 +377,7 @@ private:
     if ((fd=canvas_open(const_cast<t_canvas*>(canvas), name.c_str(), extension,
                         buf2, &bufptr, MAXPDSTRING, 1))>=0) {
       ::close(fd);
-#if defined FREEFRAME_USE_BUNDLELOADER && 0
+#if defined __APPLE__ && 0
       snprintf(buf, MAXPDSTRING, "%s", buf2);
 #else
       snprintf(buf, MAXPDSTRING, "%s/%s", buf2, bufptr);
@@ -390,7 +389,7 @@ private:
                             const_cast<char*>(name.c_str()), buf, MAXPDSTRING);
       } else {
         if(loud) {
-          ::pd_error(0, "pix_freeframe[%s]: unfindeable", name.c_str());
+          ::error("pix_freeframe[%s]: unfindeable", name.c_str());
         }
         return false;
       }
@@ -403,71 +402,68 @@ private:
     }
 
 #ifdef DL_OPEN
-    if(!plugmain) {
+    if(loud) {
+      ::post("dlopen %s", libname.c_str());
+    }
+    m_dlhandle=dlopen(libname.c_str(), RTLD_NOW);
+    if(!m_dlhandle) {
       if(loud) {
-        ::post("dlopen %s", libname.c_str());
+        ::error("pix_freeframe[%s]: %s", libname.c_str(), dlerror());
       }
-      m_dlhandle=dlopen(libname.c_str(), RTLD_NOW);
-      if(!m_dlhandle) {
-        if(loud) {
-          ::pd_error(0, "pix_freeframe[%s]: %s", libname.c_str(), dlerror());
-        }
-      } else {
-        dlerror();
-        plugmain = reinterpret_cast<FF_Main_FuncPtr>(dlsym(m_dlhandle, hookname));
-      }
+      return NULL;
     }
-#endif
-#if defined FREEFRAME_USE_BUNDLELOADER
-    if(!plugmain) {
-      CFURLRef bundleURL = NULL;
-      CFBundleRef theBundle = NULL;
-      CFStringRef plugin = CFStringCreateWithCString(NULL,
-                                                     libname.c_str(), kCFStringEncodingMacRoman);
+    dlerror();
 
-      bundleURL = CFURLCreateWithFileSystemPath( kCFAllocatorSystemDefault,
-                                                 plugin,
-                                                 kCFURLPOSIXPathStyle,
-                                                 true );
-      theBundle = CFBundleCreate( kCFAllocatorSystemDefault, bundleURL );
+    plugmain = reinterpret_cast<FF_Main_FuncPtr>(dlsym(m_dlhandle, hookname));
 
-      // Get a pointer to the function.
-      if (theBundle) {
-        plugmain = reinterpret_cast<FF_Main_FuncPtr>
-          (CFBundleGetFunctionPointerForName(
-                                             theBundle, CFSTR("plugMain") )
-           );
-      } else {
-        if(loud) {
-          ::post("%s: couldn't load", libname.c_str());
-        }
+#elif defined __APPLE__
+    CFURLRef bundleURL = NULL;
+    CFBundleRef theBundle = NULL;
+    CFStringRef plugin = CFStringCreateWithCString(NULL,
+                         libname.c_str(), kCFStringEncodingMacRoman);
+
+    bundleURL = CFURLCreateWithFileSystemPath( kCFAllocatorSystemDefault,
+                plugin,
+                kCFURLPOSIXPathStyle,
+                true );
+    theBundle = CFBundleCreate( kCFAllocatorSystemDefault, bundleURL );
+
+    // Get a pointer to the function.
+    if (theBundle) {
+      plugmain = reinterpret_cast<FF_Main_FuncPtr>
+                 (CFBundleGetFunctionPointerForName(
+                    theBundle, CFSTR("plugMain") )
+                 );
+    } else {
+      if(loud) {
+        ::post("%s: couldn't load", libname.c_str());
       }
-      if(bundleURL != NULL) {
-        CFRelease( bundleURL );
-      }
-      if(theBundle != NULL) {
-        CFRelease( theBundle );
-      }
-      if(plugin != NULL) {
-        CFRelease( plugin );
-      }
+      return 0;
     }
-#endif
-#if defined _WIN32
-    if(!plugmain) {
-      char buffer[MAXPDSTRING];
-      sys_bashfilename(libname.c_str(), buffer);
-      libname=buffer;
-      m_w32handle = LoadLibrary(libname.c_str());
-      if (!m_w32handle) {
-        if(loud) {
-          ::post("%s: couldn't load", libname.c_str());
-        }
-      } else {
-        plugmain = reinterpret_cast<FF_Main_FuncPtr>(GetProcAddress(m_w32handle,
-                   hookname));
-      }
+    if(bundleURL != NULL) {
+      CFRelease( bundleURL );
     }
+    if(theBundle != NULL) {
+      CFRelease( theBundle );
+    }
+    if(plugin != NULL) {
+      CFRelease( plugin );
+    }
+#elif defined _WIN32
+    char buffer[MAXPDSTRING];
+    sys_bashfilename(libname.c_str(), buffer);
+    libname=buffer;
+    m_w32handle = LoadLibrary(libname.c_str());
+    if (!m_w32handle) {
+      if(loud) {
+        ::post("%s: couldn't load", libname.c_str());
+      }
+      return false;
+    }
+    plugmain = reinterpret_cast<FF_Main_FuncPtr>(GetProcAddress(m_w32handle,
+               hookname));
+#else
+# error no way to load dynamic linked libraries on this OS
 #endif
 
     m_plugin=plugmain;
@@ -491,16 +487,19 @@ private:
   {
     FFMixed result=callGlobal(FF_GETINFO);
     if(FF_FAIL==result.UIntValue) {
-      std::cerr << "getInfo failed" << std::endl;
+      std::cout << "getInfo failed" << std::endl;
       return false;
     }
     PluginInfoStruct*pis=reinterpret_cast<PluginInfoStruct*>
                          (result.PointerValue);
+#ifdef __GNUC__
+# warning check whether the API is supported by us
+#endif
     m_name = nchar2str(pis->PluginName, 16);
     m_id = nchar2str(pis->PluginUniqueID, 4);
     m_type = pis->PluginType;
 
-    std::cerr <<
+    std::cout <<
               "FF-API: "<<pis->APIMajorVersion<<"."<<pis->APIMinorVersion<<std::endl;
 
     return true;
@@ -685,7 +684,7 @@ private:
       default:
         val = def.FloatValue;
       }
-      std::cerr << "param#"<<i<<": "<<name<<std::endl;
+      std::cout << "param#"<<i<<": "<<name<<std::endl;
       m_parameterNames.push_back(name);
       m_parameter.set(name, val);
     }
@@ -695,7 +694,6 @@ private:
   bool init_(void)
   {
     if(!initialize_()) {
-      ::pd_error(0, "pix_freeframe[%s]: does not look like a FreeFrame plugin", m_name.c_str());
       return false;
     }
 
@@ -704,7 +702,6 @@ private:
     if(rgb || rgba) {
       m_rgba=rgba;
     } else {
-      ::pd_error(0, "pix_freeframe[%s]: unsupported plugin type", m_name.c_str());
       return false;
     }
     m_cancopy =  (FF_SUPPORTED==getPluginCaps_( FF_CAP_PROCESSFRAMECOPY ));
@@ -719,8 +716,7 @@ private:
 
 public:
   FFPlugin(const std::string&name, const t_canvas*canvas=NULL)
-    : m_name(name)
-    , m_plugin(NULL)
+    : m_plugin(NULL)
     , m_instance(NULL)
     , m_rgba(false)
     , m_type(FF_EFFECT)
@@ -823,7 +819,6 @@ public:
   bool setParameter(FFUInt32 ParameterNumber)
   {
     FFMixed value;
-    value.PointerValue = 0;
     return setParameter_(ParameterNumber, value);
   }
   bool setParameter(FFUInt32 ParameterNumber, double d)
@@ -889,7 +884,7 @@ public:
 #endif /* DONT_WANT_FREEFRAME */
 
 
-CPPEXTERN_NEW_WITH_ONE_ARG(pix_freeframe,  t_symbol*, A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(pix_freeframe,  t_symbol *, A_DEFSYM);
 
 /////////////////////////////////////////////////////////
 //
@@ -1005,13 +1000,16 @@ void pix_freeframe :: openMess(t_symbol*s)
 /////////////////////////////////////////////////////////
 void pix_freeframe :: processImage(imageStruct &image)
 {
+  unsigned int orgformat = image.format;
+  unsigned int format=m_image.format;
+  unsigned char*data=image.data;
+
   if(m_plugin==NULL) {
     return;
   }
 
   // convert the current image into a format that suits the FreeFrame-plugin
-  m_image.setCsizeByFormat();
-  if(image.format != m_image.format) {
+  if(orgformat != format) {
     if(m_image.convertFrom(&image)) {
       m_plugin->processFrame(m_image);
       m_image.convertTo(&image);
@@ -1048,7 +1046,7 @@ void pix_freeframe :: parmMess(std::string key, t_atom *value)
   }
   props.set(key, v);
   m_plugin->setParameters(props);
-  setPixModified();
+  setModified();
 }
 
 
@@ -1075,14 +1073,15 @@ static void*freeframe_loader_new(t_symbol*s, int argc, t_atom*argv)
   ::verbose(2, "freeframe_loader: %s",s->s_name);
   try {
     \
+    Obj_header *obj = new (pd_new(pix_freeframe_class),
+                           (void *)NULL) Obj_header;
     const char*realname=s->s_name+offset_pix_; /* strip of the leading 'pix_' */
-    const int typespecs[] = {};
-    const unsigned int numtypespecs = sizeof(typespecs) / sizeof(*typespecs);
-    gem::CPPExtern_proxy proxy(pix_freeframe_class, s->s_name, s, argc, argv,
-                               numtypespecs, typespecs, 1);
-    argc = proxy.getNumArgs();
-    proxy.setObject(new pix_freeframe(gensym(realname)));
-    return proxy.initialize();
+    CPPExtern::m_holder = &obj->pd_obj;
+    CPPExtern::m_holdname=s->s_name;
+    obj->data = new pix_freeframe(gensym(realname));
+    CPPExtern::m_holder = NULL;
+    CPPExtern::m_holdname=NULL;
+    return(obj);
   } catch (GemException&e) {
     ::verbose(2, "freeframe_loader: failed! (%s)", e.what());
     return 0;
@@ -1096,8 +1095,6 @@ bool pix_freeframe :: loader(const t_canvas*canvas,
     return false;
   }
   std::string pluginname = classname.substr(offset_pix_);
-  if(!path.empty())
-    pluginname = path + "/" + pluginname;
 
   pix_freeframe::FFPlugin*plugin=NULL;
   try {
@@ -1116,7 +1113,7 @@ bool pix_freeframe :: loader(const t_canvas*canvas,
 }
 
 static int freeframe_loader(const t_canvas *canvas, const char *classname,
-                            const char *path, bool legacy)
+                            const char *path)
 {
   std::string nostring;
   return pix_freeframe::loader(canvas,

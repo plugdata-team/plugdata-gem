@@ -15,12 +15,10 @@
 /////////////////////////////////////////////////////////
 
 #include "model.h"
-#include "Gem/State.h"
-
+#include "plugins/modelloader.h"
 #include <algorithm> // std::min
 
-namespace
-{
+namespace {
 static char mytolower(char in)
 {
   if(in<='Z' && in>='A') {
@@ -30,7 +28,7 @@ static char mytolower(char in)
 }
 };
 
-CPPEXTERN_NEW_WITH_ONE_ARG(model, t_symbol*, A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(model, t_symbol *, A_DEFSYM);
 
 /////////////////////////////////////////////////////////
 //
@@ -40,16 +38,16 @@ CPPEXTERN_NEW_WITH_ONE_ARG(model, t_symbol*, A_DEFSYMBOL);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-model :: model(t_symbol* filename)
-  : m_loader(gem::plugins::modelloader::getInstance())
-  , m_loaded(nullptr)
-  , m_infoOut(gem::RTE::Outlet(this))
-  , m_drawType(GL_TRIANGLES)
-  , m_blend(false)
-  , m_linewidth(1.0)
-  , m_texType(gem::modelGL::texturetype::LINEAR)
-  , m_rescale(gem::modelGL::rescale::NORMALIZE_CENTER)
-  , m_useMaterial(false)
+model :: model(t_symbol *filename) :
+  m_loader(gem::plugins::modelloader::getInstance()),
+  m_loaded(false),
+  m_size_change_flag(false),
+  m_position(0,3),
+  m_texture (0,2),
+  m_color   (0,4),
+  m_normal  (0,3),
+  m_infoOut(gem::RTE::Outlet(this)),
+  m_drawType(GL_TRIANGLES)
 {
   m_drawTypes.clear();
   m_drawTypes["default"]=m_drawType;
@@ -73,13 +71,11 @@ model :: ~model(void)
 {
   if(m_loaded) {
     m_loader->close();
-    delete m_loaded;
   }
-  m_loaded = 0;
   if(m_loader) {
     delete m_loader;
+    m_loader=NULL;
   }
-  m_loader = 0;
 }
 
 static gem::any atom2any(t_atom*ap)
@@ -99,14 +95,14 @@ static gem::any atom2any(t_atom*ap)
   }
   return result;
 }
-static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom*argv)
+static void addProperties(gem::Properties&props, int argc, t_atom*argv)
 {
   if(!argc) {
     return;
   }
 
   if(argv->a_type != A_SYMBOL) {
-    pd_error(obj, "no key given...");
+    error("no key given...");
     return;
   }
   std::string key=std::string(atom_getsymbol(argv)->s_name);
@@ -137,7 +133,7 @@ void model :: setPropertyMess(t_symbol*, int argc, t_atom*argv)
     error("no property specified!");
     return;
   }
-  addProperties(this, m_writeprops, argc, argv);
+  addProperties(m_writeprops, argc, argv);
 
   if(m_loader) {
     m_loader->setProperties(m_writeprops);
@@ -151,7 +147,7 @@ void model :: getPropertyMess(t_symbol*, int argc, t_atom*argv)
     m_readprops.clear();
 
     for(i=0; i<argc; i++) {
-      addProperties(this, m_readprops, 1, argv+i);
+      addProperties(m_readprops, 1, argv+i);
     }
 
   } else {
@@ -295,7 +291,7 @@ void model :: enumPropertyMess()
 
 void model :: setPropertiesMess(t_symbol*, int argc, t_atom*argv)
 {
-  addProperties(this, m_writeprops, argc, argv);
+  addProperties(m_writeprops, argc, argv);
 }
 
 void model :: applyProperties()
@@ -321,28 +317,38 @@ void model :: clearPropertiesMess()
 /////////////////////////////////////////////////////////
 void model :: materialMess(int material)
 {
-  m_useMaterial = material;
+  gem::any value=material;
+  m_writeprops.set("usematerials", value);
+  applyProperties();
 }
 
 /////////////////////////////////////////////////////////
-// textureMess
+// materialMess
 //
 /////////////////////////////////////////////////////////
 void model :: textureMess(int state)
 {
+  std::string textype;
   switch(state) {
   case 0:
-    m_texType = gem::modelGL::texturetype::LINEAR;
+    textype="linear";
     break;
   case 1:
-    m_texType = gem::modelGL::texturetype::SPHEREMAP;
+    textype="spheremap";
     break;
   case 2:
-    m_texType = gem::modelGL::texturetype::UV;
+    textype="UV";
     break;
   default:
     break;
   }
+  if(textype.empty()) {
+    m_writeprops.erase("textype");
+  } else {
+    gem::any value=textype;
+    m_writeprops.set("textype", value);
+  }
+  applyProperties();
 }
 
 /////////////////////////////////////////////////////////
@@ -371,7 +377,9 @@ void model :: reverseMess(bool reverse)
 /////////////////////////////////////////////////////////
 void model :: rescaleMess(bool state)
 {
-  m_rescale = state?gem::modelGL::rescale::NORMALIZE_CENTER:gem::modelGL::rescale::ORIGINAL;
+  gem::any value=(double)state;
+  m_writeprops.set("rescale", value);
+  applyProperties();
 }
 
 /////////////////////////////////////////////////////////
@@ -380,31 +388,10 @@ void model :: rescaleMess(bool state)
 /////////////////////////////////////////////////////////
 void model :: groupMess(int state)
 {
-  m_group.clear();
-  if(state>0)
-    m_group.push_back(state-1);
-  setModified();
+  gem::any value=state;
+  m_writeprops.set("group", value);
+  applyProperties();
 }
-void model :: groupsMess(t_symbol*s, int argc, t_atom*argv)
-{
-  m_group.clear();
-  for(int i=0; i<argc; i++) {
-    m_group.push_back(int(atom_getfloat(argv+i)));
-  }
-  setModified();
-}
-
-void model :: blendMess(bool mode)
-{
-  m_blend = mode;
-  setModified();
-}
-void model :: linewidthMess(t_float w)
-{
-  m_linewidth = w;
-  setModified();
-}
-
 
 /////////////////////////////////////////////////////////
 // drawStyle
@@ -455,7 +442,7 @@ void model :: backendMess(t_symbol*s, int argc, t_atom*argv)
   if(argc) {
     for(i=0; i<argc; i++) {
       if(A_SYMBOL == argv->a_type) {
-        t_symbol* b=atom_getsymbol(argv+i);
+        t_symbol *b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
       } else {
         error("%s must be symbolic", s->s_name);
@@ -466,6 +453,8 @@ void model :: backendMess(t_symbol*s, int argc, t_atom*argv)
     if(m_loader) {
       std::vector<gem::any>atoms;
       gem::any value;
+      t_atom at;
+      t_atom*ap=&at;
       gem::Properties props;
       std::vector<std::string> backends;
       props.set("backends", value);
@@ -503,9 +492,7 @@ void model :: openMess(const std::string&filename)
     return;
   }
   m_loader->close();
-  if (m_loaded)
-    delete m_loaded;
-  m_loaded = 0;
+  m_loaded=false;
 
   if(!m_backends.empty()) {
     wantProps.set("backends", m_backends);
@@ -519,13 +506,19 @@ void model :: openMess(const std::string&filename)
     return;
   }
 
-  m_loaded=new gem::modelGL(*m_loader);
+  m_loaded=true;
+  getVBOarray();
+  setModified();
 }
 
 void model :: startRendering()
 {
-  if(m_loaded)
-    m_loaded->update();
+  if (m_loaded) {
+    copyArray(m_loader->getVector("vertices"), m_position);
+    copyArray(m_loader->getVector("texcoords"), m_texture);
+    copyArray(m_loader->getVector("normals"), m_normal);
+    copyArray(m_loader->getVector("colors"), m_color);
+  }
 }
 /////////////////////////////////////////////////////////
 // render
@@ -533,56 +526,90 @@ void model :: startRendering()
 /////////////////////////////////////////////////////////
 void model :: render(GemState *state)
 {
-  if(!m_loaded) return;
+  if(!m_loaded) {
+    return;
+  }
 
-  bool blend = m_blend;
-  bool setwidth = false;
+  if(!GLEW_VERSION_1_5) {
+    float*positions = m_position.size?m_position.array:0;
+    float*textures = m_texture.size?m_texture.array:0;
+    float*colors = m_color.size?m_color.array:0;
+    float*normals = m_normal.size?m_normal.array:0;
+    unsigned int size = m_position.size;
+    if(textures && m_texture.size < size) size = m_texture.size;
+    if(colors && m_color.size < size) size = m_color.size;
+    if(normals && m_normal.size < size) size = m_normal.size;
 
-  int texType = 0;
-  state->get(GemState::_GL_TEX_TYPE, texType);
-  if(texType) {
-    bool rebuild = false;
-    TexCoord*texCoords = 0;
-    int texNum = 0;
-    state->get(GemState::_GL_TEX_COORDS, texCoords);
-    state->get(GemState::_GL_TEX_NUMCOORDS, texNum);
-    if(texNum>1 && texCoords) {
-      m_loaded->setTexture(texCoords[1].s, texCoords[1].t);
+    glBegin(m_drawType);
+    for (unsigned int i=0; i<size; i++) {
+      if(normals) {
+        glNormal3fv(normals);
+        normals += m_normal.dimen;
+      }
+      if(textures) {
+        glTexCoord2fv(textures);
+        textures += m_texture.dimen;
+      }
+      if(colors) {
+        glColor4fv(colors);
+        colors += m_color.dimen;
+      }
+      if(positions) {
+        glVertex3fv(positions);
+        positions += m_position.dimen;
+      }
     }
-    m_loaded->setTextureType(m_texType);
+    glEnd();
+    return;
   }
 
-  switch(m_drawType) {
-  case GL_LINE_LOOP:
-  case GL_LINE_STRIP:
-  case GL_LINES:
-  case GL_LINE:
-    setwidth = true;
-    break;
-  default:
-    setwidth = false;
-    break;
+  if ( !m_position.vbo || !m_texture.vbo || !m_color.vbo || !m_normal.vbo
+       || m_size_change_flag ) {
+    createVBO();
+    m_size_change_flag = false;
+  }
+  getVBOarray();
+
+  std::vector<unsigned int> sizeList;
+
+  if(m_position.render()) {
+    glVertexPointer(m_position.dimen, GL_FLOAT, 0, 0);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    sizeList.push_back(m_position.size);
+  }
+  if(m_texture.render()) {
+    glTexCoordPointer(m_texture.dimen, GL_FLOAT, 0, 0);
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    sizeList.push_back(m_texture.size);
+  }
+  if(m_color.render()) {
+    glColorPointer(m_color.dimen, GL_FLOAT, 0, 0);
+    glEnableClientState(GL_COLOR_ARRAY);
+    sizeList.push_back(m_color.size);
+  }
+  if(m_normal.render()) {
+    glNormalPointer(GL_FLOAT, 0, 0);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    sizeList.push_back(m_normal.size);
   }
 
-  m_loaded->setDrawType(m_drawType);
-  m_loaded->useMaterial(m_useMaterial);
-  m_loaded->setRescale(m_rescale);
-
-
-  if(setwidth) {
-    glLineWidth(m_linewidth);
-  }
-  if(blend) {
-    glEnable(GL_POLYGON_SMOOTH);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-    glHint(GL_POLYGON_SMOOTH_HINT,GL_DONT_CARE);
+  if ( sizeList.size() > 0 ) {
+    unsigned int npoints = *std::min_element(sizeList.begin(),sizeList.end());
+    glDrawArrays(m_drawType, 0, npoints);
   }
 
-  if (m_group.empty())
-    m_loaded->render();
-  else
-    m_loaded->render(m_group);
+  if ( m_position.enabled ) {
+    glDisableClientState(GL_VERTEX_ARRAY);
+  }
+  if ( m_color.enabled    ) {
+    glDisableClientState(GL_COLOR_ARRAY);
+  }
+  if ( m_texture.enabled  ) {
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+  }
+  if ( m_normal.enabled   ) {
+    glDisableClientState(GL_NORMAL_ARRAY);
+  }
 }
 
 /////////////////////////////////////////////////////////
@@ -595,10 +622,9 @@ void model :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG1(classPtr, "rescale", rescaleMess, bool);
   CPPEXTERN_MSG1(classPtr, "smooth", smoothMess, float);
   CPPEXTERN_MSG1(classPtr, "revert", reverseMess, bool);
-  CPPEXTERN_MSG1(classPtr, "material", materialMess, bool);
+  CPPEXTERN_MSG1(classPtr, "material", materialMess, int);
   CPPEXTERN_MSG1(classPtr, "texture", textureMess, int);
   CPPEXTERN_MSG1(classPtr, "group", groupMess, int);
-  CPPEXTERN_MSG (classPtr, "groups", groupsMess);
   CPPEXTERN_MSG (classPtr, "loader", backendMess);
 
   CPPEXTERN_MSG (classPtr, "set", setPropertyMess);
@@ -610,6 +636,81 @@ void model :: obj_setupCallback(t_class *classPtr)
 
   CPPEXTERN_MSG1(classPtr, "draw", drawMess, std::string);
   CPPEXTERN_MSG1(classPtr, "type", drawMess, int);
-  CPPEXTERN_MSG1(classPtr, "width", linewidthMess, t_float);
-  CPPEXTERN_MSG1(classPtr, "blend", blendMess, bool);
+}
+
+void model :: createVBO(void)
+{
+  m_position.create();
+  m_texture .create();
+  m_color   .create();
+  m_normal  .create();
+}
+
+void model :: copyArray(const std::vector<std::vector<float> >&tab,
+                        gem::VertexBuffer&vb)
+{
+  unsigned int size(0), i(0), npts(0);
+
+  //~std::vector<std::vector<float> > tab = m_loader->getVector(vectorName);
+  if ( tab.empty() ) {
+    return;
+  }
+  size=tab.size();
+
+  if(size!=vb.size) {
+    vb.resize(size);
+    m_size_change_flag=true;
+  }
+
+  for ( i = 0 ; i < size ; i++ ) {
+    for ( int j=0 ; j< std::min(vb.dimen,(unsigned int)tab[i].size()) ; j++) {
+      vb.array[i*vb.dimen + j] = tab[i][j];
+    }
+  }
+  vb.dirty=true;
+  vb.enabled=true;
+}
+
+void model :: copyAllArrays()
+{
+  if (m_loader && m_loader->needRefresh()) {
+    copyArray(m_loader->getVector("vertices"), m_position);
+    copyArray(m_loader->getVector("texcoords"), m_texture);
+    copyArray(m_loader->getVector("normals"), m_normal);
+    copyArray(m_loader->getVector("colors"), m_color);
+    m_loader->unsetRefresh();
+  }
+}
+
+void model :: getVBOarray()
+{
+  if (m_loader && m_loader->needRefresh()) {
+
+    std::vector<gem::plugins::modelloader::VBOarray>  vboArray =
+      m_loader->getVBOarray();
+
+    if ( vboArray.empty() ) {
+      copyAllArrays();
+    } else {
+      for (int i = 0; i<vboArray.size(); i++) {
+        switch (vboArray[i].type) {
+        case gem::VertexBuffer::GEM_VBO_VERTICES:
+          copyArray(*vboArray[i].data, m_position);
+          break;
+        case gem::VertexBuffer::GEM_VBO_TEXCOORDS:
+          copyArray(*vboArray[i].data, m_texture);
+          break;
+        case gem::VertexBuffer::GEM_VBO_NORMALS:
+          copyArray(*vboArray[i].data, m_normal);
+          break;
+        case gem::VertexBuffer::GEM_VBO_COLORS:
+          copyArray(*vboArray[i].data, m_color);
+          break;
+        default:
+          error("VBO type %d not supported\n",vboArray[i].type);
+        }
+      }
+      m_loader->unsetRefresh();
+    }
+  }
 }

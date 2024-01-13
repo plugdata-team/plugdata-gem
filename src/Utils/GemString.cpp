@@ -12,7 +12,7 @@ typedef unsigned __int8 uint8_t;
 #ifdef  HAVE_FRIBIDI_H
 # include <fribidi.h>
 
-#include <m_pd.h>
+#include "m_pd.h"
 
 namespace gem
 {
@@ -154,13 +154,12 @@ std::wstring toWstring(const char*str)
 
   return result;
 }
-std::wstring toWstring(const std::string&str)
-{
+  std::wstring toWstring(const std::string&str) {
 #ifdef _WIN32
-  return gem::string::utf8string_to_wstring(str);
+    return gem::string::utf8string_to_wstring(str);
 #else
-  return toWstring(str.c_str());
+    return toWstring(str.c_str());
 #endif
-}
+  }
 };
 };

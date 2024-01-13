@@ -165,7 +165,7 @@ GEM_EXTERN int createGemWindow(WindowInfo &info, WindowHints &hints)
 {
   static int firstTime = 1;
 
-  // Register the frame class
+  //  the frame class
   HINSTANCE hInstance = GetModuleHandle(NULL);
   if (!hInstance) {
     error("GEM: Unable to get module instance");
@@ -185,7 +185,7 @@ GEM_EXTERN int createGemWindow(WindowInfo &info, WindowHints &hints)
     wndclass.lpszClassName = "GEM";
 
     if (!RegisterClass(&wndclass) ) {
-      error("GEM: Unable to register window class");
+      error("GEM: Unable to  window class");
       return(0);
     }
     firstTime = 0;

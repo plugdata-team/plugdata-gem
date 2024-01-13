@@ -196,7 +196,7 @@ public:
     while(isrunning) {
       sleep.tv_sec=0;
       sleep.tv_usec=10;
-      select(0,0,0,0,&sleep);
+      //select(0,0,0,0,&sleep);
       s_newdata.thaw();
     }
     return true;
@@ -287,7 +287,7 @@ bool WorkerThread::cancel(WorkerThread::id_t ID)
       while(ID==m_pimpl->processingID) {
         sleep.tv_sec=0;
         sleep.tv_usec=10;
-        select(0,0,0,0,&sleep);
+        //select(0,0,0,0,&sleep);
       }
     }
   }

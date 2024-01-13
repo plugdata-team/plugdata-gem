@@ -192,7 +192,7 @@ void GemShape :: sizeMess(float size)
 // typeMess
 //
 /////////////////////////////////////////////////////////
-void GemShape :: typeMess(t_symbol* type)
+void GemShape :: typeMess(t_symbol *type)
 {
   if(0==m_drawTypes.size()) {
     error("unable to change drawstyle");
@@ -227,11 +227,8 @@ void GemShape :: blendMess(float blend)
 
 void GemShape :: render(GemState *state)
 {
-  if (m_drawType == GL_LINE_LOOP
-      || m_drawType == GL_LINE_STRIP
-      || m_drawType == GL_LINES
-      || m_drawType == GL_LINE
-    ) {
+  if (m_drawType == GL_LINE_LOOP || m_drawType == GL_LINE_STRIP
+      || m_drawType == GL_LINES) {
     glLineWidth(m_linewidth);
   }
 

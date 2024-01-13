@@ -118,7 +118,7 @@ void sphere3d :: print(void)
 {
   int i=0, j=0;
 
-  post("%d lines of longitude and %d lines of latitude and %d poles",
+  post("%d lines of longitude and %d lines of lattitude and %d poles",
        m_numSlices, m_numStacks-1, 2);
 
   print(i, j);
@@ -181,7 +181,7 @@ void sphere3d :: setSpherical(int i, int j,
 // render
 //
 /////////////////////////////////////////////////////////
-void sphere3d :: renderShape(GemState *state)
+void sphere3d :: render(GemState *state)
 {
   GLint slices=m_numSlices;
   GLint stacks=m_numStacks;

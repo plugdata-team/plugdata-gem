@@ -22,7 +22,7 @@
 #include "Gem/State.h"
 
 
-CPPEXTERN_NEW_WITH_ONE_ARG(pix_movie, t_symbol*, A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(pix_movie, t_symbol *, A_DEFSYM);
 
 /////////////////////////////////////////////////////////
 //
@@ -32,7 +32,7 @@ CPPEXTERN_NEW_WITH_ONE_ARG(pix_movie, t_symbol*, A_DEFSYMBOL);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-pix_movie :: pix_movie(t_symbol* filename) :
+pix_movie :: pix_movie(t_symbol *filename) :
   pix_film(filename)
 {
   // we don't want the additional in/outlet of [pix_texture]
@@ -87,7 +87,7 @@ void pix_movie :: render(GemState *state)
       // so try to get the newly requested frame:
       if(m_thread_running) {
         /* the grabbing-thread is currently locked
-         * we do the grabbing ourselves
+         * we do the grabbing ourselfes
          */
         m_handle->changeImage(static_cast<int>(m_reqFrame), m_reqTrack);
       }

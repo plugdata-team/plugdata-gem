@@ -34,14 +34,14 @@ extern t_class *pix_buffer_class;
 //
 /////////////////////////////////////////////////////////
 
-CPPEXTERN_NEW_WITH_ONE_ARG(pix_buffer_read, t_symbol*,A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(pix_buffer_read, t_symbol*,A_DEFSYM);
 
 
 /////////////////////////////////////////////////////////
 // Constructor
 //
 /////////////////////////////////////////////////////////
-pix_buffer_read :: pix_buffer_read(t_symbol* s) :
+pix_buffer_read :: pix_buffer_read(t_symbol *s) :
   m_frame(0.f), m_auto(0.f), m_loop(0),
   m_haveImage(false),
   m_bindname(NULL),
@@ -216,7 +216,7 @@ void pix_buffer_read :: obj_setupCallback(t_class *classPtr)
 {
   class_addcreator(reinterpret_cast<t_newmethod>(create_pix_buffer_read),
                    gensym("pix_get"),
-                   A_GIMME, A_NULL);
+                   A_DEFSYM, A_NULL);
   class_addmethod(classPtr,
                   reinterpret_cast<t_method>(&pix_buffer_read::setMessCallback),
                   gensym("set"), A_SYMBOL, A_NULL);

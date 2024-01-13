@@ -13,6 +13,7 @@
 //
 /////////////////////////////////////////////////////////
 #include "GemWindow.h"
+#include "Gem/Manager.h"
 #include "RTE/MessageCallbacks.h"
 
 #include "Gem/Settings.h"
@@ -38,25 +39,9 @@ bool sendContextDestroyedMsg(t_pd*x)
 }
 };
 
-/* make sure that we can use these as enums */
-#ifdef TRUE
-# undef TRUE
-#endif
-#ifdef FALSE
-# undef FALSE
-#endif
-#ifdef NONE
-# undef NONE
-#endif
-
 class GemWindow::PIMPL
 {
 public:
-  typedef enum {
-    NONE = -1,
-    FALSE = 0,
-    TRUE = 1,
-  } tristate_t;
   explicit PIMPL(GemWindow*gc)
     : parent(gc)
     , mycontext(0)
@@ -177,49 +162,6 @@ public:
     clock_delay(qClock, 0);
   }
 
-  bool render(bool swap, bool dispatch, tristate_t output_state=NONE)
-  {
-    if(!mycontext)
-      goto fail;
-    if (!mycontext->isActive()) {
-      if(!parent->makeCurrent()) {
-        parent->error("unable to switch to current window (do you have one?), cannot render!");
-        goto fail;
-      }
-    }
-
-    if(!mycontext->push()) {
-      parent->error("unable to switch to current context, cannot render!");
-      goto fail;
-    }
-
-    if(dispatch)
-      parent->dispatch();
-
-    switch(output_state) {
-    case TRUE:
-      parent->info("float", 1);
-      break;
-    case NONE:
-      parent->bang();
-      break;
-    default: case FALSE:
-      break;
-    }
-
-    if(swap) {
-      parent->swapBuffers();
-    }
-
-    mycontext->pop();
-    return true;
-
-  fail:
-    if(TRUE == output_state)
-      parent->info("float", 0);
-    return false;
-  }
-
   static std::set<GemWindow*>s_contexts;
 }; /* GemWindow::PIMPL */
 std::set<GemWindow*>GemWindow::PIMPL::s_contexts;
@@ -237,7 +179,7 @@ GemWindow :: GemWindow()
     m_width(500), m_height(500),
     /* in order to not hide the window-title, offset is >0 */
     m_xoffset(50), m_yoffset(50),
-    m_border(true), m_fullscreen(0),
+    m_border(true), m_fullscreen(false),
     m_buffer(2),
     m_title("Gem"),
     m_cursor(true),
@@ -345,36 +287,9 @@ void GemWindow::entry(int devId, int state)
 void GemWindow::key(int devId, const std::string& sid, int iid, int state)
 {
   t_atom ap[4];
-  const char*keyname = sid.c_str();
-
-  if(keyname[0] && !keyname[1]) {
-    switch(keyname[0]) {
-    case '\b':
-      keyname = "BackSpace";
-      break;
-    case '\t':
-      keyname = "Tab";
-      break;
-    case '\r':
-      keyname = "Return";
-      break;
-    case ' ':
-      keyname = "Space";
-      break;
-    case 27:
-      keyname = "Escape";
-      break;
-    case 127:
-      keyname = "Delete";
-      break;
-    default:
-      break;
-    }
-  }
-
   SETFLOAT (ap+0, devId);
   SETSYMBOL(ap+1, gensym("keyname"));
-  SETSYMBOL(ap+2, gensym(keyname));
+  SETSYMBOL(ap+2, gensym(sid.c_str()));
   SETFLOAT (ap+3, state);
   info(gensym("keyboard"), 4, ap);
 
@@ -392,15 +307,6 @@ void GemWindow::dimension(unsigned int w, unsigned int h)
   SETFLOAT (ap+1, h);
 
   info(gensym("dimen"), 2, ap);
-}
-
-void GemWindow::framebuffersize(unsigned int w, unsigned int h)
-{
-  t_atom ap[2];
-  SETFLOAT (ap+0, w);
-  SETFLOAT (ap+1, h);
-
-  info(gensym("framebuffersize"), 2, ap);
 }
 
 void GemWindow::position(int x, int y)
@@ -497,11 +403,20 @@ bool GemWindow::popContext(void)
 
 void GemWindow::render(void)
 {
-  m_pimpl->render(m_buffer==2, true);
-}
-void GemWindow::activate(bool output_state)
-{
-  m_pimpl->render(false, false, output_state?GemWindow::PIMPL::TRUE:GemWindow::PIMPL::FALSE);
+  if(!makeCurrent()) {
+    error("unable to switch to current window (do you have one?), cannot render!");
+    return;
+  }
+  if(!pushContext()) {
+    error("unable to switch to current context, cannot render!");
+    return;
+  }
+  bang();
+  if(m_buffer==2) {
+    swapBuffers();
+  }
+
+  popContext();
 }
 
 void GemWindow:: bufferMess(int buf)
@@ -607,8 +522,6 @@ void GemWindow :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG1(classPtr, "transparent", transparentMess, bool);
 
   CPPEXTERN_MSG0(classPtr, "print", printMess);
-
-  CPPEXTERN_MSG1(classPtr, "activate", activate, bool);
 
   struct _CB_any {
     static void callback(void*data, t_symbol*s, int argc, t_atom*argv)

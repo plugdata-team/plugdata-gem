@@ -61,9 +61,8 @@ gemframebuffer :: gemframebuffer(int argc, t_atom*argv)
 
   unsigned int typesignature = 0;
   for(int i=0; i<4; i++) {
-    if(i>=argc) {
+    if(i>=argc)
       break;
-    }
     switch(argv[i].a_type) {
     default:
       break;
@@ -319,10 +318,7 @@ const std::string getFormatString(int fmt)
     format="BGRA";
     break;
   case GL_RGB_FLOAT32_ATI:
-    format="RGB32F";
-    break;
-  case GL_RGBA32F:
-    format="RGBA32F";
+    format="RGB32";
     break;
   default:
     format="<unknown>";
@@ -575,6 +571,8 @@ void gemframebuffer :: perspectiveMess(t_symbol*s,int argc, t_atom*argv)
 /* needs to be called with a valid context */
 void gemframebuffer :: fixFormat(GLenum wantFormat)
 {
+  m_type = GL_UNSIGNED_BYTE;
+
   if(wantFormat == GL_RGB_FLOAT32_ATI && !GLEW_ATI_texture_float) {
     wantFormat =  GL_RGB;
   }
@@ -588,24 +586,37 @@ void gemframebuffer :: fixFormat(GLenum wantFormat)
     break;
   case  GL_RGB_FLOAT32_ATI:
     m_internalformat = GL_RGB_FLOAT32_ATI;
-    m_format = GL_RGB_GEM;
+    m_format = GL_RGB;
     break;
   case  GL_RGBA32F:
     m_internalformat = GL_RGBA32F;
-    m_format = GL_RGBA;
+    m_format = GL_RGB;
     break;
   case GL_RGBA:
     m_internalformat = GL_RGBA;
-    m_format = GL_RGBA_GEM;
+    m_format = GL_RGBA;
     break;
   case GL_YUV422_GEM:
     m_format=GL_YUV422_GEM;
     m_internalformat=GL_RGB8;
-#ifdef __APPLE__
-    m_type = GL_UNSIGNED_SHORT_8_8_REV_APPLE;
-#endif
     break;
   }
+
+#ifdef __APPLE__
+  switch(wantFormat) {
+  case  GL_RGB_FLOAT32_ATI:
+    m_format = GL_BGR;
+    break;
+  case GL_RGBA:
+    m_format = GL_BGRA;
+    break;
+  case GL_YUV422_GEM:
+    m_type = GL_UNSIGNED_SHORT_8_8_REV_APPLE;
+    break;
+  default:
+    break;
+  }
+#endif
 }
 
 
@@ -622,9 +633,6 @@ void gemframebuffer :: formatMess(std::string format)
     tmp_format =  GL_RGB_FLOAT32_ATI;
   } else if ("RGBA32F"==format) {
     tmp_format =  GL_RGBA32F;
-  } else {
-    error("unknown format '%s'", format.c_str());
-    return;
   }
 
   if(tmp_format) {
@@ -641,10 +649,7 @@ void gemframebuffer :: typeMess(std::string type)
     m_type = GL_INT;
   } else if("UINT"==type) {
     m_type = GL_UNSIGNED_INT;
-  } else if("BYTE"==type) {
-    m_type = GL_UNSIGNED_BYTE;
   } else {
-    error("unknown type '%s', fall back to 'BYTE'", type.c_str());
     type="BYTE";
     m_type=GL_UNSIGNED_BYTE;
   }

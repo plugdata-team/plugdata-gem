@@ -26,8 +26,7 @@ GEMglActiveTexture :: GEMglActiveTexture  (int argc, t_atom*argv)
   , maxTexUnits(0)
 {
   switch(argc) {
-  case 0:
-    break;
+  case 0: break;
   case 1:
     texUnitMess(argv[0]);
     break;
@@ -89,7 +88,7 @@ void GEMglActiveTexture :: obj_setupCallback(t_class *classPtr)
 }
 
 void GEMglActiveTexture :: texUnitMessCallback (void* data,
-    t_symbol*, int argc, t_atom*argv)
+                                                t_symbol*, int argc, t_atom*argv)
 {
   if(argc==1) {
     GetMyClass(data)->texUnitMess(argv[0]);

@@ -185,14 +185,14 @@ void pix_blur :: processYUVImage(imageStruct &image)
   int h,w,hlength;
   long src;
 
-  int rightGain,imageGain;
-  int y1res,y2res;
+   int rightGain,imageGain;
+   int y1res,y2res;
   src = 0;
   rightGain = static_cast<int>(m_blurf * 255.);
   imageGain = static_cast<int>(255. - (m_blurf * 255.));
   hlength = image.xsize/2;
 
-  //unroll this, add register temps and schedule the ops better to remove the
+  //unroll this, add  temps and schedule the ops better to remove the
   //data dependencies
   for (h=0; h<image.ysize-1; h++) {
     for(w=0; w<hlength; w++) {
@@ -251,14 +251,15 @@ void pix_blur :: processYUVAltivec(imageStruct &image)
     vector      unsigned char v;
   } charBuffer;
 
-  vector unsigned short gainAdd,hiImage,loImage,hiRight,loRight,YImage,UVImage;
+   vector unsigned short gainAdd, hiImage, loImage,hiRight,loRight,
+           YImage, UVImage;
   vector unsigned char zero = vec_splat_u8(0);
   vector unsigned short sone = vec_splat_u16(1);
-  vector unsigned char c,one;
-  vector unsigned int UVhi,UVlo,Yhi,Ylo;
-  vector unsigned int UVhiR,UVloR,YhiR,YloR;
-  vector unsigned short gainSub,gain,gainR,d;
-  vector unsigned int bitshift;
+   vector unsigned char c,one;
+   vector unsigned int UVhi,UVlo,Yhi,Ylo;
+   vector unsigned int UVhiR,UVloR,YhiR,YloR;
+   vector unsigned short gainSub,gain,gainR,d;
+   vector unsigned int bitshift;
 
   vector unsigned char *inData = (vector unsigned char*) image.data;
   vector unsigned char *rightData = (vector unsigned char*) saved;

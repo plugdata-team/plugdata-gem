@@ -16,6 +16,7 @@
 /////////////////////////////////////////////////////////
 
 #include "glsl_vertex.h"
+#include "Gem/Manager.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -27,7 +28,7 @@
 # include <unistd.h>
 #endif
 
-CPPEXTERN_NEW_WITH_ONE_ARG(glsl_vertex, t_symbol*, A_DEFSYMBOL);
+CPPEXTERN_NEW_WITH_ONE_ARG(glsl_vertex, t_symbol *, A_DEFSYM);
 
 /////////////////////////////////////////////////////////
 //
@@ -49,7 +50,7 @@ glsl_vertex :: glsl_vertex() :
   // create an outlet to send shader object ID
   m_outShaderID = outlet_new(this->x_obj, &s_float);
 }
-glsl_vertex :: glsl_vertex(t_symbol* filename) :
+glsl_vertex :: glsl_vertex(t_symbol *filename) :
   m_shaderTarget(0),
   m_shader(0),
   m_shaderARB(0),
@@ -178,7 +179,7 @@ bool glsl_vertex :: openMessARB(void)
 }
 
 
-void glsl_vertex :: openMess(t_symbol* filename)
+void glsl_vertex :: openMess(t_symbol *filename)
 {
   if(NULL==filename || NULL==filename->s_name) {
     return;
@@ -277,8 +278,7 @@ void glsl_vertex :: startRendering()
     return;
   }
 }
-void glsl_vertex :: stopRendering()
-{
+void glsl_vertex :: stopRendering() {
   if(m_shader) {
     glDeleteShader( m_shader );
   }

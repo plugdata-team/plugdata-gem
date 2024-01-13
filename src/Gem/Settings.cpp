@@ -53,9 +53,9 @@ static const char*s_configdir[] = {
 
 /* this is ripped from m_imp.h */
 struct _gemclass {
-  t_symbol* c_name;                   /* name (mostly for error reporting) */
-  t_symbol* c_helpname;               /* name of help file */
-  t_symbol* c_externdir;              /* directory extern was loaded from */
+  t_symbol *c_name;                   /* name (mostly for error reporting) */
+  t_symbol *c_helpname;               /* name of help file */
+  t_symbol *c_externdir;              /* directory extern was loaded from */
   /* ... */ /* the real t_class continues here... */
 };
 # define t_gemclass struct _gemclass
@@ -221,24 +221,21 @@ struct PIMPL {
 
 
     t_gemclass *c = (t_gemclass*)class_new(gensym("Gem"), 0, 0, 0, 0, A_NULL);
-    if (c && c->c_externdir) {
-      char fullpath[PATH_MAX];
-      const char*fp = fullpath;
+    char fullpath[PATH_MAX];
+    const char*fp = fullpath;
 #ifdef _WIN32
-      char** lppPart= {NULL};
-      GetFullPathName(c->c_externdir->s_name,
-                      PATH_MAX,
-                      fullpath,
-                      lppPart);
+    char** lppPart={NULL};
+    GetFullPathName(c->c_externdir->s_name,
+                                 PATH_MAX,
+                                 fullpath,
+                                 lppPart);
 #else
-      fp = realpath(c->c_externdir->s_name, fullpath);
+    fp = realpath(c->c_externdir->s_name, fullpath);
 #endif
-      sys_unbashfilename(fullpath, fullpath);
-      if(!fp) {
-        fp = c->c_externdir->s_name;
-      }
-      set("gem.path", fp);
-    }
+    sys_unbashfilename(fullpath, fullpath);
+    if(!fp)
+      fp = c->c_externdir->s_name;
+    set("gem.path", fp);
   }
 
   ~PIMPL(void)

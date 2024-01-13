@@ -17,10 +17,8 @@
 #ifndef MARK
 # define MARK() post("%s:%d\t%s", __FILE__, __LINE__, __FUNCTION__)
 #endif
-/*
- * FIXXME: check how font handling behaves with multiple contexts
- */
 
+/*
 #include "TextBase.h"
 #include "Utils/Functions.h"
 #include "Gem/Settings.h"
@@ -126,10 +124,9 @@ void TextBase :: render(GemState *)
   glEnable(GL_BLEND);
   if(glBlendFuncSeparate)
     glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
-                        GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-  else {
+        GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  else
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  }
   // step through the lines
   for(i=0; i<m_theText.size(); i++) {
     renderLine(m_theText[i].c_str(),
@@ -179,7 +176,7 @@ void TextBase :: fontNameMess(const std::string&filename)
   std::string fn = findFile(filename);
   bufptr=fn.c_str();
 
-  /* try to open the file */
+  // try to open the file
   FILE*file = fopen(bufptr, "r");
   if (!file) {
     error("cannot find font-file '%s'", bufptr);
@@ -187,7 +184,7 @@ void TextBase :: fontNameMess(const std::string&filename)
   }
   fclose(file);
 
-  /* now read font */
+  // now read font
   m_font=makeFont(bufptr);
   if (NULL==m_font) {
     error("unable to open font '%s'", bufptr);
@@ -208,7 +205,7 @@ void TextBase :: fontNameMess(const std::string&filename)
 /////////////////////////////////////////////////////////
 TextBase :: ~TextBase()
 {
-  /* textbase deletion */
+  // textbase deletion
   if(m_inlet) {
     inlet_free(m_inlet);
   }
@@ -263,9 +260,8 @@ void TextBase :: setJustification(JustifyWidth wType)
 
 void TextBase :: getBBox()
 {
-  if(!m_font || m_theText.empty()) {
+  if(!m_font || m_theText.empty())
     return;
-  }
 
   std::vector<gem::any>atoms;
   float x0, y0, z0, x1, y1, z1;
@@ -277,12 +273,9 @@ void TextBase :: getBBox()
     m_font->BBox(m_theText[i].c_str(), _x0, _y0, _z0, _x1, _y1, _z1);
     Justification just=justifyFont(_x0, _y0, _z0, _x1, _y1, _z1, dist);
 #define JUST(var, offset) var = (var - offset) * just.scale
-    JUST(_x0, just.width);
-    JUST(_x1, just.width);
-    JUST(_y0, just.height);
-    JUST(_y1, just.height);
-    JUST(_z0, just.depth);
-    JUST(_z1, just.depth);
+    JUST(_x0, just.width);  JUST(_x1, just.width);
+    JUST(_y0, just.height); JUST(_y1, just.height);
+    JUST(_z0, just.depth);  JUST(_z1, just.depth);
 
     atoms.clear();
     atoms.push_back(i);
@@ -295,12 +288,9 @@ void TextBase :: getBBox()
     m_infoOut.send("bboxline", atoms);
 
     // get the bounding box for all lines
-    x0 = MIN(x0, _x0);
-    x1 = MAX(x1, _x1);
-    y0 = MIN(y0, _y0);
-    y1 = MAX(y1, _y1);
-    z0 = MIN(z0, _z0);
-    z1 = MAX(z1, _z1);
+    x0 = MIN(x0, _x0);  x1 = MAX(x1, _x1);
+    y0 = MIN(y0, _y0);  y1 = MAX(y1, _y1);
+    z0 = MIN(z0, _z0);  z1 = MAX(z1, _z1);
   }
   atoms.clear();
   atoms.push_back(x0);
@@ -511,14 +501,7 @@ void TextBase :: makeLineDist()
   // else:
   // calculate the y offset of each line, so
   // that the text will be centered:
-  /*lines    y-offset        calculation
-    1:   0                 = 0- 0
-    2:   -0.5 0.5          = [0 1]   - 0.5
-    3:   -1 0 1            = [0 1 2] - 1
-    4:   -1.5 -0.5 0.5 1.5 = [0 1 2 3] - 1.5
-    5:   -2 -1 0 1 2       = [0 1 2 3 4] - 2
-    ...
-  */
+
 
   float diff = (m_theText.size()-1)*0.5;
   for(unsigned int i=0; i<m_theText.size(); i++) {
@@ -548,13 +531,6 @@ void TextBase :: stringMess(int argc, t_atom *argv)
 
   for (i = 0; i < argc; i++)    {
     int v=atom_getint(argv+i);
-    /*
-     * i experienced crashes in FTGL with indices>65535;
-     * since TrueType fonts cannot hold more than 65536 entries
-     * we just clamp it...
-     * note: at least wikipedia claims that TTF can only hold 2^16 glyphs
-     *       i have seen ttf-fonts with (seemingly) more
-     */
     if(v<0||v>65535) {
       verbose(1, "invalid character %d: using ' ' instead", v);
       v=32;
@@ -590,7 +566,7 @@ void TextBase :: obj_setupCallback(t_class *classPtr)
                   gensym("justify"), A_GIMME, A_NULL);
 }
 
-void TextBase :: justifyMessCallback(void *data, t_symbol* s, int argc,
+void TextBase :: justifyMessCallback(void *data, t_symbol *s, int argc,
                                      t_atom*argv)
 {
   JustifyWidth  wType=CENTER;
@@ -702,3 +678,4 @@ void TextBase :: linedistMess(float dist)
   m_dist = dist;
   makeLineDist();
 }
+ */

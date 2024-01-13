@@ -77,7 +77,7 @@ protected:
   // dictionary for setting values
   std::map <GemState::key_t, any> data;
 
-  std::auto_ptr<GLStack>stacks;
+  std::unique_ptr<GLStack>stacks;
 
   static std::map <std::string, int> keys;
 };
@@ -283,9 +283,8 @@ bool GemState::get(const GemState::key_t key, any&value)
       value=texture;
       return true;
     case(_GL_TEX_COORDS):
-      if(!texCoords) {
+      if(!texCoords)
         return false;
-      }
       value=texCoords;
       return true;
     case(_GL_TEX_UNITS):

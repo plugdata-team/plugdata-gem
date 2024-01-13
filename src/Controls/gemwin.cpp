@@ -29,6 +29,7 @@
 #endif // __APPLE__
 
 #include "Utils/GemMath.h"
+#include "Gem/Manager.h"
 
 CPPEXTERN_NEW_WITH_ONE_ARG(gemwin, t_floatarg, A_DEFFLOAT);
 
@@ -458,10 +459,10 @@ void gemwin :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG0(classPtr, "render", renderMess);
   class_addmethod(classPtr,
                   reinterpret_cast<t_method>(&gemwin::titleMessCallback),
-                  gensym("title"), A_DEFSYMBOL,A_NULL);
+                  gensym("title"), A_DEFSYM,A_NULL);
   class_addmethod(classPtr,
                   reinterpret_cast<t_method>(&gemwin::createMessCallback),
-                  gensym("create"), A_DEFSYMBOL,A_NULL);
+                  gensym("create"), A_DEFSYM,A_NULL);
   class_addmethod(classPtr,
                   reinterpret_cast<t_method>(&gemwin::createStereoMessCallback),
                   gensym("createStereo"), A_NULL);
@@ -566,7 +567,7 @@ void gemwin :: lightingMessCallback(void *, t_float state)
 {
   GemMan::lightingOnOff(static_cast<int>(state));
 }
-void gemwin :: fogMessCallback(void *data, t_symbol*, int argc,
+void gemwin :: fogMessCallback(void *data, t_symbol *, int argc,
                                t_atom *argv)
 {
   switch (argc) {
@@ -638,7 +639,7 @@ void gemwin :: frameMessCallback(void *, t_float rate)
 {
   GemMan::frameRate(static_cast<float>(rate));
 }
-void gemwin :: perspectiveMessCallback(void *data, t_symbol*, int argc,
+void gemwin :: perspectiveMessCallback(void *data, t_symbol *, int argc,
                                        t_atom *argv)
 {
   if (argc != 6) {
@@ -652,7 +653,7 @@ void gemwin :: perspectiveMessCallback(void *data, t_symbol*, int argc,
   GemMan::m_perspect[4] = atom_getfloat(&argv[4]);      // front
   GemMan::m_perspect[5] = atom_getfloat(&argv[5]);      // back
 }
-void gemwin :: viewMessCallback(void *data, t_symbol*, int argc,
+void gemwin :: viewMessCallback(void *data, t_symbol *, int argc,
                                 t_atom *argv)
 {
   const float DEG2RAD = 0.01745329251994f;

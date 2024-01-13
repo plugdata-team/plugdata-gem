@@ -58,9 +58,6 @@ protected:
   virtual void    processRGBAImage(imageStruct &image);
   virtual void    processGrayImage(imageStruct &image);
   virtual void    processYUVImage(imageStruct &image);
-
-  virtual void    processFloat32(imageStruct &image);
-
 #ifdef __MMX__
   //////////
   // MMX
@@ -94,7 +91,7 @@ private:
 
   //////////
   // Static member functions
-  static void     vecGainMessCallback(void *data, t_symbol*, int argc,
+  static void     vecGainMessCallback(void *data, t_symbol *, int argc,
                                       t_atom *argv);
   static void     floatGainMessCallback(void *data, t_float gain);
   static void     saturateMessCallback(void *data, t_float saturate);

@@ -25,6 +25,11 @@
 # warning multicontext rendering currently under development
 #endif /* GEM_MULTICONTEXT */
 
+static GLEWContext*s_glewcontext=NULL;
+#ifdef GemGlewXContext
+static GemGlewXContext*s_glewxcontext=NULL;
+#endif /* GemGlewXContext */
+
 using namespace gem;
 
 class Context::PIMPL
@@ -33,12 +38,12 @@ public:
   PIMPL(void) :
 #ifdef GEM_MULTICONTEXT
     context(new GLEWContext),
+# ifdef GemGlewXContext
+    xcontext(new GemGlewXContext),
+# endif /* GemGlewXContext */
 #else
     context(NULL),
 #endif
-#ifdef GemGlewXContext
-    xcontext(new GemGlewXContext),
-#endif /* GemGlewXContext */
     contextid(makeID())
   {
     /* check the stack-sizes */
@@ -55,12 +60,12 @@ public:
   PIMPL(const PIMPL&p) :
 #ifdef GEM_MULTICONTEXT
     context(new GLEWContext(*p.context)),
+# ifdef GemGlewXContext
+    xcontext(new GemGlewXContext(*p.xcontext)),
+# endif /* GemGlewXContext */
 #else
     context(NULL),
 #endif
-#ifdef GemGlewXContext
-    xcontext(new GemGlewXContext(*p.xcontext)),
-#endif /* GemGlewXContext */
     contextid(makeID())
   {
     /* check the stack-sizes */
@@ -148,7 +153,7 @@ Context::Context(void)
     if(GLEW_ERROR_GLX_VERSION_11_ONLY == err) {
       errstring=
         "failed to init GLEW (glx): continuing anyhow - please report any problems to the gem-dev mailinglist!";
-    } else if (GLEW_ERROR_GL_VERSION_10_ONLY == err) {
+    } else if (GLEW_ERROR_GL_VERSION_10_ONLY) {
       errstring="failed to init GLEW: your system only supports openGL-1.0";
     } else {
       errstring="failed to init GLEW";
@@ -227,11 +232,6 @@ bool Context::push(void)
 #endif /* GemGlewXContext */
   m_pimpl->s_contextid=m_pimpl->contextid;
   return true;
-}
-
-bool Context::isActive(void)
-{
-  return (m_pimpl->s_contextid == m_pimpl->contextid);
 }
 
 bool Context::pop(void)

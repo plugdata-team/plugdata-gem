@@ -89,10 +89,6 @@
 #error glx.h included before glxew.h
 #endif
 
-#if !defined(__glew_h__) && !defined (__GLEW_H__)
-# error glew.h MUST be included before glxew.h
-#endif
-
 #define __glxext_h_
 
 #define GLX_H
@@ -102,6 +98,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xmd.h>
+#include <GL/glew.h>
 
 #ifdef __cplusplus
 extern "C" {

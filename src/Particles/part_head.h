@@ -28,8 +28,6 @@ CLASS
 DESCRIPTION
 
 -----------------------------------------------------------------*/
-struct _ParticleState;
-
 class GEM_EXTERN part_head : public partlib_base
 {
   CPPEXTERN_HEADER(part_head, partlib_base);
@@ -62,8 +60,6 @@ protected:
   //////////
   // The speed of the object
   float             m_speed;
-
-  _ParticleState   *m_particlestate;
 };
 
 #endif  // for header file

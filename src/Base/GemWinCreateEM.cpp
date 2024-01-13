@@ -16,6 +16,7 @@
 //
 /////////////////////////////////////////////////////////
 #include "Gem/GemConfig.h"
+#ifdef __EMSCRIPTEN__
 
 #include "GemWinCreate.h"
 #include "Gem/Event.h"
@@ -49,11 +50,11 @@ GEM_EXTERN int createGemWindow(WindowInfo &info, WindowHints &hints)
   bool border = (hints.border != 0);
 
   info.win = SDL_CreateWindow(hints.title, x, y, w, h
-                              , SDL_WINDOW_OPENGL
-                              | SDL_WINDOW_RESIZABLE
-                              | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0)
-                              | (border ? 0 : SDL_WINDOW_BORDERLESS)
-                             );
+    , SDL_WINDOW_OPENGL
+    | SDL_WINDOW_RESIZABLE
+    | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0)
+    | (border ? 0 : SDL_WINDOW_BORDERLESS)
+    );
   info.fs = fullscreen;
 
   if (! info.win)  {
@@ -122,7 +123,8 @@ int cursorGemWindow(WindowInfo &info, int state)
   state=!(!state);
   if (cursor_state != state) {
     cursor_state=SDL_ShowCursor(state);
-    if (cursor_state != (cursor_state & 1)) {
+    if (cursor_state != (cursor_state & 1))
+    {
       fprintf(stderr, "cursor problem: %s\n", SDL_GetError());
     }
   }
@@ -137,7 +139,8 @@ int topmostGemWindow(WindowInfo &info, int state)
 {
   static int topmost_state = 0;
   state=!(!state);
-  if (state) {
+  if (state)
+  {
     SDL_RaiseWindow(info.win); // FIXME not permanent
   }
   topmost_state = state;
@@ -435,53 +438,54 @@ static std::string key2symbol(SDL_Keycode k)
 GEM_EXTERN void dispatchGemWindowMessages(WindowInfo &win)
 {
   SDL_Event event;
-  while (SDL_PollEvent(&event)) {
-    switch (event.type) {
-    case SDL_QUIT:
-      // ignore
-      break;
-    case SDL_WINDOWEVENT:
-      switch (event.window.event) {
-      case SDL_WINDOWEVENT_CLOSE:
+  while (SDL_PollEvent(&event))
+  {
+    switch (event.type)
+    {
+      case SDL_QUIT:
         // ignore
         break;
-      case SDL_WINDOWEVENT_RESIZED:
-      case SDL_WINDOWEVENT_SIZE_CHANGED:
-        triggerResizeEvent(event.window.data1, event.window.data2);
+      case SDL_WINDOWEVENT:
+        switch (event.window.event)
+        {
+          case SDL_WINDOWEVENT_CLOSE:
+            // ignore
+            break;
+          case SDL_WINDOWEVENT_RESIZED:
+          case SDL_WINDOWEVENT_SIZE_CHANGED:
+            triggerResizeEvent(event.window.data1, event.window.data2);
+            break;
+        }
         break;
-      }
-      break;
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-      triggerKeyboardEvent
-      ( key2symbol(event.key.keysym.sym).c_str()
-        , event.key.keysym.scancode
-        , event.type == SDL_KEYDOWN
-      );
-      break;
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP:
-      triggerButtonEvent
-      ( event.button.button == SDL_BUTTON_LEFT ? 0
-        : event.button.button == SDL_BUTTON_MIDDLE ? 1
-        : event.button.button == SDL_BUTTON_RIGHT ? 2
-        : event.button.button // FIXME
-        , event.type == SDL_MOUSEBUTTONDOWN
-        , event.button.x
-        , event.button.y
-      );
-      break;
-    case SDL_MOUSEMOTION:
-      triggerMotionEvent(event.motion.x, event.motion.y);
-      break;
-    case SDL_MOUSEWHEEL: // FIXME
-      if (event.wheel.y != 0) {
-        triggerWheelEvent(0, event.wheel.y);
-      }
-      if (event.wheel.x != 0) {
-        triggerWheelEvent(1, event.wheel.x);
-      }
-      break;
+      case SDL_KEYDOWN:
+      case SDL_KEYUP:
+        triggerKeyboardEvent
+          ( key2symbol(event.key.keysym.sym).c_str()
+          , event.key.keysym.scancode
+          , event.type == SDL_KEYDOWN
+          );
+        break;
+      case SDL_MOUSEBUTTONDOWN:
+      case SDL_MOUSEBUTTONUP:
+        triggerButtonEvent
+          ( event.button.button == SDL_BUTTON_LEFT ? 0
+          : event.button.button == SDL_BUTTON_MIDDLE ? 1
+          : event.button.button == SDL_BUTTON_RIGHT ? 2
+          : event.button.button // FIXME
+          , event.type == SDL_MOUSEBUTTONDOWN
+          , event.button.x
+          , event.button.y
+          );
+        break;
+      case SDL_MOUSEMOTION:
+        triggerMotionEvent(event.motion.x, event.motion.y);
+        break;
+      case SDL_MOUSEWHEEL: // FIXME
+        if (event.wheel.y != 0) triggerWheelEvent(0, event.wheel.y);
+        if (event.wheel.x != 0) triggerWheelEvent(1, event.wheel.x);
+        break;
     }
   }
 }
+
+#endif /* Emscripten */

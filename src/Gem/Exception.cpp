@@ -17,7 +17,7 @@
 #include "Exception.h"
 
 // for error()
-#include <m_pd.h>
+#include "m_pd.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -38,9 +38,9 @@ void GemException::report(const char*origin) const
   const char*ErrorString = what();
   if(ErrorString && *ErrorString) {
     if (NULL==origin) {
-      pd_error(0, "GemException: %s", ErrorString);
+      error("GemException: %s", ErrorString);
     } else {
-      pd_error(0, "[%s]: %s", origin, ErrorString);
+      error("[%s]: %s", origin, ErrorString);
     }
   }
 }

@@ -62,7 +62,7 @@ protected:
 
   //////////
   // Do the rendering
-  virtual void    renderShape(GemState *state);
+  virtual void    render(GemState *state);
 
 };
 
