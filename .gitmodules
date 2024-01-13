@@ -1,0 +1,3 @@
+[submodule "ftgl"]
+	path = ftgl
+	url = https://github.com/ulrichard/ftgl.git

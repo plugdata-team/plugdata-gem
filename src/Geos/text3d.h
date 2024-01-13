@@ -45,7 +45,7 @@ protected:
   // Destructor
   virtual ~text3d();
 
-#if 0
+#ifdef FTGL
   virtual void setFontSize(void);
   virtual FTFont* selectFont(void);
   virtual FTFont*makeFont(const char*fontname);

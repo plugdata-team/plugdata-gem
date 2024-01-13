@@ -18,6 +18,8 @@ LOG
 
 #include "Base/TextBase.h"
 
+class FTFont;
+
 /*-----------------------------------------------------------------
 -------------------------------------------------------------------
 CLASS
@@ -44,8 +46,8 @@ protected:
   // Destructor
   virtual ~textoutline();
 
-#if 0
-  virtual FTFont*makeFont(const char*fontname);
+#ifdef FTGL
+  virtual FTFont* makeFont(const char*fontname);
 #endif
 };
 

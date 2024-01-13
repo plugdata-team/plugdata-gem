@@ -17,7 +17,7 @@
 
 #include "text3d.h"
 
-#if 0 && !defined HAVE_FTGL_FTGL_H
+#if defined FTGL && !defined HAVE_FTGL_FTGL_H
 # include "FTGLPolygonFont.h"
 #endif
 
@@ -31,7 +31,7 @@ CPPEXTERN_NEW_WITH_GIMME(text3d);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#if 0
+#ifdef FTGL
 text3d :: text3d(int argc, t_atom *argv)
   : TextBase(argc, argv), m_antialias(true),
     m_aafont(NULL), m_pyfont(NULL)
@@ -145,7 +145,7 @@ void text3d :: obj_setupCallback(t_class *classPtr)
 void text3d :: aliasMess(int io)
 {
   m_antialias = io;
-#if 0
+#ifdef FTGL
   m_font=selectFont();
 #endif
 }

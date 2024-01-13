@@ -17,7 +17,7 @@
 
 #include "textextruded.h"
 
-#if 0 && !defined HAVE_FTGL_FTGL_H
+#if defined FTGL && !defined HAVE_FTGL_FTGL_H
 # include "FTGLExtrdFont.h"
 #endif
 
@@ -31,7 +31,7 @@ CPPEXTERN_NEW_WITH_GIMME(textextruded);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#if 0
+#ifdef FTGL
 textextruded :: textextruded(int argc, t_atom *argv)
   : TextBase(argc, argv)
 {

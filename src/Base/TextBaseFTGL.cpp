@@ -18,7 +18,6 @@
 # define MARK() post("%s:%d\t%s", __FILE__, __LINE__, __FUNCTION__)
 #endif
 
-/*
 #include "TextBase.h"
 #include "Utils/Functions.h"
 #include "Gem/Settings.h"
@@ -678,4 +677,3 @@ void TextBase :: linedistMess(float dist)
   m_dist = dist;
   makeLineDist();
 }
- */
