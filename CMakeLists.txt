@@ -614,6 +614,8 @@ file(GLOB GEM_SOURCES
 
 add_subdirectory(glew/build/cmake)
 
+add_subdirectory(freetype)
+
 set(MESSAGE_QUIET ON)
 
 set(BUILD_SHARED_LIBS OFF)

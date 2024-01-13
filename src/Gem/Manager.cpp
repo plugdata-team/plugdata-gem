@@ -1555,4 +1555,10 @@ WindowInfo &GemMan :: getConstWindowInfo()
 {
   return(constInfo);
 }
+
+void initGemWindow()
+{
+    GemMan::windowInit();
+}
+
 #endif /* GEM_MULTICONTEXT */
