@@ -628,13 +628,13 @@ set(MESSAGE_QUIET OFF)
 add_library(Gem STATIC ${GEM_SOURCES})
 target_compile_definitions(Gem PRIVATE HAS_FTGL=1)
 target_include_directories(Gem PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src" "./ftgl/src/FTFont" "./ftgl/src/FTGL" ${FREETYPE_INCLUDE_DIRS})
-target_link_libraries(Gem PUBLIC glew ftgl)
+target_link_libraries(Gem INTERFACE glew ftgl)
 target_compile_options(Gem PRIVATE -fvisibility=default)
 
 add_library(Gem-multi STATIC ${GEM_SOURCES})
 target_compile_definitions(Gem-multi PRIVATE HAS_FTGL=1 PDTHREADS=1 PDINSTANCE=1)
 target_include_directories(Gem-multi PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src"  "./ftgl/src/FTFont" "./ftgl/src/FTGL" ${FREETYPE_INCLUDE_DIRS})
-target_link_libraries(Gem-multi PUBLIC glew ftgl)
+target_link_libraries(Gem-multi INTERFACE glew ftgl)
 target_compile_options(Gem-multi PRIVATE -fvisibility=default)
 
 
