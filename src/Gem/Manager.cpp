@@ -1007,7 +1007,6 @@ int GemMan :: createWindow(const char* disp)
   myHints.secondscreen = m_secondscreen;
   myHints.x_offset = m_xoffset;
   myHints.y_offset = m_yoffset;
-  myHints.shared = constInfo.context;
   myHints.actuallyDisplay = 1;
   myHints.display = disp;
   myHints.title = const_cast<char*>(GemMan::m_title.c_str());
