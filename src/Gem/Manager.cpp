@@ -1114,7 +1114,8 @@ void GemMan :: destroyWindow()
 
   // reestablish the const glxContext
   /* this crashes on linux with intel cards */
-  gemWinMakeCurrent(constInfo);
+  //gemWinMakeCurrent(constInfo);
+    
   s_windowRun = 0;
 #endif /* GEM_MULTICONTEXT */
 }
