@@ -512,7 +512,7 @@ void pix_cubemap :: rightImageMess(t_symbol *s, int argc, t_atom *argv)
       error("unknown message '%s'",s->s_name);
     }
   } else {
-    error("wrong righthand arguments...");
-    ::error("post: %d", argc);
+    pd_error(nullptr, "wrong righthand arguments...");
+    pd_error(nullptr, "post: %d", argc);
   }
 }

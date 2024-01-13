@@ -389,7 +389,7 @@ private:
                             const_cast<char*>(name.c_str()), buf, MAXPDSTRING);
       } else {
         if(loud) {
-          ::error("pix_freeframe[%s]: unfindeable", name.c_str());
+            pd_error(nullptr, "pix_freeframe[%s]: unfindeable", name.c_str());
         }
         return false;
       }
@@ -408,7 +408,7 @@ private:
     m_dlhandle=dlopen(libname.c_str(), RTLD_NOW);
     if(!m_dlhandle) {
       if(loud) {
-        ::error("pix_freeframe[%s]: %s", libname.c_str(), dlerror());
+          pd_error(nullptr, "pix_freeframe[%s]: %s", libname.c_str(), dlerror());
       }
       return NULL;
     }

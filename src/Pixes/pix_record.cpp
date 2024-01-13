@@ -70,7 +70,7 @@ public:
     }
 
     if(argv->a_type != A_SYMBOL) {
-      ::error("no key given...");
+      pd_error(nullptr, "no key given...");
       return;
     }
     std::string key=std::string(atom_getsymbol(argv)->s_name);
