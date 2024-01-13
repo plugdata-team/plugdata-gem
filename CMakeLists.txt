@@ -14,10 +14,6 @@ file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Base/GemPixObj.cpp
   ${GEM_SOURCE_PATH}/Base/GemShape.cpp
   ${GEM_SOURCE_PATH}/Base/GemVertex.cpp
-  ${GEM_SOURCE_PATH}/Base/GemWinCreateEM.cpp
-  ${GEM_SOURCE_PATH}/Base/GemWinCreateMac.cpp
-  ${GEM_SOURCE_PATH}/Base/GemWinCreateNT.cpp
-  ${GEM_SOURCE_PATH}/Base/GemWinCreateXWin.cpp
   ${GEM_SOURCE_PATH}/Base/GemWindow.cpp
   ${GEM_SOURCE_PATH}/Base/TextBaseFTGL.cpp
   ${GEM_SOURCE_PATH}/Base/TextBaseNone.cpp
