@@ -46,7 +46,7 @@ protected:
   // Destructor
   virtual ~textoutline();
 
-#ifdef FTGL
+#ifdef HAS_FTGL
   virtual FTFont* makeFont(const char*fontname);
 #endif
 };

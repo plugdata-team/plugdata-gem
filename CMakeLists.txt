@@ -612,6 +612,8 @@ file(GLOB GEM_SOURCES
 
 add_subdirectory(glew/build/cmake)
 
+set(MESSAGE_QUIET ON)
+
 set(BUILD_SHARED_LIBS OFF)
 add_subdirectory(ftgl)
 target_compile_definitions(ftgl PRIVATE __FUNC__="func")
@@ -619,14 +621,18 @@ get_target_property(FTGL_INCLUDES ftgl INTERFACE_INCLUDE_DIRECTORIES)
 
 FIND_PACKAGE(Freetype REQUIRED)
 
+set(MESSAGE_QUIET OFF)
+
 add_library(Gem STATIC ${GEM_SOURCES})
-target_compile_definitions(Gem PRIVATE FTGL=1)
+target_compile_definitions(Gem PRIVATE HAS_FTGL=1)
 target_include_directories(Gem PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src" "./ftgl/src/FTFont" "./ftgl/src/FTGL" ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(Gem PRIVATE glew ftgl)
 target_compile_options(Gem PRIVATE -fvisibility=default)
 
 add_library(Gem-multi STATIC ${GEM_SOURCES})
-target_compile_definitions(Gem-multi PRIVATE FTGL=1 PDTHREADS=1 PDINSTANCE=1)
+target_compile_definitions(Gem-multi PRIVATE HAS_FTGL=1 PDTHREADS=1 PDINSTANCE=1)
 target_include_directories(Gem-multi PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src"  "./ftgl/src/FTFont" "./ftgl/src/FTGL" ${FREETYPE_INCLUDE_DIRS})
 target_link_libraries(Gem-multi PRIVATE glew ftgl)
 target_compile_options(Gem-multi PRIVATE -fvisibility=default)
+
+

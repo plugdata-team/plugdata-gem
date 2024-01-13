@@ -49,7 +49,7 @@ protected:
   bool m_antialias;
   void aliasMess(int io);
 
-#ifdef FTGL
+#ifdef HAS_FTGL
   /////////
   // Do the rendering
   virtual void renderLine(const char*line,float dist);

@@ -44,7 +44,7 @@ protected:
   // Destructor
   virtual ~textextruded();
 
-#ifdef FTGL
+#ifdef HAS_FTGL
   virtual FTFont*makeFont(const char*fontname);
 #else
   virtual void    destroyFont() {}

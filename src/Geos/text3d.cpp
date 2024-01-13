@@ -31,7 +31,7 @@ CPPEXTERN_NEW_WITH_GIMME(text3d);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#ifdef FTGL
+#ifdef HAS_FTGL
 text3d :: text3d(int argc, t_atom *argv)
   : GemTextBase(argc, argv), m_antialias(true),
     m_aafont(NULL), m_pyfont(NULL)
@@ -145,7 +145,7 @@ void text3d :: obj_setupCallback(t_class *classPtr)
 void text3d :: aliasMess(int io)
 {
   m_antialias = io;
-#ifdef FTGL
+#ifdef HAS_FTGL
   m_font=selectFont();
 #endif
 }

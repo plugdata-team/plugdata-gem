@@ -32,7 +32,7 @@ CPPEXTERN_NEW_WITH_GIMME(text2d);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#ifdef FTGL
+#ifdef HAS_FTGL
 text2d :: text2d(int argc, t_atom *argv)
   : GemTextBase(argc,argv), m_antialias(true),
     m_aafont(NULL), m_bmfont(NULL)
@@ -174,7 +174,7 @@ void text2d :: obj_setupCallback(t_class *classPtr )
 void text2d :: aliasMess(int io)
 {
   m_antialias = io;
-#ifdef FTGL
+#ifdef HAS_FTGL
   m_font=selectFont();
 #endif
 }

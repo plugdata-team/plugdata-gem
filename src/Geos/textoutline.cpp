@@ -31,7 +31,7 @@ CPPEXTERN_NEW_WITH_GIMME(textoutline);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#ifdef FTGL
+#ifdef HAS_FTGL
 textoutline :: textoutline(int argc, t_atom *argv)
   : GemTextBase(argc, argv)
 {

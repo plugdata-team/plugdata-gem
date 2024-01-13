@@ -31,7 +31,7 @@ CPPEXTERN_NEW_WITH_GIMME(textextruded);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#ifdef FTGL
+#ifdef HAS_FTGL
 textextruded :: textextruded(int argc, t_atom *argv)
   : GemTextBase(argc, argv)
 {
