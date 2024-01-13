@@ -31,7 +31,7 @@
 #include <vector>
 #include <string>
 
-#ifdef FTGL
+#ifdef HAS_FTGL
 # define FONT_SCALE 0.2/3.0
 # ifdef HAVE_FTGL_FTGL_H
 #  include "FTGL/ftgl.h"
@@ -211,7 +211,7 @@ protected:
 
   //////////
   // The font structure
-#ifdef FTGL
+#ifdef HAS_FTGL
   FTFont                *m_font;
   /* this should delete (m_font) if it is notnull and recreate it.
    * a pointer to the new structure is returned (and is set to m_font).
