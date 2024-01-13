@@ -28,9 +28,9 @@ CLASS
 DESCRIPTION
 
 -----------------------------------------------------------------*/
-class GEM_EXTERN text2d : public TextBase
+class GEM_EXTERN text2d : public GemTextBase
 {
-  CPPEXTERN_HEADER(text2d, TextBase);
+  CPPEXTERN_HEADER(text2d, GemTextBase);
 
 public:
 

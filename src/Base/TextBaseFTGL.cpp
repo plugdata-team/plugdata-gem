@@ -36,17 +36,17 @@ typedef unsigned __int8 uint8_t;
 
 #include "Utils/GemString.h"
 
-std::string TextBase::DEFAULT_FONT = "vera.ttf";
+std::string GemTextBase::DEFAULT_FONT = "vera.ttf";
 
 /////////////////////////////////////////////////////////
 //
-// TextBase
+// GemTextBase
 //
 /////////////////////////////////////////////////////////
 // Constructor
 //
 /////////////////////////////////////////////////////////
-TextBase :: TextBase(int argc, t_atom *argv)
+GemTextBase :: GemTextBase(int argc, t_atom *argv)
   :
   m_dist(1), m_valid(0), m_fontSize(20), m_fontDepth(20), m_precision(3.f),
   m_widthJus(CENTER), m_heightJus(MIDDLE), m_depthJus(HALFWAY),
@@ -69,7 +69,7 @@ TextBase :: TextBase(int argc, t_atom *argv)
                       gensym("ft1"));
 }
 
-void TextBase :: startRendering(void)
+void GemTextBase :: startRendering(void)
 {
   if(m_fontname) {
     fontNameMess(m_fontname->s_name);
@@ -81,7 +81,7 @@ void TextBase :: startRendering(void)
 // render
 //
 /////////////////////////////////////////////////////////
-void TextBase :: renderLine(const char*line, float dist)
+void GemTextBase :: renderLine(const char*line, float dist)
 {
   float x1=0, y1=0, z1=0, x2=0, y2=0, z2=0;
   m_font->BBox(line, x1, y1, z1, x2, y2, z2); // FTGL
@@ -97,7 +97,7 @@ void TextBase :: renderLine(const char*line, float dist)
   glPopMatrix();
 }
 
-void TextBase :: renderLine(const wchar_t*line, float dist)
+void GemTextBase :: renderLine(const wchar_t*line, float dist)
 {
   float x1=0, y1=0, z1=0, x2=0, y2=0, z2=0;
   m_font->BBox(line, x1, y1, z1, x2, y2, z2); // FTGL
@@ -113,7 +113,7 @@ void TextBase :: renderLine(const wchar_t*line, float dist)
   glPopMatrix();
 }
 
-void TextBase :: render(GemState *)
+void GemTextBase :: render(GemState *)
 {
   unsigned int i=0;
   if (m_theText.empty() || !m_font) {
@@ -140,7 +140,7 @@ void TextBase :: render(GemState *)
 // setFontSize
 //
 ////////////////////////////////////////////////////////
-void TextBase :: setFontSize(float size)
+void GemTextBase :: setFontSize(float size)
 {
   m_fontSize = size;
   setFontSize();
@@ -149,7 +149,7 @@ void TextBase :: setFontSize(float size)
 // setPrecision
 //
 ////////////////////////////////////////////////////////
-void TextBase :: setPrecision(float prec)
+void GemTextBase :: setPrecision(float prec)
 {
   if(prec<=0.f) {
     prec=1.f;
@@ -163,7 +163,7 @@ void TextBase :: setPrecision(float prec)
 // fontNameMess
 //
 ////////////////////////////////////////////////////////
-void TextBase :: fontNameMess(const std::string&filename)
+void GemTextBase :: fontNameMess(const std::string&filename)
 {
   m_valid = 0;
   const char *bufptr=NULL;
@@ -202,9 +202,9 @@ void TextBase :: fontNameMess(const std::string&filename)
 // Destructor
 //
 /////////////////////////////////////////////////////////
-TextBase :: ~TextBase()
+GemTextBase :: ~GemTextBase()
 {
-  // textbase deletion
+  // GemTextBase deletion
   if(m_inlet) {
     inlet_free(m_inlet);
   }
@@ -214,7 +214,7 @@ TextBase :: ~TextBase()
 // setJustification
 //
 /////////////////////////////////////////////////////////
-void TextBase :: setFontSize()
+void GemTextBase :: setFontSize()
 {
   if (!m_font) {
     return;
@@ -235,7 +235,7 @@ void TextBase :: setFontSize()
 // setJustification
 //
 /////////////////////////////////////////////////////////
-void TextBase :: setJustification(JustifyWidth wType, JustifyHeight hType,
+void GemTextBase :: setJustification(JustifyWidth wType, JustifyHeight hType,
                                   JustifyDepth dType)
 {
   m_widthJus = wType;
@@ -244,20 +244,20 @@ void TextBase :: setJustification(JustifyWidth wType, JustifyHeight hType,
 
   makeLineDist();
 }
-void TextBase :: setJustification(JustifyWidth wType, JustifyHeight hType)
+void GemTextBase :: setJustification(JustifyWidth wType, JustifyHeight hType)
 {
   m_widthJus = wType;
   m_heightJus = hType;
 
   makeLineDist();
 }
-void TextBase :: setJustification(JustifyWidth wType)
+void GemTextBase :: setJustification(JustifyWidth wType)
 {
   m_widthJus = wType;
 }
 
 
-void TextBase :: getBBox()
+void GemTextBase :: getBBox()
 {
   if(!m_font || m_theText.empty())
     return;
@@ -302,7 +302,7 @@ void TextBase :: getBBox()
 
 
 }
-void TextBase :: fontInfo(void)
+void GemTextBase :: fontInfo(void)
 {
   if(!m_font) {
     return;
@@ -330,7 +330,7 @@ void TextBase :: fontInfo(void)
   }
 }
 
-TextBase::Justification TextBase :: justifyFont(
+GemTextBase::Justification GemTextBase :: justifyFont(
   float x1, float y1, float z1,
   float x2, float y2, float z2,
   float y_offset)
@@ -391,7 +391,7 @@ TextBase::Justification TextBase :: justifyFont(
     depth = 0;
     break;
   }
-  TextBase::Justification result;
+  GemTextBase::Justification result;
   result.scale=FONT_SCALE/m_precision;
   result.width=width;
   result.height=height;
@@ -404,7 +404,7 @@ TextBase::Justification TextBase :: justifyFont(
 // textMess
 //
 /////////////////////////////////////////////////////////
-void TextBase :: breakLine(wstring line)
+void GemTextBase :: breakLine(wstring line)
 {
   // split the string wherever there is a '\n'
   while(line.length()>0) {
@@ -429,7 +429,7 @@ void TextBase :: breakLine(wstring line)
   //setModified();
 }
 
-void TextBase :: textMess(int argc, t_atom *argv)
+void GemTextBase :: textMess(int argc, t_atom *argv)
 {
   m_theText.clear();
   if ( argc < 1 ) {
@@ -476,7 +476,7 @@ void TextBase :: textMess(int argc, t_atom *argv)
 // line distance, the offset
 // of the individual lines
 /////////////////////////////////////////////////////////
-void TextBase :: makeLineDist()
+void GemTextBase :: makeLineDist()
 {
   m_lineDist.clear();
   if (m_heightJus == BOTTOM || m_heightJus == BASEH) {
@@ -517,7 +517,7 @@ void TextBase :: makeLineDist()
 // stringMess
 //
 /////////////////////////////////////////////////////////
-void TextBase :: stringMess(int argc, t_atom *argv)
+void GemTextBase :: stringMess(int argc, t_atom *argv)
 {
   m_theText.clear();
 
@@ -546,7 +546,7 @@ void TextBase :: stringMess(int argc, t_atom *argv)
 // static member function
 //
 /////////////////////////////////////////////////////////
-void TextBase :: obj_setupCallback(t_class *classPtr)
+void GemTextBase :: obj_setupCallback(t_class *classPtr)
 {
   CPPEXTERN_MSG(classPtr, "list", textMess);
   CPPEXTERN_MSG(classPtr, "text", textMess);
@@ -561,11 +561,11 @@ void TextBase :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG1(classPtr, "linedist", linedistMess, float);
 
   class_addmethod(classPtr,
-                  reinterpret_cast<t_method>(&TextBase::justifyMessCallback),
+                  reinterpret_cast<t_method>(&GemTextBase::justifyMessCallback),
                   gensym("justify"), A_GIMME, A_NULL);
 }
 
-void TextBase :: justifyMessCallback(void *data, t_symbol *s, int argc,
+void GemTextBase :: justifyMessCallback(void *data, t_symbol *s, int argc,
                                      t_atom*argv)
 {
   JustifyWidth  wType=CENTER;
@@ -672,7 +672,7 @@ void TextBase :: justifyMessCallback(void *data, t_symbol *s, int argc,
     break;
   }
 }
-void TextBase :: linedistMess(float dist)
+void GemTextBase :: linedistMess(float dist)
 {
   m_dist = dist;
   makeLineDist();

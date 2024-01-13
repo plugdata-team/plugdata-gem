@@ -49,7 +49,7 @@ using std::wstring;
 /*-----------------------------------------------------------------
   -------------------------------------------------------------------
   CLASS
-  TextBase
+  GemTextBase
 
   Base class for text objects
 
@@ -59,22 +59,22 @@ using std::wstring;
   "text" - The text to draw
 
   -----------------------------------------------------------------*/
-class GEM_EXTERN TextBase : public GemBase
+class GEM_EXTERN GemTextBase : public GemBase
 {
-  CPPEXTERN_HEADER(TextBase, GemBase);
+  CPPEXTERN_HEADER(GemTextBase, GemBase);
 
 public:
 
   //////////
   // Constructor with args
-  TextBase(int argc, t_atom *argv);
+  GemTextBase(int argc, t_atom *argv);
 
 
 protected:
 
   //////////
   // Destructor
-  virtual ~TextBase();
+  virtual ~GemTextBase();
 
   //////////
   // Do the rendering

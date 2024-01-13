@@ -33,7 +33,7 @@ CPPEXTERN_NEW_WITH_GIMME(textoutline);
 /////////////////////////////////////////////////////////
 #ifdef FTGL
 textoutline :: textoutline(int argc, t_atom *argv)
-  : TextBase(argc, argv)
+  : GemTextBase(argc, argv)
 {
   fontNameMess(DEFAULT_FONT);
 }
@@ -62,7 +62,7 @@ FTFont *textoutline :: makeFont(const char*fontfile)
 #else /* !FTGL */
 
 textoutline :: textoutline(int argc, t_atom *argv)
-  : TextBase(argc, argv)
+  : GemTextBase(argc, argv)
 {}
 textoutline :: ~textoutline()
 {}

@@ -28,9 +28,9 @@ CLASS
 DESCRIPTION
 
 -----------------------------------------------------------------*/
-class GEM_EXTERN textextruded : public TextBase
+class GEM_EXTERN textextruded : public GemTextBase
 {
-  CPPEXTERN_HEADER(textextruded, TextBase);
+  CPPEXTERN_HEADER(textextruded, GemTextBase);
 
 public:
 
