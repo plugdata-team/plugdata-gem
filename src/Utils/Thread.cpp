@@ -6,7 +6,7 @@
 //
 // Implementation file
 //
-//    Copyright (c) 2012-2012 IOhannes m zmölnig. forum::fur::umläute. IEM. zmoelnig@iem.at
+//    Copyright (c) 2012-2012 IOhannes m zmï¿½lnig. forum::fur::umlï¿½ute. IEM. zmoelnig@iem.at
 //    For information on usage and redistribution, and for a DISCLAIMER OF ALL
 //    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 //
@@ -21,21 +21,12 @@
 #ifdef _WIN32
 # include <winsock2.h>
 # include <windows.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
-#endif
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-
-//#if defined HAVE_SYS_SYSCTL_H
-#if defined (__APPLE__) || defined (__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#elif defined (__APPLE__) || defined (__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 # include <sys/sysctl.h>
+#else
+# include <unistd.h>
+# include <sys/time.h>
+# include <sys/types.h>
 #endif
 
 unsigned int  gem::thread::getCPUCount(void)
