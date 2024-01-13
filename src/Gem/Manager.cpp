@@ -1070,7 +1070,9 @@ int GemMan :: createWindow(const char* disp)
   cursorOnOff(m_cursor);
   topmostOnOff(m_topmost);
   m_windowNumber++;
-  windowInit();
+  
+  // For plugdata, we do this later so that it happens on the correct thread
+  //windowInit();
   clock_delay(s_windowClock, s_windowDelTime);
 
   s_windowRun = 1;
