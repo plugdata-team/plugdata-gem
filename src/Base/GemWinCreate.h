@@ -62,6 +62,7 @@ GEM_EXTERN extern void gemWinSwapBuffers(WindowInfo &nfo);
 /////////
 // reestablish a context
 GEM_EXTERN extern void gemWinMakeCurrent(WindowInfo &nfo);
+GEM_EXTERN extern bool gemWinMakeCurrent();
 
 /////////
 // init OS-specific stuff

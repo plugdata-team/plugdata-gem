@@ -1556,14 +1556,3 @@ WindowInfo &GemMan :: getConstWindowInfo()
   return(constInfo);
 }
 #endif /* GEM_MULTICONTEXT */
-
-
-void performGemRender()
-{
-    GemMan::render(nullptr);
-}
-
-void initGemWindow()
-{
-    GemMan::windowInit();
-}
