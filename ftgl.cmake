@@ -108,7 +108,7 @@ set(ftlayout_sources
 
 add_library(ftgl STATIC ${libftgl_la_SOURCES} ${ftgl_headers} ${ftglyph_sources} ${ftfont_sources} ${ftlayout_sources})
 
-#target_compile_definitions(ftgl PRIVATE PACKAGE_VERSION="${VERSION_SERIES}.${VERSION_MAJOR}.${VERSION_MINOR}")
+target_compile_definitions(ftgl PRIVATE PACKAGE_VERSION="2.3.14")
 target_compile_definitions(ftgl PRIVATE __FUNC__="func")
 
 if(WIN32)
