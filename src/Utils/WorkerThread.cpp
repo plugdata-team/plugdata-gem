@@ -11,7 +11,10 @@
 //    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 //
 /////////////////////////////////////////////////////////
-#define WORKERTHREAD_DEQUEUE
+
+// outcommenting this seems to fix some deadlocks in plugdata
+//#define WORKERTHREAD_DEQUEUE
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
