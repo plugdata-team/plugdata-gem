@@ -1288,7 +1288,10 @@ set(FT_DISABLE_PNG TRUE)
 set(FT_DISABLE_HARFBUZZ TRUE)
 set(FT_DISABLE_BROTLI TRUE)
 
+if(UNIX) # needed for freetype
 add_compile_definitions(HAVE_UNISTD_H=1 HAVE_FCNTL_H=1)
+endif()
+
 add_subdirectory(freetype)
 
 set(MESSAGE_QUIET OFF)
