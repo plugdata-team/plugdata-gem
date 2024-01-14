@@ -616,23 +616,30 @@ add_subdirectory(glew/build/cmake)
 
 set(MESSAGE_QUIET ON)
 
-set(BUILD_SHARED_LIBS OFF)
+set(BUILD_SHARED_LIBS OFF) # Build ftgl and freetype as static libs
+
 add_subdirectory(ftgl)
 target_compile_definitions(ftgl PRIVATE __FUNC__="func")
 get_target_property(FTGL_INCLUDES ftgl INTERFACE_INCLUDE_DIRECTORIES)
 
-FIND_PACKAGE(Freetype REQUIRED)
+#
+set(FT_DISABLE_ZLIB TRUE)
+set(FT_DISABLE_PNG TRUE)
+set(FT_DISABLE_HARFBUZZ TRUE)
+set(FT_DISABLE_BROTLI TRUE)
+
+add_subdirectory(freetype)
 
 set(MESSAGE_QUIET OFF)
 
 add_library(Gem STATIC ${GEM_SOURCES})
 target_compile_definitions(Gem PRIVATE HAS_FTGL=1)
-target_include_directories(Gem PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src" "./ftgl/src/FTFont" "./ftgl/src/FTGL" ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(Gem PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src" "./ftgl/src/FTFont" "./ftgl/src/FTGL" "./freetype/include")
 target_compile_options(Gem PRIVATE -fvisibility=default)
 
 add_library(Gem-multi STATIC ${GEM_SOURCES})
 target_compile_definitions(Gem-multi PRIVATE HAS_FTGL=1 PDTHREADS=1 PDINSTANCE=1)
-target_include_directories(Gem-multi PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src"  "./ftgl/src/FTFont" "./ftgl/src/FTGL" ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(Gem-multi PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src"  "./ftgl/src/FTFont" "./ftgl/src/FTGL" "./freetype/include")
 target_compile_options(Gem-multi PRIVATE -fvisibility=default)
 
 
