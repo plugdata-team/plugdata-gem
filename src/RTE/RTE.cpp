@@ -181,17 +181,19 @@ bool RTE::addSearchPath(const std::string&path, void* ctx)
     didit = true;
   }
   if(modern) {
-    t_atom ap[2];
-    const char *inptr = path.c_str();
-    char encoded[MAXPDSTRING * 4];
-    char*outptr = encoded;
-    *outptr++='+';
-    while(inptr && ((outptr+2) < (encoded+(MAXPDSTRING * 4)))) {
-      *outptr++ = *inptr++;
-      if ('+'==inptr[-1]) {
-        *outptr++='+';
+      t_atom ap[2];
+      const char *inptr = path.c_str();
+      char encoded[MAXPDSTRING];
+      char *outptr = encoded;
+      int len = snprintf(encoded, MAXPDSTRING, "%s", path.c_str());
+      *outptr++ = '+';
+      while (inptr && ((outptr + 2) < (encoded + len))) {
+        *outptr++ = *inptr++;
+
+        if ('+' == inptr[-1]) {
+          *outptr++ = '+';
+        }
       }
-    }
     *outptr=0;
     SETSYMBOL(ap+0, gensym(encoded));
     SETFLOAT (ap+1, 0.f);

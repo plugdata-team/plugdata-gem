@@ -75,12 +75,4 @@ GEM_EXTERN extern bool initGemWin(void);
 GEM_EXTERN void initWin_sharedContext(WindowInfo &info,
                                       WindowHints &hints);
 
-
-
-/////////
-//
-GEM_EXTERN extern void dispatchGemWindowMessages(WindowInfo &nfo);
-
-
-
 #endif  // for header file
