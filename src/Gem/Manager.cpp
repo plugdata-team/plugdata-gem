@@ -153,6 +153,9 @@ void GemMan::resizeCallback(int xSize, int ySize, void *)
   //  TODO:
   //    shouldn't this be called here?
   //  glLoadIdentity();
+    
+  //windowInit();
+    
 #endif /* GEM_MULTICONTEXT */
 }
 
@@ -870,7 +873,7 @@ void GemMan :: render(void *)
 // startRendering
 //
 /////////////////////////////////////////////////////////
-void GemMan :: startRendering()
+void GemMan :: startRendering(bool log)
 {
   if (!m_windowState) {
     pd_error(nullptr, "GEM: Create window first!");
@@ -881,7 +884,7 @@ void GemMan :: startRendering()
     return;
   }
 
-    post("GEM: Start rendering");
+    if(log) post("GEM: Start rendering");
 
   // set up all of the gemheads
   renderChain(gensym("__gem_render"), true);
@@ -902,7 +905,7 @@ void GemMan :: startRendering()
 // stopRendering
 //
 /////////////////////////////////////////////////////////
-void GemMan :: stopRendering()
+void GemMan :: stopRendering(bool log)
 {
   if (!m_rendering) {
     return;
@@ -916,7 +919,7 @@ void GemMan :: stopRendering()
   renderChain(gensym("__gem_render"), false);
   renderChain(gensym("__gem_render_osd"), false);
 
-  post("GEM: Stop rendering");
+  if(log) post("GEM: Stop rendering");
 }
 
 
@@ -1536,6 +1539,16 @@ WindowInfo &GemMan :: getConstWindowInfo()
 void initGemWindow()
 {
     GemMan::windowInit();
+}
+
+void gemBeginExternalResize()
+{
+    GemMan::stopRendering(false);
+}
+
+void gemEndExternalResize()
+{
+    GemMan::startRendering(false);
 }
 
 #endif /* GEM_MULTICONTEXT */

@@ -90,11 +90,11 @@ public:
 
   //////////
   // Start a clock to do rendering.
-  static void       startRendering(void);
+  static void       startRendering(bool log = true);
 
   //////////
   // Stop the clock to do rendering.
-  static void       stopRendering(void);
+  static void       stopRendering(bool log = true);
 
   //////////
   // Create the window with the current parameters
