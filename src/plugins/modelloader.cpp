@@ -168,7 +168,7 @@ public:
       }
       unsigned int i=0;
       for(i=0; i<m_handles.size(); i++) {
-        if(m_handles[i] && m_handles[i]->open(name, requestprops)) {
+         if(m_handles[i] && m_handles[i]->open(name, requestprops)) {
           m_handle=m_handles[i];
           break;
         } else {

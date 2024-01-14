@@ -197,6 +197,7 @@ void vertex_scale :: obj_setupCallback(t_class *classPtr)
                   reinterpret_cast<t_method>(&vertex_scale::paramMessCallback),
                   gensym("param"), A_GIMME, A_NULL);
 
+  // plugdata fix: [scale] is already taken by cyclone, so we require the "Gem/" prefix
   class_addmethod(classPtr,
                   reinterpret_cast<t_method>(&vertex_scale::paramMessCallback),
                   gensym("scale"), A_GIMME, A_NULL);
