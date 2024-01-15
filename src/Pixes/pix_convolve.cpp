@@ -695,7 +695,7 @@ void pix_convolve :: rangeMess(float range)
 void pix_convolve :: matrixMess(int argc, t_atom *argv)
 {
   if (argc != m_cols * m_rows) {
-    error("matrix size not correct");
+    pd_error(0, "matrix size not correct");
     return;
   }
 

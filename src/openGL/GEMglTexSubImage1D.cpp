@@ -57,7 +57,7 @@ bool GEMglTexSubImage1D :: isRunnable(void)
   if(GLEW_VERSION_1_1) {
     return true;
   }
-  error("your system does not support OpenGL-1.1");
+  pd_error(0, "your system does not support OpenGL-1.1");
   return false;
 }
 
@@ -87,7 +87,7 @@ void GEMglTexSubImage1D :: render(GemState *state)
 //
 void GEMglTexSubImage1D :: targetMess (t_float arg1)    // FUN
 {
-  error("target has to be GL_TEXTURE_1D");
+  pd_error(0, "target has to be GL_TEXTURE_1D");
 }
 
 void GEMglTexSubImage1D :: levelMess (t_float arg1)     // FUN

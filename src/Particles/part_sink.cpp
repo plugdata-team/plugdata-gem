@@ -88,7 +88,7 @@ void part_sink :: domainMess(const std::string&str)
   } else if (str == "rectangle") {
     m_domain=PDRectangle;
   } else {
-    error("unknown domain '%s'", str.c_str());
+    pd_error(0, "unknown domain '%s'", str.c_str());
   }
 }
 void part_sink :: killMess(int kill)

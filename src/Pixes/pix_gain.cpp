@@ -395,7 +395,7 @@ void pix_gain :: processFloat32(imageStruct &image)
     }
     break;
   default:
-    error("cannot handle 0x%X/float image", image.format);
+    pd_error(0, "cannot handle 0x%X/float image", image.format);
     break;
   }
 }
@@ -416,7 +416,7 @@ void pix_gain :: vecGainMess(int argc, t_atom *argv)
     m_gain[chRed] = m_gain[chGreen] = m_gain[chBlue] = m_gain[chAlpha] =
                                         atom_getfloat(argv);
   } else {
-    error("not enough gain values");
+    pd_error(0, "not enough gain values");
     return;
   }
   m_gain[chRed] = atom_getfloat(&argv[0]);

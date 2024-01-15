@@ -56,8 +56,8 @@ void pix_rgba :: processImage(imageStruct &image)
   }
 
   if(!m_image.convertFrom(&image)) {
-    error("no method for this format !!!");
-    error("if you know how to convert this format (%X),\n"
+    pd_error(0, "no method for this format !!!");
+    pd_error(0, "if you know how to convert this format (%X),\n"
           "please contact the authors of this software", image.format);
     return;
   }

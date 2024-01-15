@@ -227,7 +227,7 @@ void imageVert :: processGrayPix(imageStruct &image, int texture)
 /////////////////////////////////////////////////////////
 void imageVert :: processYUVPix(imageStruct &image, int texture)
 {
-  error("YUV not yet implemented :-(");
+  pd_error(0, "YUV not yet implemented :-(");
   /*  float Y, Y2, U, U2, V, V2;
 
     const int ySize = image.ysize;

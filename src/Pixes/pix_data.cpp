@@ -188,7 +188,7 @@ void pix_data :: listMess(t_symbol* s, int argc, t_atom* argv)
     trigger();
     break;
   default:
-    error("usage: list <xpos> <ypos>");
+    pd_error(0, "usage: list <xpos> <ypos>");
   }
 }
 
@@ -202,7 +202,7 @@ void pix_data :: qualityMess(int q)
     m_quality = LINEAR2D;
     break;
   default:
-    error("quality must be 0|1");
+    pd_error(0, "quality must be 0|1");
   }
 }
 void pix_data :: normalizeMess(int q)
@@ -215,7 +215,7 @@ void pix_data :: normalizeMess(int q)
     m_normalize = NORMALIZED;
     break;
   default:
-    error("normalize must be 0|1");
+    pd_error(0, "normalize must be 0|1");
   }
 }
 

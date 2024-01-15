@@ -67,7 +67,7 @@ pix_video :: pix_video(int argc, t_atom*argv) :
   if(m_videoHandles.size()>0) {
     m_driver=-1;
   } else {
-    error("no video backends found!");
+    pd_error(0, "no video backends found!");
   }
   MARK;
   std::string dev=gem::RTE::Symbol(argc, argv);
@@ -123,13 +123,13 @@ void pix_video :: startRendering()
   }
 
   if(m_videoHandles.size()<1) {
-    error("do video for this OS");
+    pd_error(0, "do video for this OS");
     return;
   }
 
   if (!m_videoHandle) {
     if(!restart()) {
-      error("no valid video backend found");
+      pd_error(0, "no valid video backend found");
       return;
     }
     return;
@@ -294,7 +294,7 @@ bool pix_video :: driverMess(std::string s)
       }
     }
   }
-  error("could not find a backend for driver '%s'", s.c_str());
+  pd_error(0, "could not find a backend for driver '%s'", s.c_str());
   return false;
 }
 bool pix_video :: driverMess(int dev)
@@ -302,7 +302,7 @@ bool pix_video :: driverMess(int dev)
   if(dev>=0) {
     unsigned int udev=(unsigned int)dev;
     if(udev>=m_videoHandles.size()) {
-      error("driverID (%d) must not exceed %d", udev, m_videoHandles.size());
+      pd_error(0, "driverID (%d) must not exceed %d", udev, m_videoHandles.size());
       return false;
     }
 
@@ -334,7 +334,7 @@ bool pix_video :: driverMess(t_symbol*s, int argc, t_atom*argv)
   case 1:
     break;
   default:
-    error("'driver' takes a single numeric or symbolic driver ID");
+    pd_error(0, "'driver' takes a single numeric or symbolic driver ID");
     return false;
   }
 
@@ -345,7 +345,7 @@ bool pix_video :: driverMess(t_symbol*s, int argc, t_atom*argv)
     return driverMess(atom_getsymbol(argv)->s_name);
   default: break;
   }
-  error("'driver' takes a single numeric or symbolic driver ID");
+  pd_error(0, "'driver' takes a single numeric or symbolic driver ID");
   return false;
 }
 
@@ -419,7 +419,7 @@ bool pix_video :: deviceMess(std::string s)
 bool pix_video :: deviceMess(t_symbol*, int argc, t_atom*argv)
 {
   if(argc!=1) {
-    error("can only set to 1 device at a time");
+    pd_error(0, "can only set to 1 device at a time");
     return false;
   }
   switch(argv->a_type) {
@@ -430,7 +430,7 @@ bool pix_video :: deviceMess(t_symbol*, int argc, t_atom*argv)
       deviceMess(atom_getsymbol(argv)->s_name);
       break;
     default:
-      error("device must be integer or symbol");
+      pd_error(0, "device must be integer or symbol");
       return false;
     }
   return true;
@@ -469,7 +469,7 @@ void pix_video :: openMess(t_symbol *s, int argc, t_atom *argv)
   deviceMess(s, 1, argv);
   return;
  bad:
-  error("usage: open [device [driver]]");
+  pd_error(0, "usage: open [device [driver]]");
 }
 
 void pix_video :: closeMess()
@@ -583,7 +583,7 @@ void pix_video :: enumerateMess()
     }
   }
   if(data.size()<1) {
-    error("no devices found");
+    pd_error(0, "no devices found");
   }
 
   t_atom ap[2];
@@ -677,7 +677,7 @@ static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom
 void pix_video :: setPropertyMess(int argc, t_atom*argv)
 {
   if(!argc) {
-    error("no property specified!");
+    pd_error(0, "no property specified!");
     return;
   }
   addProperties(this, m_writeprops, argc, argv);
@@ -843,7 +843,7 @@ void pix_video :: enumPropertyMess()
       outlet_anything(m_infoOut, gensym("proplist"), ac, ap);
     }
   } else {
-    error("cannot enumerate properties without a valid video-device");
+    pd_error(0, "cannot enumerate properties without a valid video-device");
   }
 }
 

@@ -81,12 +81,12 @@ void pix_multiimage :: openMess(t_symbol* filename, int baseImage,
   /*
   if (!topImage)
   {
-      error("requires an int for number of images");
+      pd_error(0, "requires an int for number of images");
       return;
   }
   */
   if (baseImage > topImage) {
-    error("Top range less than base image");
+    pd_error(0, "Top range less than base image");
     return;
   }
   if (skipRate < 1) {
@@ -134,7 +134,7 @@ void pix_multiimage :: openMess(t_symbol* filename, int baseImage,
   }
 
   if (!strPtr[i]) {
-    error("Unable to find * in file name");
+    pd_error(0, "Unable to find * in file name");
     return;
   }
 
@@ -256,11 +256,11 @@ void pix_multiimage :: changeImage(int imgNum)
   }
 
   if (imgNum >= m_numImages) {
-    error("selection number too high: %d (max num is %d)", imgNum,
+    pd_error(0, "selection number too high: %d (max num is %d)", imgNum,
           m_numImages);
     return;
   } else if (imgNum < 0) {
-    error("selection number must be > 0");
+    pd_error(0, "selection number must be > 0");
     return;
   }
   m_curImage = imgNum;

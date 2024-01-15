@@ -38,7 +38,7 @@ bool GEMglPopClientAttrib :: isRunnable(void)
   if(GLEW_VERSION_1_1) {
     return true;
   }
-  error("your system does not support OpenGL-1.1");
+  pd_error(0, "your system does not support OpenGL-1.1");
   return false;
 }
 

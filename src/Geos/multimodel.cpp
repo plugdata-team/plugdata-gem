@@ -180,7 +180,7 @@ void multimodel :: drawMess(int type)
 void multimodel :: drawMess(std::string name)
 {
   if(0==m_drawTypes.size()) {
-    error("unable to change drawstyle");
+    pd_error(0, "unable to change drawstyle");
     return;
   }
 
@@ -188,10 +188,10 @@ void multimodel :: drawMess(std::string name)
 
   std::map<std::string, GLenum>::iterator it=m_drawTypes.find(name);
   if(m_drawTypes.end() == it) {
-    error ("unknown draw style '%s'... possible values are:", name.c_str());
+    pd_error(0, "unknown draw style '%s'... possible values are:", name.c_str());
     it=m_drawTypes.begin();
     while(m_drawTypes.end() != it) {
-      error("\t %s", it->first.c_str());
+      pd_error(0, "\t %s", it->first.c_str());
       ++it;
     }
     return;
@@ -220,7 +220,7 @@ void multimodel :: backendMess(t_symbol*s, int argc, t_atom*argv)
         t_symbol* b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
       } else {
-        error("%s must be symbolic", s->s_name);
+        pd_error(0, "%s must be symbolic", s->s_name);
       }
     }
   } else {
@@ -276,7 +276,7 @@ void multimodel :: open(const std::string&filename, int baseModel,
                         int topModel, int skipRate)
 {
   if(!m_loader) {
-    error("no model loader");
+    pd_error(0, "no model loader");
     return;
   }
   gem::Properties wantProps = m_properties;
@@ -284,11 +284,11 @@ void multimodel :: open(const std::string&filename, int baseModel,
     wantProps.set("backends", m_backends);
   }
   if (!topModel) {
-    error("requires an int for number of models");
+    pd_error(0, "requires an int for number of models");
     return;
   }
   if (baseModel > topModel) {
-    error("top range less than base model");
+    pd_error(0, "top range less than base model");
     return;
   }
   if (skipRate < 1) {
@@ -305,7 +305,7 @@ void multimodel :: open(const std::string&filename, int baseModel,
   }
 
   if (!strPtr[i]) {
-    error("unable to find * in file name");
+    pd_error(0, "unable to find * in file name");
     return;
   }
 
@@ -340,7 +340,7 @@ void multimodel :: open(const std::string&filename, int baseModel,
 
   if(loaded.size()!=numModels) {
     /* ouch, something went wrong! */
-    error("failed to load model#%d of %d (%s)...resetting to original models",
+    pd_error(0, "failed to load model#%d of %d (%s)...resetting to original models",
           i, numModels, newName);
     return;
   }
@@ -363,7 +363,7 @@ void multimodel :: open(const std::string&filename, int baseModel,
 void multimodel :: changeModel(int modelNum)
 {
   if (modelNum < 0 || ((unsigned int)modelNum) >= m_loaded.size()) {
-    error("selection %d out of range: 0..%d", modelNum, m_loaded.size()-1);
+    pd_error(0, "selection %d out of range: 0..%d", modelNum, m_loaded.size()-1);
     return;
   }
 

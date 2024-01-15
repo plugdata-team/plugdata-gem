@@ -521,7 +521,7 @@ void pix_motionblur :: motionblurMessage(t_symbol*, int argc, t_atom*argv)
     }
     break;
   default:
-    error("specify 1 or 2 values");
+    pd_error(0, "specify 1 or 2 values");
   }
 }
 

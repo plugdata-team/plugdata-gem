@@ -155,7 +155,7 @@ void pix_bitmask :: vecMaskMess(int argc, t_atom *argv)
   } else if (argc == 3) {
     m_mask[chAlpha] = 255;
   } else {
-    error("not enough mask values");
+    pd_error(0, "not enough mask values");
     return;
   }
   m_mask[chRed] = atom_getint(&argv[0]);

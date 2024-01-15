@@ -81,7 +81,7 @@ void pix_buffer_read :: setMess(t_symbol*s)
 void pix_buffer_read :: frameMess(t_float f)
 {
   if (f<0.) {
-    error("frame# must not be less than zero (%f)", f);
+    pd_error(0, "frame# must not be less than zero (%f)", f);
   }
   m_frame=f;
   m_needsupdate=true;
@@ -117,13 +117,13 @@ void pix_buffer_read :: update_image()
   m_haveImage=false;
 
   if(m_bindname==NULL || m_bindname->s_name==NULL) {
-    error("you must set a buffer name!");
+    pd_error(0, "you must set a buffer name!");
     return;
   }
 
   ohead=(Obj_header*)pd_findbyclass(m_bindname, pix_buffer_class);
   if(ohead==NULL) {
-    error("couldn't find pix_buffer '%s'", m_bindname->s_name);
+    pd_error(0, "couldn't find pix_buffer '%s'", m_bindname->s_name);
     return;
   }
   buffer=(pix_buffer *)(ohead)->data;

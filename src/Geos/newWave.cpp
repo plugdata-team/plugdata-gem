@@ -61,7 +61,7 @@ newWave :: newWave( int argc,
   switch(argc) {
   /* coverity[unterminated_default] */
   default:
-    error("ignoring extra arguments");
+    pd_error(0, "ignoring extra arguments");
   case 3:
     m_height=atom_getfloat(argv+2);
   case 2:
@@ -134,7 +134,7 @@ void newWave :: forceMess(float posX, float posY, float valforce)
 void newWave :: textureMess(int mode)
 {
   if(mode<0) {
-    error("textureMode must be >= 0");
+    pd_error(0, "textureMode must be >= 0");
     return;
   }
   m_textureMode = mode;

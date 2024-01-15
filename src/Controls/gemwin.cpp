@@ -106,7 +106,7 @@ void gemwin :: bangMess()
       GemMan::render(NULL);
     }
   } else {
-    error("no window");
+    pd_error(0, "no window");
   }
 }
 
@@ -131,7 +131,7 @@ void gemwin :: renderMess()
   if (GemMan::getRenderState()) {
     GemMan::render(NULL);
   } else {
-    error("not in render mode");
+    pd_error(0, "not in render mode");
   }
 }
 /////////////////////////////////////////////////////////
@@ -195,11 +195,11 @@ void gemwin :: bufferMess(int buf)
 void gemwin :: stereoMess(int mode)
 {
   if (mode<0) {
-    error("stereo-mode must not be %d", mode);
+    pd_error(0, "stereo-mode must not be %d", mode);
     return;
   }
   if (mode>1) {
-    error("only stereo-modes 1/0 are allowed!!!");
+    pd_error(0, "only stereo-modes 1/0 are allowed!!!");
     return;
   }
 
@@ -252,12 +252,12 @@ void gemwin :: secondscreenMess(int on)
 void gemwin :: dimensionsMess(int width, int height)
 {
   if (width <= 0) {
-    error("width must be greater than 0");
+    pd_error(0, "width must be greater than 0");
     return;
   }
 
   if (height <= 0 ) {
-    error ("height must be greater than 0");
+    pd_error(0, "height must be greater than 0");
     return;
   }
   GemMan::m_width = width;
@@ -400,7 +400,7 @@ void gemwin :: fogModeMess(int mode)
     break;
 
   default :
-    error("fogmode must be 0, 1, 2 or 3");
+    pd_error(0, "fogmode must be 0, 1, 2 or 3");
     break;
   }
 }

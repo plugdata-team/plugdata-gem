@@ -261,7 +261,7 @@ void gemvertexbuffer :: tableMess (gem::VertexBuffer&vb, std::string name,
   return;
 
 failed:
-  error("illegal arguments to '%s': must be <table[1..%d]> [<offset>]",
+  pd_error(0, "illegal arguments to '%s': must be <table[1..%d]> [<offset>]",
         name.c_str(), vb.dimen);
   return;
 }
@@ -375,7 +375,7 @@ void gemvertexbuffer :: enableMess (t_symbol*s, int argc, t_atom *argv)
     } else if("normal"  ==std::string(atom_getsymbol(argv+i)->s_name)) {
       m_normal  .enabled=true;
     } else {
-      error("enable: illegal argument#%d: must be 'position', 'color', 'texture', 'normal' or 'attribute'",
+      pd_error(0, "enable: illegal argument#%d: must be 'position', 'color', 'texture', 'normal' or 'attribute'",
             i);
     }
   }
@@ -397,7 +397,7 @@ void gemvertexbuffer :: disableMess (t_symbol*s, int argc, t_atom *argv)
     } else if("normal"  ==std::string(atom_getsymbol(argv+i)->s_name)) {
       m_normal  .enabled=false;
     } else {
-      error("disable: illegal argument#%d: must be 'position', 'color', 'texture', 'normal' or 'attribute'",
+      pd_error(0, "disable: illegal argument#%d: must be 'position', 'color', 'texture', 'normal' or 'attribute'",
             i);
     }
   }
@@ -411,12 +411,12 @@ void gemvertexbuffer :: tabMess(unsigned int argc, t_atom *argv,
   int offset2 = 0;
   bool resize=true;
   if ( argv[0].a_type != A_SYMBOL ) {
-    error("first arg must be symbol (table name)");
+    pd_error(0, "first arg must be symbol (table name)");
     return;
   }
   if ( argc > 1 ) {
     if ( argv[1].a_type != A_FLOAT ) {
-      error("second arg must be float (offset)");
+      pd_error(0, "second arg must be float (offset)");
     } else {
       offset2 = argv[1].a_w.w_float;
       resize=false;
@@ -476,22 +476,22 @@ void gemvertexbuffer :: copyArray(const std::string&tab_name,
   const bool interleaved = (0==dimen);
 
   if(offset>vb.size) {
-    error("offset %d is bigger than vertexbuffer size (%d) for %s", offset, vb.size, tab_name.c_str());
+    pd_error(0, "offset %d is bigger than vertexbuffer size (%d) for %s", offset, vb.size, tab_name.c_str());
     return;
   }
 
   t_symbol*s=gensym(tab_name.c_str());
   pd_findbyclass(s, garray_class);
   if (!(a = (t_garray *)pd_findbyclass(s, garray_class))) {
-    error("%s: no such array", tab_name.c_str());
+    pd_error(0, "%s: no such array", tab_name.c_str());
     return;
   }
   if (!garray_getfloatwords(a, &npoints_, &vec)) {
-    error("%s: bad template for tabLink", tab_name.c_str());
+    pd_error(0, "%s: bad template for tabLink", tab_name.c_str());
     return;
   }
   if(npoints_<0) {
-    error("%s: illegal number of elements %d", tab_name.c_str(), npoints_);
+    pd_error(0, "%s: illegal number of elements %d", tab_name.c_str(), npoints_);
   }
   npoints=npoints_;
 
@@ -557,13 +557,13 @@ void gemvertexbuffer :: attribute(t_symbol*s, int argc, t_atom *argv)
   bool resize=true;
 
   if(glsl_program==0) {
-    error("glsl_program has not been set");
+    pd_error(0, "glsl_program has not been set");
     return;
   }
 
   if((argc!=2 && argc!=3) || (argv[0].a_type!=A_SYMBOL
                               || argv[1].a_type!=A_SYMBOL)) {
-    error("illegal arguments to 'attribute': must be <vbo_index> <attribute_name> <table> [<offset>]");
+    pd_error(0, "illegal arguments to 'attribute': must be <vbo_index> <attribute_name> <table> [<offset>]");
     return;
   }
   if(argc==3) {
@@ -571,7 +571,7 @@ void gemvertexbuffer :: attribute(t_symbol*s, int argc, t_atom *argv)
       tab_offset=atom_getfloat(argv+2);
       resize=false;
     } else {
-      error("illegal arguments to 'attribute': must be <vbo_index> <attribute_name> <table> [<offset>]");
+      pd_error(0, "illegal arguments to 'attribute': must be <vbo_index> <attribute_name> <table> [<offset>]");
       return;
     }
   }
@@ -592,7 +592,7 @@ void gemvertexbuffer :: attribute(t_symbol*s, int argc, t_atom *argv)
   name_ch = name.c_str();
   glsl_index = glGetAttribLocation(glsl_program, name_ch);
   if(glsl_index==-1) {
-    error("illegal arguments to 'attribute': '%s' not found in glsl_program",
+    pd_error(0, "illegal arguments to 'attribute': '%s' not found in glsl_program",
           name_ch);
     return;
   }
@@ -629,7 +629,7 @@ void gemvertexbuffer :: attribute(t_symbol*s, int argc, t_atom *argv)
     vbo_dimen=16;
     break;
   default:
-    error("illegal arguments to 'attribute': must be type 'float', 'vec2-4' or 'mat2-4'");
+    pd_error(0, "illegal arguments to 'attribute': must be type 'float', 'vec2-4' or 'mat2-4'");
     return;
   }
 

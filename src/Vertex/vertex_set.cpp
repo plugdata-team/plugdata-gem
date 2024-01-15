@@ -52,7 +52,7 @@ void vertex_set :: paramMess(int argc, t_atom*argv)
     m_x = atom_getfloat(argv);
     break;
   default:
-    error("set must be 3 or 4 values!");
+    pd_error(0, "set must be 3 or 4 values!");
     break;
   }
 }

@@ -173,7 +173,7 @@ void GemTextBase :: fontNameMess(const std::string&filename)
   const char *bufptr=NULL;
 
   if(filename.empty()) {
-    error("no font-file specified");
+    pd_error(0, "no font-file specified");
     return;
   }
   std::string fn = findFile(filename);
@@ -182,7 +182,7 @@ void GemTextBase :: fontNameMess(const std::string&filename)
   /* try to open the file */
   FILE*file = fopen(bufptr, "r");
   if (!file) {
-    error("cannot find font-file '%s'", bufptr);
+    pd_error(0, "cannot find font-file '%s'", bufptr);
     return;
   }
   fclose(file);
@@ -190,7 +190,7 @@ void GemTextBase :: fontNameMess(const std::string&filename)
   /* now read font */
   m_font=makeFont(bufptr);
   if (NULL==m_font) {
-    error("unable to open font '%s'", bufptr);
+    pd_error(0, "unable to open font '%s'", bufptr);
     return;
   }
   m_fontname=gensym(filename.c_str());
@@ -230,7 +230,7 @@ void GemTextBase :: setFontSize()
   }
 
   if(!m_font->FaceSize(fs)) {
-    error("unable to set fontsize !");
+    pd_error(0, "unable to set fontsize !");
   }
   //setModified();
 }

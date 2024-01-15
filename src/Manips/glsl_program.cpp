@@ -470,7 +470,7 @@ bool glsl_program :: isRunnable()
     return true;
   }
 
-  error("openGL-2.0 (or at least ARB shader extensions) needed for GLSL");
+  pd_error(0, "openGL-2.0 (or at least ARB shader extensions) needed for GLSL");
 
   return false;
 }
@@ -562,17 +562,17 @@ void glsl_program :: paramMess(t_symbol*s,int argc, const t_atom *argv)
       t_symbol *s = atom_getsymbol(argv);
       t_garray *a;
       if (!(a = (t_garray *)pd_findbyclass(s, garray_class))) {
-        error("no such table '%s' to fill values for uniform variable '%s'", s->s_name, name.c_str());
+        pd_error(0, "no such table '%s' to fill values for uniform variable '%s'", s->s_name, name.c_str());
         return;
       }
       int npoints;
       t_word *vec;
       if (!garray_getfloatwords(a, &npoints, &vec)) {
-        error("%s: bad template for uniform '%s'", s->s_name, name.c_str());
+        pd_error(0, "%s: bad template for uniform '%s'", s->s_name, name.c_str());
         return;
       }
       if(npoints < 0) {
-        error("%s: illegal number of elements %d for uniform '%s'", s->s_name, npoints, name.c_str());
+        pd_error(0, "%s: illegal number of elements %d for uniform '%s'", s->s_name, npoints, name.c_str());
         return;
       }
       if(npoints > maxargc)
@@ -623,7 +623,7 @@ void glsl_program :: paramMess(t_symbol*s,int argc, const t_atom *argv)
     return;
   } catch (std::out_of_range&) {
     // if we reach this, then no param-name was matching!
-    error("no method for '%s' (it's not a uniform variable)", s->s_name);
+    pd_error(0, "no method for '%s' (it's not a uniform variable)", s->s_name);
   }
 }
 void glsl_program :: keepUniformsMess(bool keep) {
@@ -640,7 +640,7 @@ void glsl_program :: shaderMess(int argc, t_atom *argv)
   int i;
 
   if (!argc) {
-    error("can't link non-existent shaders");
+    pd_error(0, "can't link non-existent shaders");
     return;
   }
 
@@ -655,7 +655,7 @@ void glsl_program :: shaderMess(int argc, t_atom *argv)
     try {
       ui=m_shadermapper.get(f);
     } catch(GemException&x) {
-      error("unable to get shaderID for %f...skipping!", f);
+      pd_error(0, "unable to get shaderID for %f...skipping!", f);
       continue;
     }
     m_shaderObj[m_numShaders]    = ui;
@@ -852,7 +852,7 @@ void glsl_program :: LinkProgram()
 {
   bool success=false;
   if (!m_numShaders) {
-    error("can't link zero shaders");
+    pd_error(0, "can't link zero shaders");
     return;
   }
 
@@ -996,7 +996,7 @@ void glsl_program :: getVariables()
 void glsl_program :: printInfo()
 {
   if(!m_linked) {
-    error("no GLSL-program linked");
+    pd_error(0, "no GLSL-program linked");
     return;
   }
 

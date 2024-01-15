@@ -105,12 +105,12 @@ void text2d :: setFontSize()
 
   if (m_bmfont) {
     if (! m_bmfont->FaceSize(fs) ) {
-      error("unable to set fontsize!");
+      pd_error(0, "unable to set fontsize!");
     }
   }
   if (m_aafont) {
     if (! m_aafont->FaceSize(fs) ) {
-      error("unable to set antialiased-fontfize!");
+      pd_error(0, "unable to set antialiased-fontfize!");
     }
   }
   m_font=selectFont();

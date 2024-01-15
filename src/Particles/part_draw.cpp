@@ -78,7 +78,7 @@ void part_draw :: typeMess(t_symbol*s,int ac,t_atom* av)
       m_drawType=GL_POINTS;
       break;
     default:
-      error("unknown draw style");
+      pd_error(0, "unknown draw style");
       return;
     }
   } else {

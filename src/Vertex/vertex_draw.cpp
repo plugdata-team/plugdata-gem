@@ -315,7 +315,7 @@ void vertex_draw :: typeMess(t_symbol* type)
     break;
 
   default:
-    error ("GEM: square draw style");
+    pd_error(0, "GEM: square draw style");
     return;
   }
   setModified();

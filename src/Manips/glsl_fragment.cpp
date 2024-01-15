@@ -59,7 +59,7 @@ bool glsl_fragment :: isRunnable()
     return true;
   }
 
-  error("need OpenGL-2.0 (or at least the fragment-shader ARB-extension) to run GLSL");
+  pd_error(0, "need OpenGL-2.0 (or at least the fragment-shader ARB-extension) to run GLSL");
   return false;
 }
 

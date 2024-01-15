@@ -321,7 +321,7 @@ void pix_set :: FILLMess(t_symbol* s, int argc, t_atom *argv)
       b=(unsigned char)(m_inputScale*atom_getfloat(&argv[2]));
       a=0;
     } else {
-      error("fill need 1 or 3 float arg in RGB mode");
+      pd_error(0, "fill need 1 or 3 float arg in RGB mode");
       return;
     }
     while (counter--) {
@@ -344,7 +344,7 @@ void pix_set :: FILLMess(t_symbol* s, int argc, t_atom *argv)
       r=g=b=(unsigned char)(m_inputScale*atom_getfloat(&argv[0]));
       a=0;
     } else {
-      error("fill need 1 float arg in GREY mode");
+      pd_error(0, "fill need 1 float arg in GREY mode");
       return;
     }
     while (counter--) {
@@ -374,7 +374,7 @@ void pix_set :: FILLMess(t_symbol* s, int argc, t_atom *argv)
       b=(unsigned char)(m_inputScale*atom_getfloat(&argv[2]));
       a=(unsigned char)(m_inputScale*atom_getfloat(&argv[3]));;
     } else {
-      error("fill need 1 or 4 float arg in RGBA mode");
+      pd_error(0, "fill need 1 or 4 float arg in RGBA mode");
       return;
     }
     while (counter--) {

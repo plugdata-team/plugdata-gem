@@ -59,7 +59,7 @@ void vertex_add::typeMess(int argc, t_atom*argv)
   char c=0;
   switch(argc) {
   default:
-    error("GEM: dual_vertex: 'type' must have 1 (for both sides) or 2 arguments!");
+    pd_error(0, "GEM: dual_vertex: 'type' must have 1 (for both sides) or 2 arguments!");
     break;
   case 2:
     c=*atom_getsymbol(argv+1)->s_name;
@@ -81,7 +81,7 @@ void vertex_add::typeMess(int argc, t_atom*argv)
       m_rightType=3;
       break;
     default:
-      error("vertex_operator: invalid type '%s'! skipping",
+      pd_error(0, "vertex_operator: invalid type '%s'! skipping",
             atom_getsymbol(argv+1)->s_name);
       return;
     }
@@ -105,7 +105,7 @@ void vertex_add::typeMess(int argc, t_atom*argv)
       m_leftType=3;
       break;
     default:
-      error("vertex_operator: invalid type '%s'! skipping",
+      pd_error(0, "vertex_operator: invalid type '%s'! skipping",
             atom_getsymbol(argv)->s_name);
       return;
     }

@@ -16,7 +16,7 @@
 
 #include "Exception.h"
 
-// for error()
+// for pd_error()
 #include <m_pd.h>
 #include <string.h>
 #include <stdlib.h>

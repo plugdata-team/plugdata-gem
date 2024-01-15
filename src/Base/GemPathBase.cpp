@@ -39,7 +39,7 @@ GemPathBase :: GemPathBase(int argc, t_atom *argv)
       m_numDimens = 1;
     }
     if (m_numDimens > 64) {
-      error("too many dimensions, must be below 64");
+      pd_error(0, "too many dimensions, must be below 64");
       m_numDimens = 64;
     }
   }
@@ -62,14 +62,14 @@ void GemPathBase :: openMess(t_symbol* arrayname)
 {
   m_array = (t_garray *)pd_findbyclass(arrayname, garray_class);
   if (!m_array) {
-    error("unable to find array %s", arrayname->s_name);
+    pd_error(0, "unable to find array %s", arrayname->s_name);
     return;
   }
 }
 void GemPathBase :: floatMess(t_float val)
 {
   if (!m_array) {
-    error("no array");
+    pd_error(0, "no array");
     return;
   }
 
@@ -80,7 +80,7 @@ void GemPathBase :: floatMess(t_float val)
   }
 
   if (size % m_numDimens) {
-    error("size is not a mod of dimensions");
+    pd_error(0, "size is not a mod of dimensions");
     return;
   }
 

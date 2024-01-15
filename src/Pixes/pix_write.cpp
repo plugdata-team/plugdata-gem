@@ -50,7 +50,7 @@ pix_write :: pix_write(int argc, t_atom *argv)
   if (argc == 5) {
     m_color = atom_getint(&argv[4]);
     if (m_color != 1 && m_color != 3 && m_color != 4) {
-      error("color argument could be 1, 3 or 4");
+      pd_error(0, "color argument could be 1, 3 or 4");
       m_color = 3;
     }
     argc--;
@@ -64,7 +64,7 @@ pix_write :: pix_write(int argc, t_atom *argv)
     m_width = atom_getint(&argv[0]);
     m_height = atom_getint(&argv[1]);
   } else if (argc != 0) {
-    error("needs 0, 2, 4 or 5 values");
+    pd_error(0, "needs 0, 2, 4 or 5 values");
     m_xoff = m_yoff = 0;
     m_width = m_height = 128;
   }
@@ -109,7 +109,7 @@ bool pix_write :: isRunnable(void)
     return true;
   }
 
-  error("your system lacks texture support");
+  pd_error(0, "your system lacks texture support");
   return false;
 }
 
@@ -273,7 +273,7 @@ void pix_write :: colorFormatMess(int format)
 {
   m_color = format;
   if (m_color != 1 && m_color != 3 && m_color != 4) {
-    error("color argument could be 1, 3 or 4");
+    pd_error(0, "color argument could be 1, 3 or 4");
     m_color = 3;
   }
 }

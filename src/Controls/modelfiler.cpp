@@ -115,7 +115,7 @@ static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom
 void modelfiler :: setPropertyMess(t_symbol*, int argc, t_atom*argv)
 {
   if(!argc) {
-    error("no property specified!");
+    pd_error(0, "no property specified!");
     return;
   }
   addProperties(this, m_readprops, argc, argv);
@@ -270,7 +270,7 @@ void modelfiler :: enumPropertyMess()
       m_infoOut.send("proplist", data);
     }
   } else {
-    error("cannot enumerate properties without a valid model loader");
+    pd_error(0, "cannot enumerate properties without a valid model loader");
   }
 }
 
@@ -305,7 +305,7 @@ void modelfiler :: backendMess(t_symbol*s, int argc, t_atom*argv)
         t_symbol* b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
       } else {
-        error("%s must be symbolic", s->s_name);
+        pd_error(0, "%s must be symbolic", s->s_name);
       }
     }
   } else {
@@ -346,7 +346,7 @@ void modelfiler :: openMess(const std::string&filename)
   gem::Properties wantProps = m_readprops;
 
   if(!m_loader) {
-    error("no model loader backends found");
+    pd_error(0, "no model loader backends found");
     return;
   }
   if(!m_backends.empty()) {
@@ -357,7 +357,7 @@ void modelfiler :: openMess(const std::string&filename)
   canvas_makefilename(const_cast<t_canvas*>(getCanvas()),
                       const_cast<char*>(filename.c_str()), buf, MAXPDSTRING);
   if(!m_loader->open(buf, wantProps)) {
-    error("unable to read model '%s'", buf);
+    pd_error(0, "unable to read model '%s'", buf);
     return;
   }
 
@@ -421,7 +421,7 @@ size_t modelfiler :: copyArrays(const std::string&name, const std::string*tablen
   }
   std::string failed = checkArrays(tablenames, count);
   if(!failed.empty()) {
-    error("no such array '%s' for %s", failed.c_str(), name.c_str());
+    pd_error(0, "no such array '%s' for %s", failed.c_str(), name.c_str());
     return 0;
   }
 
@@ -494,12 +494,12 @@ void modelfiler :: tableMess(t_symbol*s, int argc, t_atom*argv)
   }
 
   if (!names) {
-    error("invalid tabletype '%s'", s->s_name);
+    pd_error(0, "invalid tabletype '%s'", s->s_name);
     return;
   }
 
   if((argc != 1) && (argc != extensions.size()) && (argc != extensions.size() + 1)) {
-    error("'%s' requires %d array names", s->s_name, extensions.size());
+    pd_error(0, "'%s' requires %d array names", s->s_name, extensions.size());
     return;
   }
   if(argc == extensions.size()) {

@@ -134,7 +134,7 @@ static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom
 void model :: setPropertyMess(t_symbol*, int argc, t_atom*argv)
 {
   if(!argc) {
-    error("no property specified!");
+    pd_error(0, "no property specified!");
     return;
   }
   addProperties(this, m_writeprops, argc, argv);
@@ -289,7 +289,7 @@ void model :: enumPropertyMess()
       m_infoOut.send("proplist", data);
     }
   } else {
-    error("cannot enumerate properties without a valid model loader");
+    pd_error(0, "cannot enumerate properties without a valid model loader");
   }
 }
 
@@ -418,7 +418,7 @@ void model :: drawMess(int type)
 void model :: drawMess(std::string name)
 {
   if(0==m_drawTypes.size()) {
-    error("unable to change drawstyle");
+    pd_error(0, "unable to change drawstyle");
     return;
   }
 
@@ -426,10 +426,10 @@ void model :: drawMess(std::string name)
 
   std::map<std::string, GLenum>::iterator it=m_drawTypes.find(name);
   if(m_drawTypes.end() == it) {
-    error ("unknown draw style '%s'... possible values are:", name.c_str());
+    pd_error(0, "unknown draw style '%s'... possible values are:", name.c_str());
     it=m_drawTypes.begin();
     while(m_drawTypes.end() != it) {
-      error("\t %s", it->first.c_str());
+      pd_error(0, "\t %s", it->first.c_str());
       ++it;
     }
     return;
@@ -458,7 +458,7 @@ void model :: backendMess(t_symbol*s, int argc, t_atom*argv)
         t_symbol* b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
       } else {
-        error("%s must be symbolic", s->s_name);
+        pd_error(0, "%s must be symbolic", s->s_name);
       }
     }
   } else {
@@ -499,7 +499,7 @@ void model :: openMess(const std::string&filename)
   gem::Properties wantProps = m_writeprops;
 
   if(!m_loader) {
-    error("no model loader backends found");
+    pd_error(0, "no model loader backends found");
     return;
   }
   m_loader->close();
@@ -515,7 +515,7 @@ void model :: openMess(const std::string&filename)
   canvas_makefilename(const_cast<t_canvas*>(getCanvas()),
                       const_cast<char*>(filename.c_str()), buf, MAXPDSTRING);
   if(!m_loader->open(buf, wantProps)) {
-    error("unable to read model '%s'", buf);
+    pd_error(0, "unable to read model '%s'", buf);
     return;
   }
 

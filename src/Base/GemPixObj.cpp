@@ -172,20 +172,20 @@ void GemPixObj :: processImage(imageStruct &image)
   switch (image.format) {
   case GL_RGBA:
   case GL_BGRA_EXT:
-    error("cannot handle RGBA image");
+    pd_error(0, "cannot handle RGBA image");
     break;
   case GL_RGB:
   case GL_BGR_EXT:
-    error("cannot handle RGB image");
+    pd_error(0, "cannot handle RGB image");
     break;
   case GL_LUMINANCE:
-    error("cannot handle Grey image");
+    pd_error(0, "cannot handle Grey image");
     break;
   case GL_YUV422_GEM:
-    error("cannot handle YUV image");
+    pd_error(0, "cannot handle YUV image");
     break;
   default:
-    error("cannot handle this format (%x) !", image.format);
+    pd_error(0, "cannot handle this format (%x) !", image.format);
   }
 }
 void GemPixObj :: processFloat32(imageStruct &image)
@@ -193,20 +193,20 @@ void GemPixObj :: processFloat32(imageStruct &image)
   switch (image.format) {
   case GL_RGBA:
   case GL_BGRA_EXT:
-    error("cannot handle RGBA/float image");
+    pd_error(0, "cannot handle RGBA/float image");
     break;
   case GL_RGB:
   case GL_BGR_EXT:
-    error("cannot handle RGB/float image");
+    pd_error(0, "cannot handle RGB/float image");
     break;
   case GL_LUMINANCE:
-    error("cannot handle Grey/float image");
+    pd_error(0, "cannot handle Grey/float image");
     break;
   case GL_YUV422_GEM:
-    error("cannot handle YUV/float image");
+    pd_error(0, "cannot handle YUV/float image");
     break;
   default:
-    error("cannot handle this format (0x%X/float) !", image.format);
+    pd_error(0, "cannot handle this format (0x%X/float) !", image.format);
   }
 }
 
@@ -215,20 +215,20 @@ void GemPixObj :: processFloat64(imageStruct &image)
   switch (image.format) {
   case GL_RGBA:
   case GL_BGRA_EXT:
-    error("cannot handle RGBA/double image");
+    pd_error(0, "cannot handle RGBA/double image");
     break;
   case GL_RGB:
   case GL_BGR_EXT:
-    error("cannot handle RGB/double image");
+    pd_error(0, "cannot handle RGB/double image");
     break;
   case GL_LUMINANCE:
-    error("cannot handle Grey/double image");
+    pd_error(0, "cannot handle Grey/double image");
     break;
   case GL_YUV422_GEM:
-    error("cannot handle YUV/double image");
+    pd_error(0, "cannot handle YUV/double image");
     break;
   default:
-    error("cannot handle this format (0x%X/double) !", image.format);
+    pd_error(0, "cannot handle this format (0x%X/double) !", image.format);
   }
 }
 

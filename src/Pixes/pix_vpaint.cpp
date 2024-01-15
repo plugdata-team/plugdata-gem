@@ -93,12 +93,12 @@ bool pix_vpaint :: isRunnable(void)
         (strncmp((const char *) glGetString(GL_VERSION), "1.2", 3) == 0);
   */
   if(!GLEW_VERSION_1_2) {
-    error("openGL-1.2 support missing");
+    pd_error(0, "openGL-1.2 support missing");
     return false;
   }
 
   if(!GLEW_EXT_blend_minmax && !GLEW_SGI_color_matrix) {
-    error("both color_matrix and blend_minmax extension missing");
+    pd_error(0, "both color_matrix and blend_minmax extension missing");
     return false;
   }
 
@@ -222,11 +222,11 @@ void pix_vpaint :: init()
     glPixelMapfv(GL_PIXEL_MAP_G_TO_G, 256, table);
     glPixelMapfv(GL_PIXEL_MAP_B_TO_B, 256, table);
   } else {
-    error("This OpenGL implementation does not support the color matrix and/or\n");
-    error("the min/max blending equations, therefore the option to draw the\n");
-    error("Voronoi region edges is unavailable.\n\n");
-    error("The required features are available with OpenGL 1.2 or the GL_EXT_blend_minmax\n");
-    error("and GL_SGI_color_matrix extensions.\n");
+    pd_error(0, "This OpenGL implementation does not support the color matrix and/or\n");
+    pd_error(0, "the min/max blending equations, therefore the option to draw the\n");
+    pd_error(0, "Voronoi region edges is unavailable.\n\n");
+    pd_error(0, "The required features are available with OpenGL 1.2 or the GL_EXT_blend_minmax\n");
+    pd_error(0, "and GL_SGI_color_matrix extensions.\n");
   }
   m_initialized = 1;
   m_pbuffer->disable();

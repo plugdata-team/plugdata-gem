@@ -96,7 +96,7 @@ bool pix_multitexture :: isRunnable(void)
     return true;
   }
   m_useTexUnits=0;
-  error("your system lacks multitexture support");
+  pd_error(0, "your system lacks multitexture support");
   return false;
 }
 
@@ -225,7 +225,7 @@ void pix_multitexture :: obj_setupCallback(t_class *classPtr)
 void pix_multitexture :: texUnitMess(int n, int texID)
 {
   if(n<0 || n>=MAX_MULTITEX_ID) {
-    error("ID %d out of range 0..%d", n, MAX_MULTITEX_ID-1);
+    pd_error(0, "ID %d out of range 0..%d", n, MAX_MULTITEX_ID-1);
     return;
   }
   m_texID[(int)n] = (GLint)texID;

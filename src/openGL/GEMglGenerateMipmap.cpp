@@ -54,7 +54,7 @@ bool GEMglGenerateMipmap:: isRunnable(void)
   if(GLEW_VERSION_1_3) {
     return true;
   }
-  error("your system does not support OpenGL-1.3");
+  pd_error(0, "your system does not support OpenGL-1.3");
   return false;
 }
 

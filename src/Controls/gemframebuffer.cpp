@@ -158,7 +158,7 @@ gemframebuffer :: ~gemframebuffer()
 bool gemframebuffer :: isRunnable()
 {
   if(!GLEW_VERSION_1_3) {
-    error("openGL version 1.3 needed");
+    pd_error(0, "openGL version 1.3 needed");
     return false;
   }
 
@@ -176,7 +176,7 @@ bool gemframebuffer :: isRunnable()
     return true;
   }
 
-  error("openGL framebuffer extension is not supported by this system");
+  pd_error(0, "openGL framebuffer extension is not supported by this system");
 
   return false;
 }
@@ -193,7 +193,7 @@ void gemframebuffer :: render(GemState *state)
   }
 
   if(!m_width || !m_height) {
-    error("width and height must be present!");
+    pd_error(0, "width and height must be present!");
   }
 
   glActiveTexture(GL_TEXTURE0_ARB + m_texunit);
@@ -425,31 +425,31 @@ void gemframebuffer :: initFBO()
   if( status != GL_FRAMEBUFFER_COMPLETE_EXT ) {
     switch(status) {
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
-      error("GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT");
+      pd_error(0, "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT");
       break;
     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-      error("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT");
+      pd_error(0, "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT");
       break;
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-      error("GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT");
+      pd_error(0, "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT");
       break;
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-      error("GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT");
+      pd_error(0, "GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT");
       break;
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-      error("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT");
+      pd_error(0, "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT");
       break;
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-      error("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT");
+      pd_error(0, "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT");
       break;
     case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-      error("GL_FRAMEBUFFER_UNSUPPORTED_EXT");
+      pd_error(0, "GL_FRAMEBUFFER_UNSUPPORTED_EXT");
       break;
     case GL_INVALID_FRAMEBUFFER_OPERATION_EXT:
-      error("GL_INVALID_FRAMEBUFFER_OPERATION_EXT");
+      pd_error(0, "GL_INVALID_FRAMEBUFFER_OPERATION_EXT");
       break;
     default:
-      error("Unknown ERROR %d", status);
+      pd_error(0, "Unknown ERROR %d", status);
     }
     return;
   }
@@ -491,7 +491,7 @@ void gemframebuffer :: destroyFBO()
 /////////////////////////////////////////////////////////
 void gemframebuffer :: bangMess()
 {
-  error("'bang' message not implemented");
+  pd_error(0, "'bang' message not implemented");
 }
 
 ////////////////////////////////////////////////////////
@@ -540,7 +540,7 @@ void gemframebuffer :: colorMess(t_symbol*s,int argc, t_atom*argv)
     blue =atom_getfloat(argv+2);
     break;
   default:
-    error("'color' message takes 3 (RGB) or 4 (RGBA) values");
+    pd_error(0, "'color' message takes 3 (RGB) or 4 (RGBA) values");
     return;
   }
 
@@ -566,7 +566,7 @@ void gemframebuffer :: perspectiveMess(t_symbol*s,int argc, t_atom*argv)
     //    setModified();
     break;
   default:
-    error("\"perspec\" expects 6 values for frustum - left, right, bottom, top, near, far");
+    pd_error(0, "\"perspec\" expects 6 values for frustum - left, right, bottom, top, near, far");
   }
 }
 
@@ -623,7 +623,7 @@ void gemframebuffer :: formatMess(std::string format)
   } else if ("RGBA32F"==format) {
     tmp_format =  GL_RGBA32F;
   } else {
-    error("unknown format '%s'", format.c_str());
+    pd_error(0, "unknown format '%s'", format.c_str());
     return;
   }
 
@@ -644,7 +644,7 @@ void gemframebuffer :: typeMess(std::string type)
   } else if("BYTE"==type) {
     m_type = GL_UNSIGNED_BYTE;
   } else {
-    error("unknown type '%s', fall back to 'BYTE'", type.c_str());
+    pd_error(0, "unknown type '%s', fall back to 'BYTE'", type.c_str());
     type="BYTE";
     m_type=GL_UNSIGNED_BYTE;
   }

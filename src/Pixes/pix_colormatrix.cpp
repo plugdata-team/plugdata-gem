@@ -105,7 +105,7 @@ void pix_colormatrix :: matrixMess(int argc, t_atom *argv)
     m_matrix[12] = m_matrix[13] = m_matrix[14] = 0.;
     m_matrix[15] = 1.;
   } else {
-    error("GEM: color matrix size not correct");
+    pd_error(0, "GEM: color matrix size not correct");
     return;
   }
 

@@ -165,7 +165,7 @@ void polygon :: listMess(int argc, t_atom*argv)
 {
   if(0==m_numInputs) {
     if(argc%3) {
-      error("list must contain 3 elements for each vertex!");
+      pd_error(0, "list must contain 3 elements for each vertex!");
       return;
     }
     createVertices(argc/3);
@@ -181,7 +181,7 @@ void polygon :: listMess(int argc, t_atom*argv)
       argv+=3;
     }
   } else {
-    error("vertex-list must have exactly %d numbers", m_numVertices*3);
+    pd_error(0, "vertex-list must have exactly %d numbers", m_numVertices*3);
   }
 }
 
@@ -197,7 +197,7 @@ void polygon :: setVert(int whichOne, float x, float y, float z)
     m_vert[whichOne][2] = z;
     setModified();
   } else {
-    error("cannot set vertex#%d of %d", whichOne, m_numVertices);
+    pd_error(0, "cannot set vertex#%d of %d", whichOne, m_numVertices);
   }
 }
 

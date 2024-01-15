@@ -60,7 +60,7 @@ pix_snap2tex :: pix_snap2tex(int argc, t_atom *argv)
     break;
   /* coverity[unterminated_default] */
   default:
-    error("needs 0, 2, or 4 values");
+    pd_error(0, "needs 0, 2, or 4 values");
   case 0:
     m_x = m_y = 0;
     m_width = m_height = -1;
@@ -110,7 +110,7 @@ void pix_snap2tex :: setUpTextureState(void)
 bool pix_snap2tex :: isRunnable(void)
 {
   if(!GLEW_VERSION_1_1 && !GLEW_EXT_texture_object) {
-    error("your system lacks texture support");
+    pd_error(0, "your system lacks texture support");
     return false;
   }
 
@@ -165,7 +165,7 @@ void pix_snap2tex :: snapMess(void)
                    ((m_height>0)?NULL:&height));
 
   if (width <= 0 || height <= 0) {
-    error("Illegal size %dx%d", width, height);
+    pd_error(0, "Illegal size %dx%d", width, height);
     return;
   }
 
@@ -336,7 +336,7 @@ void pix_snap2tex :: startRendering(void)
   m_init=true;
 
   if (!m_textureObj)    {
-    error("Unable to allocate texture object");
+    pd_error(0, "Unable to allocate texture object");
     return;
   }
 }

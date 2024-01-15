@@ -54,7 +54,7 @@ bool glsl_tesscontrol :: isRunnable()
     return true;
   }
 
-  error("need OpenGL-4.0 to run GLSL tessellation");
+  pd_error(0, "need OpenGL-4.0 to run GLSL tessellation");
   return false;
 }
 

@@ -106,7 +106,7 @@ bool glsl_vertex :: openMessGL2(void)
   m_shader = glCreateShader(m_shaderTarget);
 
   if (!m_shader) {
-    error("could not create GLSL shader object");
+    pd_error(0, "could not create GLSL shader object");
     return false;
   }
   const char * vs = m_shaderString.c_str();
@@ -122,7 +122,7 @@ bool glsl_vertex :: openMessGL2(void)
     glGetShaderInfoLog( m_shader, length, NULL, log );
     post("compile Info_log:");
     post("%s", log );
-    error("shader not loaded");
+    pd_error(0, "shader not loaded");
     free(log);
     return false;
   }
@@ -145,7 +145,7 @@ bool glsl_vertex :: openMessARB(void)
   m_shaderARB = glCreateShaderObjectARB(m_shaderTarget);
 
   if (!m_shaderARB) {
-    error("could not create ARB shader object");
+    pd_error(0, "could not create ARB shader object");
     return false;
   }
   const char * vs = m_shaderString.c_str();
@@ -163,7 +163,7 @@ bool glsl_vertex :: openMessARB(void)
     glGetInfoLogARB( m_shaderARB, length, NULL, log );
     post("compile Info_log:");
     post("%s", log );
-    error("shader not loaded");
+    pd_error(0, "shader not loaded");
     free(log);
     return false;
   }
@@ -196,7 +196,7 @@ void glsl_vertex :: openMess(t_symbol* filename)
     long size = ftell(file);
     if(size<0) {
       fclose(file);
-      error("error reading filesize");
+      pd_error(0, "error reading filesize");
       return;
     }
     char*shaderString = new char[size + 1];
@@ -208,13 +208,13 @@ void glsl_vertex :: openMess(t_symbol* filename)
     int err=ferror(file);
     fclose(file);
     if(err) {
-      error("error %d reading file (%d<%d)", err, count, size);
+      pd_error(0, "error %d reading file (%d<%d)", err, count, size);
       delete[]shaderString;
       return;
     }
     m_shaderString = shaderString;
   } else {
-    error("could not find shader-file: '%s'", fname);
+    pd_error(0, "could not find shader-file: '%s'", fname);
     return;
   }
   verbose(1, "loaded shader file '%s'", fname);
@@ -260,7 +260,7 @@ bool glsl_vertex :: isRunnable()
     return true;
   }
 
-  error("need OpenGL-2.0 (or at least the vertex-shader ARB-extension) to run GLSL");
+  pd_error(0, "need OpenGL-2.0 (or at least the vertex-shader ARB-extension) to run GLSL");
   return false;
 }
 
@@ -273,7 +273,7 @@ void glsl_vertex :: startRendering()
   loadShader();
 
   if (m_shaderString.empty()) {
-    error("need to load a shader");
+    pd_error(0, "need to load a shader");
     return;
   }
 }

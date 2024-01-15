@@ -51,7 +51,7 @@ bool GEMglActiveTexture :: isRunnable(void)
   if(GLEW_ARB_multitexture) {
     return true;
   }
-  error("your system does not support the ARB multitexture extension");
+  pd_error(0, "your system does not support the ARB multitexture extension");
   return false;
 }
 /////////////////////////////////////////////////////////

@@ -307,7 +307,7 @@ void pix_tIIRf :: listMess(t_symbol* s, int argc, t_atom* argv)
 {
   int i=0;
   if(argc != (m_fbnum+m_ffnum)) {
-    error("need %d+%d arguments", m_fbnum, m_ffnum);
+    pd_error(0, "need %d+%d arguments", m_fbnum, m_ffnum);
     return;
   }
   for(i=0; i<m_fbnum; i++) {

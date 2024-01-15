@@ -379,7 +379,7 @@ void pix_background :: processYUVAltivec(imageStruct &image)
 
   //check to see if the buffer isn't 16byte aligned (highly unlikely)
   if (image.ysize*image.xsize % 16 != 0) {
-    error("image not properly aligned for Altivec - try something SD or HD maybe?");
+    pd_error(0, "image not properly aligned for Altivec - try something SD or HD maybe?");
     return;
   }
 
@@ -568,7 +568,7 @@ void pix_background :: rangeNMess(int argc, t_atom*argv)
     m_Vrange=v;
     break;
   default:
-    error("only 1 or 3 values are allowed as ranges (not %d)", argc);
+    pd_error(0, "only 1 or 3 values are allowed as ranges (not %d)", argc);
   }
 }
 

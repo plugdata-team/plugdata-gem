@@ -58,12 +58,12 @@ void vertex_info :: render(GemState *state)
 
   VertexArray =state->VertexArray;
   if (state->VertexArray == NULL || state->VertexArraySize <= 0) {
-    error("no vertex array!");
+    pd_error(0, "no vertex array!");
     return;
   }
 
   if (state->VertexArray == NULL ) {
-    error("no color array!");
+    pd_error(0, "no color array!");
     return;
   }
 

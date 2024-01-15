@@ -75,7 +75,7 @@ void pix_resize :: processImage(imageStruct &image)
     static bool firsttime = true;
     if(firsttime) {
       firsttime = false;
-      error("Gem has been compiled without GLU - disabled pix resizing");
+      pd_error(0, "Gem has been compiled without GLU - disabled pix resizing");
       return;
     }
 #endif

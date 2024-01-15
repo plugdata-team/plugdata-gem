@@ -98,7 +98,7 @@ void rubber :: rubber_init(void)
 
   m_mass = new MASS[m_grid_sizeX*m_grid_sizeY];
   if (m_mass == NULL)    {
-    error("can't allocate memory for masses.\n");
+    pd_error(0, "can't allocate memory for masses.\n");
     return;
   }
 
@@ -129,7 +129,7 @@ void rubber :: rubber_init(void)
 
   m_spring=new SPRING[m_spring_count];
   if (m_spring == NULL)    {
-    error("can't allocate memory for springs.\n");
+    pd_error(0, "can't allocate memory for springs.\n");
     return;
   }
 

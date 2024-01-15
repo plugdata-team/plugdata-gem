@@ -87,7 +87,7 @@ void gemlist :: sendCacheState(GemCache *cache, GemState*state)
 {
   if  ( !GemMan::windowExists() ) {
     // LATER: shouldn't this test for a valid context rather than an existing window??
-    //  error("you should not bang the gemlist now");
+    //  pd_error(0, "you should not bang the gemlist now");
     return;
   }
 
@@ -213,6 +213,6 @@ void gemlist::rightMess(t_symbol* s, int argc, t_atom *argv)
     state=reinterpret_cast<GemState*>((argv+1)->a_w.w_gpointer);
     rightRender( cache, state );
   } else {
-    error("wrong righthand arguments....");
+    pd_error(0, "wrong righthand arguments....");
   }
 }

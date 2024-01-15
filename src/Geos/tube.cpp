@@ -292,7 +292,7 @@ void tube :: slicesMess(int slices)
 {
 #ifndef __GNUC__
   if(slices>TUBE_NUMPTS) {
-    error("number of slices (%d) clamped to %d", slices, TUBE_NUMPTS);
+    pd_error(0, "number of slices (%d) clamped to %d", slices, TUBE_NUMPTS);
     slices=TUBE_NUMPTS;
   }
 #endif

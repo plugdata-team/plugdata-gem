@@ -526,7 +526,7 @@ void pix_frei0r :: closeMess()
 void pix_frei0r :: openMess(t_symbol*s)
 {
   if(!m_canopen) {
-    error("this instance cannot dynamically change the plugin");
+    pd_error(0, "this instance cannot dynamically change the plugin");
     return;
   }
 
@@ -545,11 +545,11 @@ void pix_frei0r :: openMess(t_symbol*s)
     }
     m_plugin = new F0RPlugin(filename);
   } catch (GemException&x) {
-    error("%s", x.what());
+    pd_error(0, "%s", x.what());
   }
 
   if(NULL==m_plugin) {
-    error("unable to open '%s'", pluginname.c_str());
+    pd_error(0, "unable to open '%s'", pluginname.c_str());
     return;
   }
 }
@@ -598,7 +598,7 @@ void pix_frei0r :: processRGBAImage(imageStruct &image)
 void pix_frei0r :: parmMess(const std::string&key, int argc, t_atom *argv)
 {
   if(!m_plugin) {
-    error("no plugin present! forgetting parameter....");
+    pd_error(0, "no plugin present! forgetting parameter....");
     return;
   }
   unsigned int i=0;
@@ -608,7 +608,7 @@ void pix_frei0r :: parmMess(const std::string&key, int argc, t_atom *argv)
       return;
     }
   }
-  error("unknown parameter '%s'", key.c_str());
+  pd_error(0, "unknown parameter '%s'", key.c_str());
 }
 
 
@@ -616,17 +616,17 @@ void pix_frei0r :: parmMess(int key, int argc, t_atom *argv)
 {
   unsigned int realkey=0;
   if(!m_plugin) {
-    error("no plugin present! forgetting parameter....");
+    pd_error(0, "no plugin present! forgetting parameter....");
     return;
   }
   if(key<=0) {
-    error("parameterIDs must be >0");
+    pd_error(0, "parameterIDs must be >0");
     return;
   } else {
     realkey=key-1;
   }
   if(static_cast<unsigned int>(key)>=m_plugin->m_parameterNames.size()) {
-    error("parameterID out of bounds");
+    pd_error(0, "parameterID out of bounds");
     return;
   }
 
@@ -639,7 +639,7 @@ void pix_frei0r :: parmMess(int key, int argc, t_atom *argv)
   switch(type) {
   case(F0R_PARAM_BOOL):
     if(argc!=1) {
-      error("param#%02d('%s') is of type BOOL: need exactly 1 argument", key,
+      pd_error(0, "param#%02d('%s') is of type BOOL: need exactly 1 argument", key,
             name);
       return;
     }
@@ -647,7 +647,7 @@ void pix_frei0r :: parmMess(int key, int argc, t_atom *argv)
     break;
   case(F0R_PARAM_DOUBLE):
     if(argc!=1) {
-      error("param#%02d('%s') is of type DOUBLE: need exactly 1 argument", key,
+      pd_error(0, "param#%02d('%s') is of type DOUBLE: need exactly 1 argument", key,
             name);
       return;
     }
@@ -655,7 +655,7 @@ void pix_frei0r :: parmMess(int key, int argc, t_atom *argv)
     break;
   case(F0R_PARAM_COLOR):
     if(argc!=3) {
-      error("param#%02d('%s') is of type COLOR: need exactly 3 arguments", key,
+      pd_error(0, "param#%02d('%s') is of type COLOR: need exactly 3 arguments", key,
             name);
       return;
     }
@@ -666,7 +666,7 @@ void pix_frei0r :: parmMess(int key, int argc, t_atom *argv)
     break;
   case(F0R_PARAM_POSITION):
     if(argc!=2) {
-      error("param#%02d('%s') is of type POSITION: need exactly 2 arguments",
+      pd_error(0, "param#%02d('%s') is of type POSITION: need exactly 2 arguments",
             key, name);
       return;
     }
@@ -676,14 +676,14 @@ void pix_frei0r :: parmMess(int key, int argc, t_atom *argv)
     break;
   case(F0R_PARAM_STRING):
     if(argc!=1) {
-      error("param#%02d('%s') is of type STRING: need exactly 1 argument", key,
+      pd_error(0, "param#%02d('%s') is of type STRING: need exactly 1 argument", key,
             name);
       return;
     }
     m_plugin->set(realkey, std::string(atom_getsymbol(argv)->s_name));
     break;
   default:
-    error("param#%02d('%s') is of UNKNOWN type", key, name);
+    pd_error(0, "param#%02d('%s') is of UNKNOWN type", key, name);
     break;
   }
   setPixModified();

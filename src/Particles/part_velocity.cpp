@@ -95,7 +95,7 @@ void part_velocity :: domainMess(const std::string&str)
   } else if ("rectangle"==str) {
     m_domain=PDRectangle;
   } else {
-    error("unknown domain");
+    pd_error(0, "unknown domain");
   }
 }
 

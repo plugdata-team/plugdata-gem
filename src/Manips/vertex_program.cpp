@@ -77,7 +77,7 @@ bool vertex_program :: isRunnable()
     return true;
   }
 
-  error("need ARB (or NV) vertex_program extension for shaders");
+  pd_error(0, "need ARB (or NV) vertex_program extension for shaders");
   return false;
 }
 
@@ -142,7 +142,7 @@ void vertex_program :: openMess(t_symbol* filename)
     long size = ftell(file);
     if(size<0) {
       fclose(file);
-      error("error reading filesize");
+      pd_error(0, "error reading filesize");
       return;
     }
     m_programString = new char[size + 1];
@@ -153,7 +153,7 @@ void vertex_program :: openMess(t_symbol* filename)
     int err=ferror(file);
     fclose(file);
     if(err) {
-      error("error %d reading file (%d<%d)", err, count, size);
+      pd_error(0, "error %d reading file (%d<%d)", err, count, size);
       return;
     }
   } else {
@@ -194,12 +194,12 @@ void vertex_program :: LoadProgram(void)
   GLint err=-1;
 
   if((GEM_PROGRAM_NV == m_programType) && (!GLEW_NV_vertex_program)) {
-    error("NV vertex programs not supported by this system");
+    pd_error(0, "NV vertex programs not supported by this system");
     return;
   }
 
   if((GEM_PROGRAM_ARB == m_programType) && (!GLEW_ARB_vertex_program)) {
-    error("ARB vertex programs not supported by this system");
+    pd_error(0, "ARB vertex programs not supported by this system");
     return;
   }
 
@@ -250,7 +250,7 @@ void vertex_program :: LoadProgram(void)
       e++;
     }
     *e = '\0';
-    error("program error at line %d:\n\"%s\"\n",line,s);
+    pd_error(0, "program error at line %d:\n\"%s\"\n",line,s);
     post("%s\n", glGetString(GL_PROGRAM_ERROR_STRING_ARB));
   }
 
@@ -262,7 +262,7 @@ void vertex_program :: LoadProgram(void)
     // If the program is over the hardware's limits, print out some information
     if (isUnderNativeLimits!=1) {
       // Go through the most common limits that are exceeded
-      error("is beyond hardware limits");
+      pd_error(0, "is beyond hardware limits");
 
       GLint aluInstructions, maxAluInstructions;
       glGetProgramivARB(m_programTarget, GL_PROGRAM_ALU_INSTRUCTIONS_ARB,
@@ -320,7 +320,7 @@ void vertex_program :: LoadProgram(void)
 void vertex_program :: startRendering()
 {
   if (m_programString == NULL) {
-    error("need to load a program");
+    pd_error(0, "need to load a program");
     return;
   }
 

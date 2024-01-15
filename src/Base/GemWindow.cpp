@@ -453,7 +453,7 @@ bool GemWindow::createGemWindow(void)
       m_pimpl->mycontext = new gem::Context();
     } catch (GemException&x) {
       m_context=0;
-      error("%s", x.what());
+      pd_error(0, "%s", x.what());
       return false;
     }
     m_context=m_pimpl->mycontext;
@@ -512,7 +512,7 @@ void GemWindow:: bufferMess(int buf)
     m_buffer=buf;
     break;
   default:
-    error("buffer can only be '1' (single) or '2' (double) buffered");
+    pd_error(0, "buffer can only be '1' (single) or '2' (double) buffered");
     break;
   }
 }
@@ -563,7 +563,7 @@ void GemWindow::       printMess(void)
 {
   verbose(1, "@%p", this);
   if (!makeCurrent()) {
-    error("OpenGL has not been initialized yet");
+    pd_error(0, "OpenGL has not been initialized yet");
     post("create a window first!");
     return;
   }

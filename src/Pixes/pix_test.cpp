@@ -259,7 +259,7 @@ pix_test :: pix_test(int argc, t_atom*argv)
     if(A_FLOAT == argv->a_type && ((int)atom_getfloat(argv))>0) {
       m_pix.image.xsize=m_pix.image.ysize=atom_getfloat(argv);
     } else {
-      error("usage: pix_test <width=height>]");
+      pd_error(0, "usage: pix_test <width=height>]");
     }
     break;
   case 2:
@@ -273,11 +273,11 @@ pix_test :: pix_test(int argc, t_atom*argv)
         m_pix.image.ysize = i;
       }
     } else {
-      error("usage: pix_test [<width> <height>]");
+      pd_error(0, "usage: pix_test [<width> <height>]");
     }
     break;
   default:
-    error("usage: pix_test [<width> [<height>]]");
+    pd_error(0, "usage: pix_test [<width> [<height>]]");
     break;
   }
 
@@ -367,7 +367,7 @@ void pix_test :: csMess(std::string cs)
   } else if (("grey" == color) || ("gray" == color)) {
     fmt=GEM_GRAY;
   } else {
-    error("invalid colorspace '%s'; must be 'rgba', 'yuv' or 'grey'",
+    pd_error(0, "invalid colorspace '%s'; must be 'rgba', 'yuv' or 'grey'",
           cs.c_str());
     return;
   }

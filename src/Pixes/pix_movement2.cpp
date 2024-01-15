@@ -127,7 +127,7 @@ void pix_movement2 :: processImage(imageStruct &image)
   // 1. store the current frame as gray-image in the appropriate buffer
   m_frame[m_frameIndex].setCsizeByFormat();
   if(!m_frame[m_frameIndex].convertFrom(&image)) {
-    error("no method for this kind of color");
+    pd_error(0, "no method for this kind of color");
     return;
   }
 
@@ -185,7 +185,7 @@ void pix_movement2 :: processImage(imageStruct &image)
 void pix_movement2 :: threshMess(int thresh)
 {
   if(thresh < static_cast<int>(m_lowthresh)) {
-    error("high threshold (%d) must not be less than low threshold(%d)",
+    pd_error(0, "high threshold (%d) must not be less than low threshold(%d)",
           thresh, m_lowthresh);
     return;
   }
@@ -199,7 +199,7 @@ void pix_movement2 :: threshMess(int thresh)
 void pix_movement2 :: lowThreshMess(int thresh)
 {
   if(thresh > static_cast<int>(m_thresh)) {
-    error("low threshold (%d) must not be be greater than high threshold(%d)",
+    pd_error(0, "low threshold (%d) must not be be greater than high threshold(%d)",
           thresh, m_thresh);
     return;
   }
