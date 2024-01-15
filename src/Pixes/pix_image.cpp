@@ -22,7 +22,6 @@
 #ifdef _WIN32
 # include <io.h>
 # define close _close
-# define snprintf _snprintf
 #endif
 
 #if defined(__unix__) || defined(__APPLE__)

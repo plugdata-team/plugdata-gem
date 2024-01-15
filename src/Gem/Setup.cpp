@@ -45,7 +45,6 @@
 #ifdef _WIN32
 # include <io.h>
 # include <windows.h>
-# define snprintf _snprintf
 #else
 # include <unistd.h>
 #endif

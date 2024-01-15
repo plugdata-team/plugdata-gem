@@ -22,7 +22,6 @@
 #ifdef _WIN32
 # include <io.h>
 # include <windows.h>
-# define snprintf _snprintf
 #endif
 
 CPPEXTERN_NEW_WITH_ONE_ARG(pix_multitexture, t_floatarg, A_DEFFLOAT);

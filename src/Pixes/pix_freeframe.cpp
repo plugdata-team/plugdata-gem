@@ -31,7 +31,6 @@
 #ifdef _WIN32
 # include <io.h>
 # include <windows.h>
-# define snprintf _snprintf
 # define close _close
 
 /*
