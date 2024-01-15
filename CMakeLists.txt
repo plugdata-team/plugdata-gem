@@ -54,6 +54,8 @@ file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Gem/Setup.cpp
   ${GEM_SOURCE_PATH}/Gem/State.cpp
   ${GEM_SOURCE_PATH}/Gem/VertexBuffer.cpp
+  ${GEM_SOURCE_PATH}/Gem/PixConvert.cpp
+  ${GEM_SOURCE_PATH}/Gem/model.cpp
   ${GEM_SOURCE_PATH}/Geos/GemSplash.cpp
   ${GEM_SOURCE_PATH}/Geos/circle.cpp
   ${GEM_SOURCE_PATH}/Geos/colorSquare.cpp
@@ -270,6 +272,7 @@ file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/RTE/Outlet.cpp
   ${GEM_SOURCE_PATH}/RTE/RTE.cpp
   ${GEM_SOURCE_PATH}/RTE/Symbol.cpp
+  ${GEM_SOURCE_PATH}/RTE/Atom.cpp
   ${GEM_SOURCE_PATH}/Utils/Functions.cpp
   ${GEM_SOURCE_PATH}/Utils/GLUtil.cpp
   ${GEM_SOURCE_PATH}/Utils/GLUtil_define.cpp
@@ -1311,3 +1314,5 @@ target_include_directories(Gem-multi PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src
 if(UNIX)
 target_compile_options(Gem-multi PRIVATE -fvisibility=default)
 endif()
+
+
