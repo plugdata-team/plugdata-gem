@@ -16,16 +16,6 @@ LOG
 #include "Gem/GemGL.h"
 
 
-# if defined _WIN32
-typedef struct WGLEWContextStruct WGLEWContext;
-#  define GemGlewXContext WGLEWContext
-# elif defined __linux__ || defined HAVE_GL_GLX_H
-typedef struct GLXEWContextStruct GLXEWContext;
-#  define GemGlewXContext GLXEWContext
-# else
-// no GemGlewXContext on this platform...
-# endif
-
 typedef struct GLEWContextStruct GLEWContext;
 
 namespace gem
@@ -56,9 +46,6 @@ public:
 public:
   static unsigned int getContextId(void);
   static GLEWContext*getGlewContext(void);
-#ifdef GemGlewXContext
-  static GemGlewXContext*getGlewXContext(void);
-#endif /* GemGlewXContext */
 };
 
 }; // namespace
