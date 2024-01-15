@@ -30,10 +30,6 @@
 
 #include <stdio.h>
 
-#ifdef _MSC_VER  /* This is only for Microsoft's compiler, not cygwin, e.g. */
-# define snprintf _snprintf
-#endif
-
 CPPEXTERN_NEW_WITH_GIMME(gemhead);
 
 

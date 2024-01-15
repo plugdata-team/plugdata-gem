@@ -29,9 +29,9 @@ CLASS
 DESCRIPTION
 
 -----------------------------------------------------------------*/
-class GEM_EXTERN text3d : public TextBase
+class GEM_EXTERN text3d : public GemTextBase
 {
-  CPPEXTERN_HEADER(text3d, TextBase);
+  CPPEXTERN_HEADER(text3d, GemTextBase);
 
 public:
 
@@ -45,7 +45,7 @@ protected:
   // Destructor
   virtual ~text3d();
 
-#ifdef FTGL
+#ifdef HAVE_FTGL
   virtual void setFontSize(void);
   virtual FTFont* selectFont(void);
   virtual FTFont*makeFont(const char*fontname);

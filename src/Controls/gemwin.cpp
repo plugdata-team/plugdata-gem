@@ -22,6 +22,7 @@
 #include "gemwin.h"
 
 #include "Gem/GemGL.h"
+#include "Base/GemWinCreate.h"
 
 #ifdef __APPLE__
 # include <Carbon/Carbon.h>
@@ -29,8 +30,12 @@
 #endif // __APPLE__
 
 #include "Utils/GemMath.h"
+#include "Gem/Manager.h"
+#include <functional>
 
 CPPEXTERN_NEW_WITH_ONE_ARG(gemwin, t_floatarg, A_DEFFLOAT);
+
+void GemCallOnMessageThread(std::function<void()> callback);
 
 static bool StillHaveGemWin(bool up)
 {
@@ -141,28 +146,32 @@ void gemwin :: titleMess(t_symbol* s)
 // createMess
 //
 /////////////////////////////////////////////////////////
+
+
 void gemwin :: createMess(t_symbol* s)
 {
-  const char* disp = NULL;
+  GemCallOnMessageThread([s](){
+    const char* disp = NULL;
 
-  /* just in case a "pleaseDestroy" is still pending... */
-  GemMan::pleaseDestroy=false;
+    /* just in case a "pleaseDestroy" is still pending... */
+    GemMan::pleaseDestroy=false;
 
-  if (s != &s_) {
-    disp = s->s_name;
-  }
-
-  if ( !GemMan::windowExists() )  {
-    GemMan::createContext(disp);
-    if ( !GemMan::createWindow(disp) )  {
-      error("no window made");
-      return;
+    if (s != &s_) {
+      disp = s->s_name;
     }
-    GemMan::swapBuffers();
-    GemMan::swapBuffers();
-  } else {
-    error("window already made");
-  }
+
+    if ( !GemMan::windowExists() )  {
+      GemMan::createContext(disp);
+      if ( !GemMan::createWindow(disp) )  {
+        pd_error(nullptr, "no window made");
+        return;
+      }
+      GemMan::swapBuffers();
+      GemMan::swapBuffers();
+    } else {
+      pd_error(nullptr, "window already made");
+    }
+  });
 }
 
 /////////////////////////////////////////////////////////
@@ -253,6 +262,8 @@ void gemwin :: dimensionsMess(int width, int height)
   }
   GemMan::m_width = width;
   GemMan::m_height = height;
+    
+  gemWinResize(GemMan::getWindowInfo(), width, height);
 }
 /////////////////////////////////////////////////////////
 // offsetMess

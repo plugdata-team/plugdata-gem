@@ -28,9 +28,9 @@ CLASS
 DESCRIPTION
 
 -----------------------------------------------------------------*/
-class GEM_EXTERN text2d : public TextBase
+class GEM_EXTERN text2d : public GemTextBase
 {
-  CPPEXTERN_HEADER(text2d, TextBase);
+  CPPEXTERN_HEADER(text2d, GemTextBase);
 
 public:
 
@@ -49,7 +49,7 @@ protected:
   bool m_antialias;
   void aliasMess(int io);
 
-#ifdef FTGL
+#ifdef HAVE_FTGL
   /////////
   // Do the rendering
   virtual void renderLine(const char*line,float dist);

@@ -28,9 +28,9 @@ CLASS
 DESCRIPTION
 
 -----------------------------------------------------------------*/
-class GEM_EXTERN textoutline : public TextBase
+class GEM_EXTERN textoutline : public GemTextBase
 {
-  CPPEXTERN_HEADER(textoutline, TextBase);
+  CPPEXTERN_HEADER(textoutline, GemTextBase);
 
 public:
 
@@ -44,8 +44,8 @@ protected:
   // Destructor
   virtual ~textoutline();
 
-#ifdef FTGL
-  virtual FTFont*makeFont(const char*fontname);
+#ifdef HAVE_FTGL
+  virtual FTFont* makeFont(const char*fontname);
 #endif
 };
 

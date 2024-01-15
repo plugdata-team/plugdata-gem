@@ -16,6 +16,7 @@
 /////////////////////////////////////////////////////////
 
 #include "Event.h"
+#include "Base/GemWinCreate.h"
 
 #include <stdlib.h>
 #include <m_pd.h>
@@ -348,6 +349,8 @@ static void addEvent(gem_event_t type, const char*string, int x, int y,
 
 static void dequeueEvents(void)
 {
+  if(!gemWinMakeCurrent()) return;;
+    
   CallbackList *theList=NULL;
   if (NULL==event_queue) {
     pd_error(0, "dequeue NULL queue");
@@ -355,7 +358,7 @@ static void dequeueEvents(void)
   }
   gem_event_queue_item_t*events = event_queue->first;
   if(NULL==events) {
-    pd_error(0, "dequeue empty queue");
+    //error(nullptr, "dequeue empty queue");
     return;
   }
   while(events) {

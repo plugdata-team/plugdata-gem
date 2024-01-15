@@ -31,9 +31,9 @@ CPPEXTERN_NEW_WITH_GIMME(textextruded);
 // Constructor
 //
 /////////////////////////////////////////////////////////
-#ifdef FTGL
+#ifdef HAVE_FTGL
 textextruded :: textextruded(int argc, t_atom *argv)
-  : TextBase(argc, argv)
+  : GemTextBase(argc, argv)
 {
   fontNameMess(DEFAULT_FONT);
 }
@@ -75,7 +75,7 @@ void textextruded :: setDepth(float prec)
 #else
 
 textextruded :: textextruded(int argc, t_atom *argv)
-  : TextBase(argc, argv)
+  : GemTextBase(argc, argv)
 {}
 textextruded :: ~textextruded()
 {}

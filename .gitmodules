@@ -1,0 +1,6 @@
+[submodule "ftgl"]
+	path = ftgl
+	url = https://github.com/ulrichard/ftgl.git
+[submodule "freetype"]
+	path = freetype
+	url = https://github.com/ulrichard/freetype.git

@@ -22,9 +22,6 @@
 
 // for snprintf
 #include <stdio.h>
-#ifdef _WIN32
-# define snprintf _snprintf
-#endif
 
 class gem::RTE::Symbol::PIMPL
 {

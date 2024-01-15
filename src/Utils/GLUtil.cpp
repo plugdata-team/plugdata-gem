@@ -92,9 +92,7 @@ GLenum gem::utils::gl::glReportError (bool verbose)
   }
 }
 
-
-
-#warning TODO: use gem::ContextData
+//#warning TODO: use gem::ContextData
 using namespace gem::utils::gl;
 struct gem::utils::gl::GLuintMap::PIMPL {
   std::map<float, gem::ContextData<GLuint> >idmap;

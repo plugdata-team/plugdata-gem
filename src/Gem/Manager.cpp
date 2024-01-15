@@ -119,35 +119,18 @@ GEM_EXTERN void gemAbortRendering()
   GemMan::stopRendering();
 }
 
-static t_clock *s_windowClock = NULL;
 static int s_windowDelTime = 10;
 
 
 static int s_windowRun = 0;
 static int s_singleContext = 0;
 
-/////////////////////////////////////////////////////////
-// dispatchGemWindowMessages
-//
-/////////////////////////////////////////////////////////
-void GemMan::dispatchWinmessCallback(void *owner)
-{
-#ifndef GEM_MULTICONTEXT
-  if (!s_windowRun) {
-    return;
-  }
-
-  dispatchGemWindowMessages(GemMan::getWindowInfo());
-
-  clock_delay(s_windowClock, s_windowDelTime);
-#endif /* GEM_MULTICONTEXT */
-}
-
-
 void GemMan::resizeCallback(int xSize, int ySize, void *)
 {
 #ifndef GEM_MULTICONTEXT
-
+    
+  gemWinMakeCurrent(GemMan::getWindowInfo());
+    
   float xDivy = (float)xSize / (float)ySize;
   if (ySize == 0) {
     xDivy = 1;
@@ -172,6 +155,9 @@ void GemMan::resizeCallback(int xSize, int ySize, void *)
   //  TODO:
   //    shouldn't this be called here?
   //  glLoadIdentity();
+    
+  //windowInit();
+    
 #endif /* GEM_MULTICONTEXT */
 }
 
@@ -211,15 +197,14 @@ void GemMan :: createContext(const char* disp)
     */
   }
 
-  s_windowClock = clock_new(NULL,
-                            reinterpret_cast<t_method>(GemMan::dispatchWinmessCallback));
-  if (!m_windowContext && !createConstWindow(disp)) {
-    pd_error(0, "GEM: A serious error occurred creating const Context");
-    pd_error(0, "GEM: Continue at your own risk!");
+    /* Do we need a const context?
+    if (!m_windowContext && !createConstWindow(disp)) {
+    pd_error(nullptr, "GEM: A serious error occurred creating const Context");
+    pd_error(nullptr, "GEM: Continue at your own risk!");
     m_windowContext = 0;
   } else {
     m_windowContext = 1;
-  }
+  } */
   setResizeCallback(GemMan::resizeCallback, NULL);
 }
 
@@ -561,6 +546,8 @@ static inline void setColorMask(color_t color)
 
 void GemMan :: render(void *)
 {
+  gemWinMakeCurrent(getWindowInfo());
+    
   int profiling=m_profile;
   t_symbol*chain1=gensym("__gem_render");
   t_symbol*chain2=gensym("__gem_render_osd");
@@ -898,7 +885,7 @@ void GemMan :: render(void *)
 // startRendering
 //
 /////////////////////////////////////////////////////////
-void GemMan :: startRendering()
+void GemMan :: startRendering(bool log)
 {
   if (!m_windowState) {
     pd_error(0, "GEM: Create window first!");
@@ -909,7 +896,7 @@ void GemMan :: startRendering()
     return;
   }
 
-  post("GEM: Start rendering");
+    if(log) post("GEM: Start rendering");
 
   // set up all of the gemheads
   renderChain(gensym("__gem_render"), true);
@@ -930,7 +917,7 @@ void GemMan :: startRendering()
 // stopRendering
 //
 /////////////////////////////////////////////////////////
-void GemMan :: stopRendering()
+void GemMan :: stopRendering(bool log)
 {
   if (!m_rendering) {
     return;
@@ -944,7 +931,7 @@ void GemMan :: stopRendering()
   renderChain(gensym("__gem_render"), false);
   renderChain(gensym("__gem_render_osd"), false);
 
-  post("GEM: Stop rendering");
+  if(log) post("GEM: Stop rendering");
 }
 
 
@@ -968,14 +955,7 @@ void GemMan :: windowInit()
   glClearDepth(1.0);
   glClearColor(m_clear_color[0], m_clear_color[1], m_clear_color[2],
                m_clear_color[3]);
-
-#ifdef __APPLE__
-  GLint swapInt = 1;
-# ifndef GEM_MULTICONTEXT
-  aglSetInteger ( gfxInfo.context, AGL_SWAP_INTERVAL, &swapInt);
-# endif /* GEM_MULTICONTEXT */
-#endif
-
+    
   /* i am not really sure whether it is a good idea to enable FSAA by default
    * this might slow down everything a lot;
    * JMZ: additionally, we should not enable it, without checking first,
@@ -1024,7 +1004,6 @@ int GemMan :: createWindow(const char* disp)
   myHints.secondscreen = m_secondscreen;
   myHints.x_offset = m_xoffset;
   myHints.y_offset = m_yoffset;
-  myHints.shared = constInfo.context;
   myHints.actuallyDisplay = 1;
   myHints.display = disp;
   myHints.title = const_cast<char*>(GemMan::m_title.c_str());
@@ -1048,6 +1027,7 @@ int GemMan :: createWindow(const char* disp)
     on the NVidia GeForce2MX and above, or the ATI Radeon and above.
   */
 
+  
   glewInitialized=false;
   GLenum err = glewInit();
 
@@ -1083,9 +1063,10 @@ int GemMan :: createWindow(const char* disp)
   cursorOnOff(m_cursor);
   topmostOnOff(m_topmost);
   m_windowNumber++;
-  windowInit();
-  clock_delay(s_windowClock, s_windowDelTime);
-
+  
+  // For plugdata, we do this later so that it happens on the correct thread
+  //windowInit();
+    
   s_windowRun = 1;
 #endif /* GEM_MULTICONTEXT */
   return(1);
@@ -1115,8 +1096,6 @@ void GemMan :: destroyWindow()
   }
 
   stopRendering();
-  clock_unset(s_windowClock);
-  s_windowClock = NULL;
 
   glFlush();
   glFinish();
@@ -1131,7 +1110,8 @@ void GemMan :: destroyWindow()
 
   // reestablish the const glxContext
   /* this crashes on linux with intel cards */
-  gemWinMakeCurrent(constInfo);
+  //gemWinMakeCurrent(constInfo);
+    
   s_windowRun = 0;
 #endif /* GEM_MULTICONTEXT */
 }
@@ -1569,4 +1549,20 @@ WindowInfo &GemMan :: getConstWindowInfo()
 {
   return(constInfo);
 }
+
+void initGemWindow()
+{
+    GemMan::windowInit();
+}
+
+void gemBeginExternalResize()
+{
+    GemMan::stopRendering(false);
+}
+
+void gemEndExternalResize()
+{
+    GemMan::startRendering(false);
+}
+
 #endif /* GEM_MULTICONTEXT */
