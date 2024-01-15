@@ -18,7 +18,7 @@ file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Base/GemVertex.cpp
   ${GEM_SOURCE_PATH}/Base/GemWindow.cpp
   ${GEM_SOURCE_PATH}/Base/TextBaseFTGL.cpp
-  ${GEM_SOURCE_PATH}/Base/TextBaseNone.cpp
+  #${GEM_SOURCE_PATH}/Base/TextBaseNone.cpp
   ${GEM_SOURCE_PATH}/Controls/gemcubeframebuffer.cpp
   ${GEM_SOURCE_PATH}/Controls/gemframebuffer.cpp
   ${GEM_SOURCE_PATH}/Controls/gemhead.cpp
