@@ -1280,9 +1280,8 @@ set(MESSAGE_QUIET ON)
 
 set(BUILD_SHARED_LIBS OFF) # Build ftgl and freetype as static libs
 
-include(ftgl.cmake)
 
-#
+
 set(FT_DISABLE_ZLIB TRUE)
 set(FT_DISABLE_PNG TRUE)
 set(FT_DISABLE_HARFBUZZ TRUE)
@@ -1291,9 +1290,10 @@ set(FT_DISABLE_BROTLI TRUE)
 if(UNIX) # needed for freetype
 add_compile_definitions(HAVE_UNISTD_H=1 HAVE_FCNTL_H=1)
 elseif(MSVC)
-add_compile_definitions(GEM_INTERNAL=1 _USE_MATH_DEFINES=1 PATH_MAX=4096)
+add_compile_definitions(GEM_INTERNAL=1 FTGL_LIBRARY_STATIC=1 _USE_MATH_DEFINES=1 PATH_MAX=4096)
 endif()
 
+include(ftgl.cmake)
 add_subdirectory(freetype)
 
 set(MESSAGE_QUIET OFF)
