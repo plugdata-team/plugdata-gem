@@ -37,8 +37,8 @@ void *Obj_header::operator new(size_t, void *location, void *)
   return(location);
 }
 
-t_object * CPPExtern::m_holder=NULL;
-const char* CPPExtern::m_holdname=NULL;
+t_object* CPPExtern::m_holder = NULL;
+char const* CPPExtern::m_holdname = NULL;
 
 /////////////////////////////////////////////////////////
 //

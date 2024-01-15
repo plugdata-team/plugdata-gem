@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(Gem LANGUAGES C CXX)
+project(Gem LANGUAGES C CXX ASM)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -1290,6 +1290,8 @@ set(FT_DISABLE_BROTLI TRUE)
 
 if(UNIX) # needed for freetype
 add_compile_definitions(HAVE_UNISTD_H=1 HAVE_FCNTL_H=1)
+elseif(MSVC)
+add_compile_definitions(GEM_INTERNAL=1 _USE_MATH_DEFINES=1 PATH_MAX=4096)
 endif()
 
 add_subdirectory(freetype)
@@ -1297,11 +1299,15 @@ add_subdirectory(freetype)
 set(MESSAGE_QUIET OFF)
 
 add_library(Gem STATIC ${GEM_SOURCES} ${GEM_HEADERS})
-target_compile_definitions(Gem PRIVATE HAS_FTGL=1)
+target_compile_definitions(Gem PRIVATE HAS_FTGL=1 HAVE_FTGL_FTGL_H=1 HAVE_S_STUFF_H=1)
 target_include_directories(Gem PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" )
+if(UNIX)
 target_compile_options(Gem PRIVATE -fvisibility=default)
+endif()
 
 add_library(Gem-multi STATIC ${GEM_SOURCES} ${GEM_HEADERS})
-target_compile_definitions(Gem-multi PRIVATE HAS_FTGL=1 PDTHREADS=1 PDINSTANCE=1)
+target_compile_definitions(Gem-multi PRIVATE HAS_FTGL=1 HAVE_FTGL_FTGL_H=1 HAVE_S_STUFF_H=1 PDTHREADS=1 PDINSTANCE=1)
 target_include_directories(Gem-multi PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src"  "./ftgl/src/FTFont" "./ftgl/src/FTGL" "./freetype/include")
+if(UNIX)
 target_compile_options(Gem-multi PRIVATE -fvisibility=default)
+endif()

@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 #ifdef _MSC_VER
-
+#pragma warning(disable : 4305 4244)
 #define snprintf c99_snprintf
 
 inline int c99_vsnprintf(char* str, size_t size, const char* format,

@@ -663,7 +663,7 @@ void model :: copyArray(const std::vector<std::vector<float> >&tab,
   }
 
   for ( i = 0 ; i < size ; i++ ) {
-    for ( int j=0 ; j< std::min(vb.dimen,(unsigned int)tab[i].size()) ; j++) {
+    for ( int j=0 ; j< std::min<unsigned int>(vb.dimen,(unsigned int)tab[i].size()) ; j++) {
       vb.array[i*vb.dimen + j] = tab[i][j];
     }
   }
