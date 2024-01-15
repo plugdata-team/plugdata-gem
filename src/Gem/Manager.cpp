@@ -111,6 +111,7 @@ static int s_lightState = 0;        // is lighting on or off
 static int s_lights[NUM_LIGHTS];    // the lighting array
 
 static t_clock *s_clock = NULL;
+static t_clock *s_render_start_clock = NULL;
 static double s_deltime = 50.;
 static int s_hit = 0;
 
@@ -249,6 +250,7 @@ void GemMan :: initGem()
   m_mat_shininess = 100.0;
 
   s_clock = clock_new(NULL, reinterpret_cast<t_method>(&GemMan::render));
+  s_render_start_clock = clock_new(NULL, reinterpret_cast<t_method>(&GemMan::resumeRendering));
 
   GemSIMD simd_init;
 
@@ -296,6 +298,8 @@ void GemMan :: initGem()
 /////////////////////////////////////////////////////////
 void GemMan :: resetValues()
 {
+    
+    
   if (s_lightState) {
     glEnable(GL_LIGHTING);
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
@@ -543,6 +547,13 @@ static inline void setColorMask(color_t color)
   }
 }
 };
+
+void GemMan :: resumeRendering(void *)
+{
+    gemWinMakeCurrent(getWindowInfo());
+    GemMan::windowInit();
+    startRendering(false);
+}
 
 void GemMan :: render(void *)
 {
@@ -925,6 +936,7 @@ void GemMan :: stopRendering(bool log)
 
   m_rendering = 0;
   clock_unset(s_clock);
+  clock_unset(s_render_start_clock);
   s_hit = 1;
 
   // clean out all of the gemheads
@@ -1562,7 +1574,8 @@ void gemBeginExternalResize()
 
 void gemEndExternalResize()
 {
-    GemMan::startRendering(false);
+    // Resume rendering on audio thread
+    clock_delay(s_render_start_clock, 0);
 }
 
 #endif /* GEM_MULTICONTEXT */

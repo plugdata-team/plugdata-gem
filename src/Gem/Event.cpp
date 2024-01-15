@@ -349,8 +349,8 @@ static void addEvent(gem_event_t type, const char*string, int x, int y,
 
 static void dequeueEvents(void)
 {
-  if(!gemWinMakeCurrent()) return;;
-    
+  if(!gemWinMakeCurrent()) return;
+
   CallbackList *theList=NULL;
   if (NULL==event_queue) {
     pd_error(0, "dequeue NULL queue");

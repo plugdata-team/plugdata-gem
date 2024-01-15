@@ -80,6 +80,8 @@ public:
   // reset to the initial state
   static void       resetState(void);
 
+  static void       resumeRendering(void *);
+    
   //////////
   // Just send out one frame (if double buffered, will swap buffers)
   static void       render(void *);
