@@ -26,6 +26,14 @@
 
 #include <map>
 
+#ifdef _MSC_VER
+#    include <intrin.h>
+#    define BYTESWAP(x) _byteswap_ulong(x)
+#else
+#    define BYTESWAP(x) __builtin_bswap32(x)
+#endif
+
+
 #ifdef _WIN32
 # include <io.h>
 # include <windows.h>
@@ -561,7 +569,7 @@ void swapBytes(imageStruct &image)
   size_t pixelnum=image.xsize*image.ysize;
   unsigned int *pixels=(unsigned int*)image.data;
   while(pixelnum--) {
-    unsigned int p = __builtin_bswap32(*pixels);
+    unsigned int p = BYTESWAP(*pixels);
     *pixels++ = p;
   }
 }

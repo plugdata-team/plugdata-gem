@@ -32,10 +32,6 @@ namespace
     else
       vec.clear();
   }
-  template <typename T>
-  T max(const T&a, const T&b) {
-    return (a>b)?a:b;
-  }
 
   GLfloat*color2gl(const gem::plugins::modelloader::color&c, GLfloat buf[4]) {
     buf[0] = c.r;
@@ -278,8 +274,8 @@ namespace gem {
     }
     bbox_t bb = m_pimpl->bbox();
     float maxdim = bb.maxX-bb.minX;
-    maxdim = max(maxdim, bb.maxY-bb.minY);
-    maxdim = max(maxdim, bb.maxZ-bb.minZ);
+    maxdim = std::max(maxdim, bb.maxY-bb.minY);
+    maxdim = std::max(maxdim, bb.maxZ - bb.minZ);
     if(maxdim<=0.)maxdim = 2.;
     m_pimpl->scale = 2.f / maxdim;
 
