@@ -700,10 +700,8 @@ static void*frei0r_loader_new(t_symbol*s, int argc, t_atom*argv)
   ::verbose(2, "frei0r_loader: %s",s->s_name);
   try {
     const char*realname=s->s_name+offset_pix_; /* strip of the leading 'pix_' */
-    const int typespecs[] = {};
-    const unsigned int numtypespecs = sizeof(typespecs) / sizeof(*typespecs);
     gem::CPPExtern_proxy proxy(pix_frei0r_class, s->s_name, s, argc, argv,
-                               numtypespecs, typespecs, 1);
+                               0, NULL, 1);
     argc = proxy.getNumArgs();
     proxy.setObject(new pix_frei0r(gensym(realname)));
     return proxy.initialize();
