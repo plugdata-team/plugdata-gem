@@ -274,8 +274,8 @@ namespace gem {
     }
     bbox_t bb = m_pimpl->bbox();
     float maxdim = bb.maxX-bb.minX;
-    maxdim = std::max(maxdim, bb.maxY-bb.minY);
-    maxdim = std::max(maxdim, bb.maxZ - bb.minZ);
+    maxdim = std::max<float>(maxdim, bb.maxY-bb.minY);
+    maxdim = std::max<float>(maxdim, bb.maxZ - bb.minZ);
     if(maxdim<=0.)maxdim = 2.;
     m_pimpl->scale = 2.f / maxdim;
 
