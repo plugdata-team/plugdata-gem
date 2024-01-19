@@ -1316,3 +1316,20 @@ target_compile_options(Gem-multi PRIVATE -fvisibility=default)
 endif()
 
 
+if(BUILD_GEM_PLUGINS)
+
+add_custom_target(gem_plugins_configure
+    COMMAND ./autogen.sh && ./configure --with-pd="../pure-data"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+add_custom_target(gem_plugins
+    COMMAND make
+    COMMAND python3 ./package_plugins.py
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/plugins
+)
+
+add_dependencies(gem_plugins gem_plugins_configure)
+add_dependencies(Gem gem_plugins)
+add_dependencies(Gem-multi gem_plugins)
+endif()

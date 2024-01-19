@@ -87,10 +87,6 @@ AC_CONFIG_FILES([switch-gemwin.sh], [chmod +x switch-gemwin.sh])
 
 AC_CONFIG_MACRO_DIR([m4])
 
-AC_CONFIG_HEADERS([src/config.h])
-AC_CONFIG_HEADERS([src/Gem/GemGLconfig.h])
-AC_CONFIG_SRCDIR([src/Base/GemBase.h])
-
 AC_CONFIG_SUBDIRS([extra])
 
 AS_IF([test -d "$srcdir/plugins/AVT"], [AC_CONFIG_SUBDIRS([plugins/AVT])])
@@ -282,7 +278,7 @@ AS_IF([test "x$no_glu" != "xyes"],
 )
 
 ## use system's libGLEW
-GEM_ARG_ENABLE([multicontext], [experimental support for multiple windows])
+#GEM_ARG_ENABLE([multicontext], [experimental support for multiple windows])
 ## glewmx-args default to glew-args
 AS_IF([test "x$with_glewmx" = "x"], [with_glewmx="$with_glew"])
 AS_IF([test "x$with_glewmx-includes" = "x"], [with_glewmx-includes="$with_glew-includes"])
@@ -665,7 +661,7 @@ GEM_CHECK_CXXFLAGS([-falign-loops -falign-functions -falign-jumps -funroll-loops
         GEM_CHECK_CXXFLAGS([-falign-loops -funroll-loops])
         )
 GEM_CHECK_CXXFLAGS([-ffast-math])
-
+GEM_CHECK_CXXFLAGS([-std=c++20])
 ## SIMD support
 # naive approach is to just check, which SIMD-flags the compiler takes
 # and use these
