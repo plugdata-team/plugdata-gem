@@ -14,7 +14,7 @@ github_list_releaseartifacts() {
 }
 
 doinstall() {
-  brew bundle --file=.git-ci/macOS.brew
+  brew bundle --file="../../macOS.brew"
   
   ## and install pd
   PDVERSION="0.49-1"
