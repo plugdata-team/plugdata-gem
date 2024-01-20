@@ -79,8 +79,6 @@ public:
   //////////
   // reset to the initial state
   static void       resetState(void);
-
-  static void       resumeRendering(void *);
     
   //////////
   // Just send out one frame (if double buffered, will swap buffers)
@@ -90,13 +88,17 @@ public:
   static void       renderChain(struct _symbol *head, GemState *state);
 
 
+    
+  static void       pauseRendering();
+  static void       resumeRendering(void *);
+    
   //////////
   // Start a clock to do rendering.
-  static void       startRendering(bool log = true);
+  static void       startRendering();
 
   //////////
   // Stop the clock to do rendering.
-  static void       stopRendering(bool log = true);
+  static void       stopRendering();
 
   //////////
   // Create the window with the current parameters

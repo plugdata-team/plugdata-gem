@@ -548,11 +548,23 @@ static inline void setColorMask(color_t color)
 }
 };
 
+void GemMan :: pauseRendering()
+{
+    if (!m_rendering) {
+      return;
+    }
+
+    m_rendering = 0;
+    clock_unset(s_clock);
+    clock_unset(s_render_start_clock);
+}
+
 void GemMan :: resumeRendering(void *)
 {
     gemWinMakeCurrent(getWindowInfo());
     GemMan::windowInit();
-    startRendering(false);
+    m_rendering = 1;
+    clock_set(s_clock, 15);
 }
 
 void GemMan :: render(void *)
@@ -896,7 +908,7 @@ void GemMan :: render(void *)
 // startRendering
 //
 /////////////////////////////////////////////////////////
-void GemMan :: startRendering(bool log)
+void GemMan :: startRendering()
 {
   if (!m_windowState) {
     pd_error(0, "GEM: Create window first!");
@@ -907,7 +919,7 @@ void GemMan :: startRendering(bool log)
     return;
   }
 
-    if(log) post("GEM: Start rendering");
+  post("GEM: Start rendering");
 
   // set up all of the gemheads
   renderChain(gensym("__gem_render"), true);
@@ -928,7 +940,7 @@ void GemMan :: startRendering(bool log)
 // stopRendering
 //
 /////////////////////////////////////////////////////////
-void GemMan :: stopRendering(bool log)
+void GemMan :: stopRendering()
 {
   if (!m_rendering) {
     return;
@@ -943,7 +955,7 @@ void GemMan :: stopRendering(bool log)
   renderChain(gensym("__gem_render"), false);
   renderChain(gensym("__gem_render_osd"), false);
 
-  if(log) post("GEM: Stop rendering");
+  post("GEM: Stop rendering");
 }
 
 
@@ -1569,13 +1581,13 @@ void initGemWindow()
 
 void gemBeginExternalResize()
 {
-    GemMan::stopRendering(false);
+    GemMan::pauseRendering();
 }
 
 void gemEndExternalResize()
 {
     // Resume rendering on audio thread
-    clock_delay(s_render_start_clock, 0);
+    clock_delay(s_render_start_clock, 10);
 }
 
 #endif /* GEM_MULTICONTEXT */
