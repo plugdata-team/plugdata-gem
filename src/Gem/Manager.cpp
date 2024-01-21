@@ -140,8 +140,10 @@ void GemMan::resizeCallback(int xSize, int ySize, void *)
   GemMan::m_w = xSize;
   GemMan::m_height = ySize;
   GemMan::m_width = xSize;
-  // setup the viewpoint
-  glViewport(0, 0, xSize, ySize);
+    
+  // don't setup the viewpoint, I think the JUCE window already takes care of that?
+  // It works better like this either way
+  //glViewport(0, 0, xSize, ySize);
   // setup the matrices
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();

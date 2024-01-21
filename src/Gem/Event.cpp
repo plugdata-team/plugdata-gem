@@ -353,7 +353,10 @@ static void addEvent(gem_event_t type, const char*string, int x, int y,
 
 static void dequeueEvents(void)
 {
-  if(!gemWinSetCurrent()) return;
+  if(!gemWinSetCurrent())  {
+    clock_delay(event_queue->clock, 15);
+    return;
+  }
 
   CallbackList *theList=NULL;
   if (NULL==event_queue) {
