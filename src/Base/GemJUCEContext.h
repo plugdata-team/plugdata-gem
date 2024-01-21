@@ -37,12 +37,18 @@ public:
 #if PLUGDATA
     GemJUCEWindow* getWindow()
     {
-        return window[libpd_this_instance()];
+        void* instance = libpd_this_instance();
+        if(window.find(instance) == window.end()) return nullptr;
+        
+        return window.at(instance);
     }
     
     juce::OpenGLContext* getContext()
     {
-        return context[libpd_this_instance()];
+        void* instance = libpd_this_instance();
+        if(context.find(instance) == context.end()) return nullptr;
+        
+        return context.at(instance);
     }
 #endif
     

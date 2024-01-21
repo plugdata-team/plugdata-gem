@@ -58,6 +58,7 @@
  */
 
 #include "GemBase.h"
+#include "Base/GemWinCreate.h"
 #include "Gem/Cache.h"
 
 /////////////////////////////////////////////////////////
@@ -102,6 +103,9 @@ void GemBase :: gem_startstopMess(int state)
 {
   // for now, this is important, as it is the only way to call the stopRendering
 #if 1
+
+  gemWinSetCurrent();
+    
   if (state && !gem_amRendering) {
     m_enabled = isRunnable();
     if(m_enabled) {
@@ -116,7 +120,8 @@ void GemBase :: gem_startstopMess(int state)
   }
 
   gem_amRendering=(state!=0);
-
+    
+  gemWinUnsetCurrent();
 
   // continue sending out the cache message
   t_atom ap[1];
