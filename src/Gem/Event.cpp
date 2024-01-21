@@ -18,6 +18,7 @@
 #include "Event.h"
 #include "Base/GemWinCreate.h"
 
+#include <mutex>
 #include <stdlib.h>
 #include <m_pd.h>
 
@@ -278,6 +279,7 @@ typedef struct _event_queue_item {
 typedef struct _gem_event_queue_t {
   gem_event_queue_item_t*first;
   gem_event_queue_item_t*last;
+    std::mutex queueLock;
   t_clock *clock;
 
 }  gem_event_queue_t;
@@ -333,7 +335,10 @@ static void addEvent(gem_event_t type, const char*string, int x, int y,
     event_queue->first=NULL;
     event_queue->last =NULL;
     event_queue->clock=clock_new(NULL, reinterpret_cast<t_method>(eventClock));
+    clock_delay(event_queue->clock, 15);
   }
+    
+  event_queue->queueLock.lock();
   gem_event_queue_item_t*item=createEvent(type, string, x, y, state, axis,
                                           value, which);
   if(NULL==event_queue->first) {
@@ -343,8 +348,7 @@ static void addEvent(gem_event_t type, const char*string, int x, int y,
     event_queue->last->next=item;
   }
   event_queue->last=item;
-
-  clock_delay(event_queue->clock, 0);
+  event_queue->queueLock.unlock();
 }
 
 static void dequeueEvents(void)
@@ -354,11 +358,12 @@ static void dequeueEvents(void)
   CallbackList *theList=NULL;
   if (NULL==event_queue) {
     pd_error(0, "dequeue NULL queue");
+    clock_delay(event_queue->clock, 15);
     return;
   }
   gem_event_queue_item_t*events = event_queue->first;
   if(NULL==events) {
-    //pd_error(nullptr, "dequeue empty queue");
+    clock_delay(event_queue->clock, 15);
     return;
   }
   while(events) {
@@ -414,11 +419,17 @@ static void dequeueEvents(void)
 
     deleteEvent(old);
   }
+    
+  clock_delay(event_queue->clock, 15);
 }
 
 static void eventClock(void *x)
 {
-  dequeueEvents();
+    if(event_queue) {
+        event_queue->queueLock.lock();
+        dequeueEvents();
+        event_queue->queueLock.unlock();
+    }
 }
 
 /////////////////////////////////////////////////////////
