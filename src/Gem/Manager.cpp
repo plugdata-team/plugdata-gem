@@ -141,7 +141,7 @@ void GemMan::resizeCallback(int xSize, int ySize, void *)
   GemMan::m_height = ySize;
   GemMan::m_width = xSize;
     
-  // don't setup the viewpoint, I think the JUCE window already takes care of that?
+  // don't set up the viewport on macOS, I think the JUCE window already takes care of that?
   // It works better like this either way
 #ifndef __APPLE__
   glViewport(0, 0, xSize, ySize);
