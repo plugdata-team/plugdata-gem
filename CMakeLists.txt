@@ -6,6 +6,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 set(GEM_SOURCE_PATH "./src")
 
+cmake_policy(SET CMP0077 NEW)
+
 file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Base/CPPExtern.cpp
   ${GEM_SOURCE_PATH}/Base/GemBase.cpp
