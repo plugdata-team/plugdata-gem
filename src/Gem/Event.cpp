@@ -349,7 +349,7 @@ static void addEvent(gem_event_t type, const char*string, int x, int y,
 
 static void dequeueEvents(void)
 {
-  if(!gemWinMakeCurrent()) return;
+  if(!gemWinSetCurrent()) return;
 
   CallbackList *theList=NULL;
   if (NULL==event_queue) {
