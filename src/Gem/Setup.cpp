@@ -235,6 +235,7 @@ void init(void);
 namespace Settings
 {
 void init(void);
+void set(const std::string&, t_atom*);
 };
 };
 
@@ -244,7 +245,7 @@ void init(void);
 
 namespace gem
 {
-void setup()
+void setup(t_symbol* pluginPath)
 {
   static bool firsttime = true;
   if(!firsttime) {
@@ -277,10 +278,15 @@ void setup()
   register_class_setup_list = 0;
 
   gem::Settings::init();
+
+  t_atom at;
+  SETSYMBOL(&at, pluginPath);
+  gem::Settings::set("gem.path", &at);
+    
   addownpath("Gem-meta.pd");
   GemMan::get()->initGem();
 
-
+    
   // initialize some plugins
   gem::plugins::init();
 }
@@ -302,9 +308,9 @@ void caseinsensitive_error(const char*gem)
 
 
 extern "C" {
-  GEM_EXTERN void Gem_setup()
+  GEM_EXTERN void Gem_setup(t_symbol* plugin_path)
   {
-    gem::setup();
+    gem::setup(plugin_path);
   }
 
   GEM_EXTERN void gem_setup()
