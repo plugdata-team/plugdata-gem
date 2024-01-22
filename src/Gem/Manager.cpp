@@ -37,9 +37,6 @@
 
 #include "Utils/SIMD.h"
 
-#ifndef GEM_MULTICONTEXT
-# include "Base/GemWinCreate.h"
-#endif
 #include "Controls/gemhead.h"
 
 
@@ -50,74 +47,12 @@
 # define debug_post nop_post
 #endif
 
-#ifndef GEM_MULTICONTEXT
-static WindowInfo gfxInfo;
-static WindowInfo constInfo;
-#endif /* GEM_MULTICONTEXT */
-
 
 using namespace gem::utils::gl;
 
-static bool glewInitialized = false;
-
-// static member data
-std::string GemMan::m_title = "GEM";
-int GemMan::m_xoffset = 0;
-int GemMan::m_yoffset = 0;
-int GemMan::m_fullscreen = 0;
-int GemMan::m_menuBar = 1;
-int GemMan::m_secondscreen = 0;
-int GemMan::m_height = 500;
-int GemMan::m_width = 500;
-int GemMan::m_h = 500;
-int GemMan::m_w = 500;
-int GemMan::m_border = 1;
-int GemMan::m_stereo = 0;
-int GemMan::m_buffer = 2;
-int GemMan::m_profile = 0;
-int GemMan::m_rendering = 0;
-GLfloat GemMan::m_clear_color[4];
-GLbitfield GemMan::m_clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT
-                                  | GL_STENCIL_BUFFER_BIT;
-GLfloat GemMan::m_mat_ambient[4];
-GLfloat GemMan::m_mat_specular[4];
-GLfloat GemMan::m_mat_shininess;
-GLfloat GemMan::m_stereoSep = -15.f;
-GLfloat GemMan::m_stereoFocal = 0.f;
-bool GemMan::m_stereoLine = true;
-int GemMan::m_windowState = 0;
-int GemMan::m_windowNumber = 0;
-int GemMan::m_windowContext = 0;
-int GemMan::m_cursor = 1;
-int GemMan::m_topmost = 0;
-float GemMan::m_perspect[6];
-double GemMan::m_lastRenderTime = 0.;
-float GemMan::m_lookat[9];
-GemMan::FOG_TYPE GemMan::m_fogMode = GemMan::FOG_OFF;
-float GemMan::m_fog;
-GLfloat GemMan::m_fogColor[4];
-float GemMan::m_fogStart;
-float GemMan::m_fogEnd;
-float GemMan::m_motionBlur=0.f;
-int GemMan::texture_rectangle_supported = 0;    //tigital
-GLint GemMan::maxStackDepth[4];
-float GemMan::fps;
-int GemMan::fsaa = 0;
-bool GemMan::pleaseDestroy=false;
-
-// static data
-static const int NUM_LIGHTS = 8;        // the maximum number of lights
-static int s_lightState = 0;        // is lighting on or off
-static int s_lights[NUM_LIGHTS];    // the lighting array
-
-static t_clock *s_clock = NULL;
-static t_clock *s_render_start_clock = NULL;
-static double s_deltime = 50.;
-static int s_hit = 0;
-
 GEM_EXTERN void gemAbortRendering()
 {
-  GemMan::stopRendering();
+  GemMan::get()->stopRendering();
 }
 
 static int s_windowDelTime = 10;
@@ -126,20 +61,20 @@ static int s_windowDelTime = 10;
 static int s_windowRun = 0;
 static int s_singleContext = 0;
 
-void GemMan::resizeCallback(int xSize, int ySize, void *)
+void GemMan :: resizeCallback(int xSize, int ySize, void *)
 {
 #ifndef GEM_MULTICONTEXT
-    
-  gemWinMakeCurrent(GemMan::getWindowInfo());
+  auto* gemMan = GemMan::get();
+  gemWinMakeCurrent(gemMan->getWindowInfo());
     
   float xDivy = (float)xSize / (float)ySize;
   if (ySize == 0) {
     xDivy = 1;
   }
-  GemMan::m_h = ySize;
-  GemMan::m_w = xSize;
-  GemMan::m_height = ySize;
-  GemMan::m_width = xSize;
+  gemMan->m_h = ySize;
+  gemMan->m_w = xSize;
+  gemMan->m_height = ySize;
+  gemMan->m_width = xSize;
     
   // don't set up the viewport on macOS, I think the JUCE window already takes care of that?
   // It works better like this either way
@@ -149,12 +84,12 @@ void GemMan::resizeCallback(int xSize, int ySize, void *)
   // setup the matrices
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(GemMan::m_perspect[0] * xDivy,
-            GemMan::m_perspect[1] * xDivy,       // left, right
-            GemMan::m_perspect[2],
-            GemMan::m_perspect[3],                       // bottom, top
-            GemMan::m_perspect[4],
-            GemMan::m_perspect[5]);                      // front, back
+  glFrustum(gemMan->m_perspect[0] * xDivy,
+            gemMan->m_perspect[1] * xDivy,       // left, right
+            gemMan->m_perspect[2],
+            gemMan->m_perspect[3],                       // bottom, top
+            gemMan->m_perspect[4],
+            gemMan->m_perspect[5]);                      // front, back
 
   glMatrixMode(GL_MODELVIEW);
   //  TODO:
@@ -227,15 +162,16 @@ int GemMan :: contextExists(void)
 /////////////////////////////////////////////////////////
 void GemMan :: initGem()
 {
+    /*
   static int alreadyInit = 0;
   if (alreadyInit) {
     return;
   }
-  alreadyInit = 1;
+  alreadyInit = 1; */
 
   // clear the light array
   for (int i = 0; i < NUM_LIGHTS; i++) {
-    s_lights[i] = 0;
+    m_lights[i] = 0;
   }
 
   m_clear_color[0] = 0.0;
@@ -252,8 +188,8 @@ void GemMan :: initGem()
   m_mat_specular[3] = 1.0;
   m_mat_shininess = 100.0;
 
-  s_clock = clock_new(NULL, reinterpret_cast<t_method>(&GemMan::render));
-  s_render_start_clock = clock_new(NULL, reinterpret_cast<t_method>(&GemMan::resumeRendering));
+  m_clock = clock_new(NULL, reinterpret_cast<t_method>(GemMan::render));
+  m_render_start_clock = clock_new(NULL, reinterpret_cast<t_method>(GemMan::resumeRendering));
 
   GemSIMD simd_init;
 
@@ -303,14 +239,14 @@ void GemMan :: resetValues()
 {
     
     
-  if (s_lightState) {
+  if (m_lightState) {
     glEnable(GL_LIGHTING);
     glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
     glColorMaterial(GL_FRONT_AND_BACK, GL_DIFFUSE);
     glEnable(GL_COLOR_MATERIAL);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, GemMan::m_mat_ambient);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, GemMan::m_mat_specular);
-    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &GemMan::m_mat_shininess);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, m_mat_ambient);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, m_mat_specular);
+    glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, &m_mat_shininess);
     glEnable(GL_AUTO_NORMAL);
     glEnable(GL_NORMALIZE);
     glShadeModel(GL_SMOOTH);
@@ -377,10 +313,10 @@ void GemMan :: resetValues()
       glDisable(GL_FOG);
       break;
     }
-    glFogf(GL_FOG_DENSITY, GemMan::m_fog);
-    glFogf(GL_FOG_START, GemMan::m_fogStart);
-    glFogf(GL_FOG_END, GemMan::m_fogEnd);
-    glFogfv(GL_FOG_COLOR, GemMan::m_fogColor);
+    glFogf(GL_FOG_DENSITY, m_fog);
+    glFogf(GL_FOG_START, m_fogStart);
+    glFogf(GL_FOG_END, m_fogEnd);
+    glFogfv(GL_FOG_COLOR, m_fogColor);
   }
 }
 
@@ -390,7 +326,7 @@ void GemMan :: resetValues()
 /////////////////////////////////////////////////////////
 void GemMan :: fillGemState(GemState &state)
 {
-  if (s_lightState) {
+  if (m_lightState) {
     // GemState['lighting'] = 1;
     state.set(GemState::_GL_LIGHTING, true);
     state.set(GemState::_GL_SMOOTH, true);
@@ -427,7 +363,7 @@ void GemMan :: resetState()
   m_mat_specular[3] = 1.0;
   m_mat_shininess = 100.0;
 
-  s_lightState = 0;
+  m_lightState = 0;
 
   // window hints
   m_height = 500;
@@ -558,29 +494,31 @@ void GemMan :: pauseRendering()
     }
 
     m_rendering = 0;
-    clock_unset(s_clock);
-    clock_unset(s_render_start_clock);
+    clock_unset(m_clock);
+    clock_unset(m_render_start_clock);
 }
 
 void GemMan :: resumeRendering(void *)
 {
-    gemWinMakeCurrent(getWindowInfo());
-    GemMan::windowInit();
-    m_rendering = 1;
-    clock_set(s_clock, 15);
+    auto* gemMan = GemMan::get();
+    gemWinMakeCurrent(gemMan->getWindowInfo());
+    gemMan->windowInit();
+    gemMan->m_rendering = 1;
+    clock_set(gemMan->m_clock, 15);
 }
 
 void GemMan :: render(void *)
 {
-  gemWinMakeCurrent(getWindowInfo());
+  auto* gemMan =  GemMan::get();
+  gemWinMakeCurrent( gemMan->getWindowInfo());
     
-  int profiling=m_profile;
+  int profiling= gemMan->m_profile;
   t_symbol*chain1=gensym("__gem_render");
   t_symbol*chain2=gensym("__gem_render_osd");
-  if(GemMan::pleaseDestroy) {
-    GemMan::destroyWindow();
+  if( gemMan->pleaseDestroy) {
+      gemMan->destroyWindow();
   }
-  if (!m_windowState) {
+  if (!gemMan->m_windowState) {
     return;
   }
 
@@ -588,22 +526,22 @@ void GemMan :: render(void *)
   double starttime=sys_getrealtime();
   double stoptime=0;
 
-  s_hit = 0;
-  resetValues();
+    gemMan->m_hit = 0;
+    gemMan->resetValues();
 
   GemState currentState;
   float tickTime;
 
   // fill in the elapsed time
-  if (m_buffer == 1) {
+  if (gemMan->m_buffer == 1) {
     tickTime = 50.f;
   } else {
-    tickTime = static_cast<float>(clock_gettimesince(m_lastRenderTime));
+    tickTime = static_cast<float>(clock_gettimesince( gemMan->m_lastRenderTime));
   }
 
   currentState.set(GemState::_TIMING_TICK, tickTime);
 
-  m_lastRenderTime = clock_getsystime();
+    gemMan->m_lastRenderTime = clock_getsystime();
 
   //test to see if stereo is supported
   //XXX maybe there is a better place to do this?
@@ -611,9 +549,9 @@ void GemMan :: render(void *)
   glGetBooleanv (GL_STEREO, &stereoWindowTest);
   //if we're trying to do crystal glasses stereo but don't have a stereo window
   //disable stereo and post a warning
-  if(m_stereo == 3 && !stereoWindowTest) {
+  if(gemMan->m_stereo == 3 && !stereoWindowTest) {
     pd_error(0, "GEM: you've selected Crystal Glasses Stereo but your graphics card isn't set up for stereo, setting stereo=0");
-    m_stereo = 0;
+      gemMan->m_stereo = 0;
   } else if(stereoWindowTest) {
     //if we're not doing crystal eyes stereo but our window is enabled to do stereo
     //select the back buffer for drawing
@@ -621,10 +559,10 @@ void GemMan :: render(void *)
   }
 
   // if stereoscopic rendering
-  switch (m_stereo) {
+  switch (gemMan->m_stereo) {
   case 1: { // 2-screen stereo
-    int xSize = m_w / 2;
-    int ySize = m_h;
+    int xSize = gemMan->m_w / 2;
+    int ySize = gemMan->m_h;
     float xDivy = static_cast<float>(xSize) / static_cast<float>(ySize);
     if (ySize == 0) {
       xDivy = 1;
@@ -635,65 +573,64 @@ void GemMan :: render(void *)
     // setup the matrices
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(GemMan::m_perspect[0] * xDivy,
-              GemMan::m_perspect[1] * xDivy,   // left, right
-              GemMan::m_perspect[2],
-              GemMan::m_perspect[3],                   // bottom, top
-              GemMan::m_perspect[4],
-              GemMan::m_perspect[5]);                  // front, back
+    glFrustum(gemMan->m_perspect[0] * xDivy,
+              gemMan->m_perspect[1] * xDivy,   // left, right
+              gemMan->m_perspect[2],
+              gemMan->m_perspect[3],                   // bottom, top
+              gemMan->m_perspect[4],
+              gemMan->m_perspect[5]);                  // front, back
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(m_lookat[0] - m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+    gem::utils::gl::gluLookAt(gemMan->m_lookat[0] - gemMan->m_stereoSep / 100.f, gemMan->m_lookat[1], gemMan->m_lookat[2],
+                              gemMan->m_lookat[3], gemMan->m_lookat[4],
+                              gemMan->m_lookat[5] + gemMan->m_stereoFocal, gemMan->m_lookat[6], gemMan->m_lookat[7], gemMan->m_lookat[8]);
 
     // render left view
-    fillGemState(currentState);
+    gemMan->fillGemState(currentState);
 
-    renderChain(chain1, &currentState);
+    gemMan->renderChain(chain1, &currentState);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(0 - m_stereoSep / 100.f, 0, 4, 0, 0, 0 + m_stereoFocal, 0, 1, 0);
-    renderChain(chain2, &currentState);
+    gem::utils::gl::gluLookAt(0 - gemMan->m_stereoSep / 100.f, 0, 4, 0, 0, 0 + gemMan->m_stereoFocal, 0, 1, 0);
+    gemMan->renderChain(chain2, &currentState);
 
     // setup the right viewpoint
     glViewport(xSize, 0, xSize, ySize);
     // setup the matrices
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(GemMan::m_perspect[0] * xDivy,
-              GemMan::m_perspect[1] * xDivy,   // left, right
-              GemMan::m_perspect[2],
-              GemMan::m_perspect[3],                   // bottom, top
-              GemMan::m_perspect[4],
-              GemMan::m_perspect[5]);                  // front, back
+    glFrustum(gemMan->m_perspect[0] * xDivy,
+              gemMan->m_perspect[1] * xDivy,   // left, right
+              gemMan->m_perspect[2],
+              gemMan->m_perspect[3],                   // bottom, top
+              gemMan->m_perspect[4],
+              gemMan->m_perspect[5]);                  // front, back
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(m_lookat[0] + m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+    gem::utils::gl::gluLookAt(gemMan->m_lookat[0] + gemMan->m_stereoSep / 100.f, gemMan->m_lookat[1], gemMan->m_lookat[2],
+                              gemMan->m_lookat[3], gemMan->m_lookat[4],
+                              gemMan->m_lookat[5] + gemMan->m_stereoFocal, gemMan->m_lookat[6], gemMan->m_lookat[7], gemMan->m_lookat[8]);
 
     // render right view
-    fillGemState(currentState);
+    gemMan->fillGemState(currentState);
     tickTime=0;
     currentState.set(GemState::_TIMING_TICK, tickTime);
-    renderChain(chain1, &currentState);
+    gemMan->renderChain(chain1, &currentState);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(0 + m_stereoSep / 100.f, 0, 4, 0, 0, 0 + m_stereoFocal, 0, 1, 0);
-    renderChain(chain2, &currentState);
+    gem::utils::gl::gluLookAt(0 + gemMan->m_stereoSep / 100.f, 0, 4, 0, 0, 0 + gemMan->m_stereoFocal, 0, 1, 0);
+    gemMan->renderChain(chain2, &currentState);
 
-
-    if (GemMan::m_stereoLine) {
+    if (gemMan->m_stereoLine) {
       // draw a line between the views
       glDisable(GL_LIGHTING);
 
-      glViewport(0, 0, m_w, m_h);
-      xDivy = static_cast<float>(m_w) / static_cast<float>(ySize);
+      glViewport(0, 0, gemMan->m_w, gemMan->m_h);
+      xDivy = static_cast<float>(gemMan->m_w) / static_cast<float>(ySize);
       // setup the matrices
       glMatrixMode(GL_PROJECTION);
       glLoadIdentity();
@@ -713,8 +650,8 @@ void GemMan :: render(void *)
   }
   break;
   case 2: { // color-stereo
-    int xSize = m_w;
-    int ySize = m_h;
+    int xSize = gemMan->m_w;
+    int ySize = gemMan->m_h;
     float xDivy = static_cast<float>(xSize) / static_cast<float>(ySize);
     if (ySize == 0) {
       xDivy = 1;
@@ -723,10 +660,10 @@ void GemMan :: render(void *)
     color_t left_color=RED;
     color_t right_color=GREEN;
 
-    glClear(GL_COLOR_BUFFER_BIT & m_clear_mask);
-    glClear(GL_DEPTH_BUFFER_BIT & m_clear_mask);
-    glClear(GL_STENCIL_BUFFER_BIT & m_clear_mask);
-    glClear(GL_ACCUM_BUFFER_BIT & m_clear_mask);
+    glClear(GL_COLOR_BUFFER_BIT & gemMan->m_clear_mask);
+    glClear(GL_DEPTH_BUFFER_BIT & gemMan->m_clear_mask);
+    glClear(GL_STENCIL_BUFFER_BIT & gemMan->m_clear_mask);
+    glClear(GL_ACCUM_BUFFER_BIT & gemMan->m_clear_mask);
 
     // setup the left viewpoint
     setColorMask(left_color);
@@ -734,64 +671,64 @@ void GemMan :: render(void *)
     // setup the matrices
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(GemMan::m_perspect[0] * xDivy,
-              GemMan::m_perspect[1] * xDivy,   // left, right
-              GemMan::m_perspect[2],
-              GemMan::m_perspect[3],                   // bottom, top
-              GemMan::m_perspect[4],
-              GemMan::m_perspect[5]);                  // front, back
+    glFrustum(gemMan->m_perspect[0] * xDivy,
+              gemMan->m_perspect[1] * xDivy,   // left, right
+              gemMan->m_perspect[2],
+              gemMan->m_perspect[3],                   // bottom, top
+              gemMan->m_perspect[4],
+              gemMan->m_perspect[5]);                  // front, back
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(m_lookat[0] - m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+    gem::utils::gl::gluLookAt(gemMan->m_lookat[0] - gemMan->m_stereoSep / 100.f, gemMan->m_lookat[1], gemMan->m_lookat[2],
+                              gemMan->m_lookat[3], gemMan->m_lookat[4],
+                              gemMan->m_lookat[5] + gemMan->m_stereoFocal, gemMan->m_lookat[6], gemMan->m_lookat[7], gemMan->m_lookat[8]);
 
     // render left view
-    fillGemState(currentState);
-    renderChain(chain1, &currentState);
+    gemMan->fillGemState(currentState);
+    gemMan->renderChain(chain1, &currentState);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(0 - m_stereoSep / 100.f, 0, 4, 0, 0, 0 + m_stereoFocal, 0, 1, 0);
-    renderChain(chain2, &currentState);
+    gem::utils::gl::gluLookAt(0 - gemMan->m_stereoSep / 100.f, 0, 4, 0, 0, 0 + gemMan->m_stereoFocal, 0, 1, 0);
+    gemMan->renderChain(chain2, &currentState);
 
     // setup the right viewpoint
-    glClear(GL_DEPTH_BUFFER_BIT & m_clear_mask);
+    glClear(GL_DEPTH_BUFFER_BIT & gemMan->m_clear_mask);
     setColorMask(right_color);
 
     // setup the matrices
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(GemMan::m_perspect[0] * xDivy,
-              GemMan::m_perspect[1] * xDivy,   // left, right
-              GemMan::m_perspect[2],
-              GemMan::m_perspect[3],                   // bottom, top
-              GemMan::m_perspect[4],
-              GemMan::m_perspect[5]);                  // front, back
+    glFrustum(gemMan->m_perspect[0] * xDivy,
+              gemMan->m_perspect[1] * xDivy,   // left, right
+              gemMan->m_perspect[2],
+              gemMan->m_perspect[3],                   // bottom, top
+              gemMan->m_perspect[4],
+              gemMan->m_perspect[5]);                  // front, back
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(m_lookat[0] + m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+    gem::utils::gl::gluLookAt(gemMan->m_lookat[0] + gemMan->m_stereoSep / 100.f, gemMan->m_lookat[1], gemMan->m_lookat[2],
+                              gemMan->m_lookat[3], gemMan->m_lookat[4],
+                              gemMan->m_lookat[5] + gemMan->m_stereoFocal, gemMan->m_lookat[6], gemMan->m_lookat[7], gemMan->m_lookat[8]);
 
     // render right view
-    fillGemState(currentState);
+    gemMan->fillGemState(currentState);
     tickTime=0;
     currentState.set(GemState::_TIMING_TICK, tickTime);
-    renderChain(chain1, &currentState);
+    gemMan->renderChain(chain1, &currentState);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(0 + m_stereoSep / 100.f, 0, 4, 0, 0, 0 + m_stereoFocal, 0, 1, 0);
-    renderChain(chain2, &currentState);
+    gem::utils::gl::gluLookAt(0 + gemMan->m_stereoSep / 100.f, 0, 4, 0, 0, 0 + gemMan->m_stereoFocal, 0, 1, 0);
+    gemMan->renderChain(chain2, &currentState);
 
     glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
   }
   break;
   case 3: { // Crystal Eyes Stereo
-    int xSize = m_w;
-    int ySize = m_h;
+    int xSize = gemMan->m_w;
+    int ySize = gemMan->m_h;
     float xDivy = static_cast<float>(xSize) / static_cast<float>(ySize);
     if (ySize == 0) {
       xDivy = 1;
@@ -802,89 +739,89 @@ void GemMan :: render(void *)
     // setup the matrices
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(GemMan::m_perspect[0] * xDivy,
-              GemMan::m_perspect[1] * xDivy, // left, right
-              GemMan::m_perspect[2], GemMan::m_perspect[3],     // bottom, top
-              GemMan::m_perspect[4], GemMan::m_perspect[5]);      // front, back
+    glFrustum(gemMan->m_perspect[0] * xDivy,
+              gemMan->m_perspect[1] * xDivy, // left, right
+              gemMan->m_perspect[2], gemMan->m_perspect[3],     // bottom, top
+              gemMan->m_perspect[4], gemMan->m_perspect[5]);      // front, back
 
     glMatrixMode(GL_MODELVIEW);
     glDrawBuffer(GL_BACK_LEFT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(m_lookat[0] - m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+    gem::utils::gl::gluLookAt(gemMan->m_lookat[0] - gemMan->m_stereoSep / 100.f, gemMan->m_lookat[1], gemMan->m_lookat[2],
+                              gemMan->m_lookat[3], gemMan->m_lookat[4],
+                              gemMan->m_lookat[5] + gemMan->m_stereoFocal, gemMan->m_lookat[6], gemMan->m_lookat[7], gemMan->m_lookat[8]);
 
     // render left view
-    fillGemState(currentState);
-    renderChain(chain1, &currentState);
+    gemMan->fillGemState(currentState);
+    gemMan->renderChain(chain1, &currentState);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(0 - m_stereoSep / 100.f, 0, 4, 0, 0, 0 + m_stereoFocal, 0, 1, 0);
-    renderChain(chain2, &currentState);
+    gem::utils::gl::gluLookAt(0 - gemMan->m_stereoSep / 100.f, 0, 4, 0, 0, 0 + gemMan->m_stereoFocal, 0, 1, 0);
+    gemMan->renderChain(chain2, &currentState);
 
     // setup the right viewpoint
-    glClear(GL_DEPTH_BUFFER_BIT & m_clear_mask);
+    glClear(GL_DEPTH_BUFFER_BIT & gemMan->m_clear_mask);
 
     // setup the matrices
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(GemMan::m_perspect[0] * xDivy,
-              GemMan::m_perspect[1] * xDivy, // left, right
-              GemMan::m_perspect[2], GemMan::m_perspect[3],     // bottom, top
-              GemMan::m_perspect[4], GemMan::m_perspect[5]);      // front, back
+    glFrustum(gemMan->m_perspect[0] * xDivy,
+              gemMan->m_perspect[1] * xDivy, // left, right
+              gemMan->m_perspect[2], gemMan->m_perspect[3],     // bottom, top
+              gemMan->m_perspect[4], gemMan->m_perspect[5]);      // front, back
 
     glMatrixMode(GL_MODELVIEW);
     glDrawBuffer(GL_BACK_RIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(m_lookat[0] + m_stereoSep / 100.f, m_lookat[1], m_lookat[2],
-                              m_lookat[3], m_lookat[4],
-                              m_lookat[5] + m_stereoFocal, m_lookat[6], m_lookat[7], m_lookat[8]);
+    gem::utils::gl::gluLookAt(gemMan->m_lookat[0] + gemMan->m_stereoSep / 100.f, gemMan->m_lookat[1], gemMan->m_lookat[2],
+                              gemMan->m_lookat[3], gemMan->m_lookat[4],
+                              gemMan->m_lookat[5] + gemMan->m_stereoFocal, gemMan->m_lookat[6], gemMan->m_lookat[7], gemMan->m_lookat[8]);
 
     // render right view
-    fillGemState(currentState);
+    gemMan->fillGemState(currentState);
     tickTime=0;
     currentState.set(GemState::_TIMING_TICK, tickTime);
-    renderChain(chain1, &currentState);
+    gemMan->renderChain(chain1, &currentState);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gem::utils::gl::gluLookAt(0 + m_stereoSep / 100.f, 0, 4, 0, 0, 0 + m_stereoFocal, 0, 1, 0);
-    renderChain(chain2, &currentState);
+    gem::utils::gl::gluLookAt(0 + gemMan->m_stereoSep / 100.f, 0, 4, 0, 0, 0 + gemMan->m_stereoFocal, 0, 1, 0);
+    gemMan->renderChain(chain2, &currentState);
 
     glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
   }
   break;
   default: { // normal rendering
-    fillGemState(currentState);
-    renderChain(chain1, &currentState);
+    gemMan->fillGemState(currentState);
+    gemMan->renderChain(chain1, &currentState);
 
     // setup the matrices
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gem::utils::gl::gluLookAt(0, 0, 4, 0, 0, 0, 0, 1, 0);
-    renderChain(chain2, &currentState);
+    gemMan->renderChain(chain2, &currentState);
   }
   }
-  swapBuffers();
+  gemMan->swapBuffers();
 
   // are we profiling?
   stoptime=sys_getrealtime();
   if (profiling>0) {
     double seconds =  stoptime-starttime;
     if(seconds>0.f) {
-      GemMan::fps = (1 / (seconds * 1000.f)) * 1000.f;
+        gemMan->fps = (1 / (seconds * 1000.f)) * 1000.f;
     } else {
       pd_error(0, "GEM: unable to profile");
     }
   }
 
-  // only keep going if no one set the s_hit (could be hit if scheduler gets
+  // only keep going if no one set the m_hit (could be hit if scheduler gets
   //        ahold of a stopRendering command)
-  double deltime=s_deltime;
+  double deltime= gemMan->m_deltime;
   if(profiling<0) {
     float spent=(stoptime-starttime)*1000;
     if(profiling<-1) {
@@ -900,8 +837,8 @@ void GemMan :: render(void *)
     }
   }
 
-  if (!s_hit && (0.0 != deltime)) {
-    clock_delay(s_clock, deltime);
+  if (!gemMan->m_hit && (0.0 != deltime)) {
+    clock_delay(gemMan->m_clock, deltime);
   }
 
   glReportError();
@@ -931,7 +868,7 @@ void GemMan :: startRendering()
   m_rendering = 1;
 
   // if only single buffering then just return
-  if (GemMan::m_buffer == 1) {
+  if (m_buffer == 1) {
     return;
   }
 
@@ -950,9 +887,9 @@ void GemMan :: stopRendering()
   }
 
   m_rendering = 0;
-  clock_unset(s_clock);
-  clock_unset(s_render_start_clock);
-  s_hit = 1;
+  clock_unset(m_clock);
+  clock_unset(m_render_start_clock);
+  m_hit = 1;
 
   // clean out all of the gemheads
   renderChain(gensym("__gem_render"), false);
@@ -1033,7 +970,7 @@ int GemMan :: createWindow(const char* disp)
   myHints.y_offset = m_yoffset;
   myHints.actuallyDisplay = 1;
   myHints.display = disp;
-  myHints.title = const_cast<char*>(GemMan::m_title.c_str());
+  myHints.title = const_cast<char*>(m_title.c_str());
   myHints.fsaa = fsaa;
 
   if (disp) {
@@ -1107,7 +1044,7 @@ void GemMan :: destroyWindowSoon()
 {
   GemMan::pleaseDestroy=true;
   /* jump to the render() to destroy the window asap */
-  clock_delay(s_clock, 0.0);
+  clock_delay(m_clock, 0.0);
 }
 void GemMan :: destroyWindow()
 {
@@ -1143,6 +1080,22 @@ void GemMan :: destroyWindow()
 #endif /* GEM_MULTICONTEXT */
 }
 
+bool GemMan :: stillHaveGemWin(bool up)
+{
+  if (up) {
+    m_window_ref_count++;
+    if (m_window_ref_count==1) {
+      return false;
+    }
+  } else {
+      m_window_ref_count--;
+    if (m_window_ref_count<0) {
+        m_window_ref_count=0;
+    }
+    return (m_window_ref_count!=0);
+  }
+  return true;
+}
 
 int GemMan :: windowNumber(void)
 {
@@ -1163,13 +1116,13 @@ int GemMan::createConstWindow(const char* disp)
   }
 
   WindowHints myHints;
-  myHints.title = const_cast<char*>(GemMan::m_title.c_str());
+  myHints.title = const_cast<char*>(m_title.c_str());
   myHints.border = 1;
   myHints.buffer = 1;
   myHints.x_offset = 0;
   myHints.y_offset = 0;
-  myHints.width = GemMan::m_width;
-  myHints.height = GemMan::m_height;
+  myHints.width = m_width;
+  myHints.height = m_height;
 
   initWin_sharedContext(constInfo, myHints);
 
@@ -1199,7 +1152,7 @@ void destroyConstWindow()
 {
 #ifndef GEM_MULTICONTEXT
   if (!s_singleContext) {
-    destroyGemWindow(constInfo);
+    destroyGemWindow(GemMan::get()->constInfo);
   }
 #endif /* GEM_MULTICONTEXT */
 }
@@ -1214,7 +1167,7 @@ void GemMan :: swapBuffers()
   if (!m_windowState) {
     return;
   }
-  if (GemMan::m_buffer == 2) {
+  if (m_buffer == 2) {
     gemWinSwapBuffers(gfxInfo);
   } else {
     glFlush();
@@ -1230,7 +1183,7 @@ void GemMan :: swapBuffers()
   //  not clear what glMatrixMode() we're loading...probably GL_MODELVIEW?
   glLoadIdentity();
 
-  if (GemMan::m_buffer == 1) {
+  if (m_buffer == 1) {
     glFlush();
     // setup the transformation matrices
     float xDivy = static_cast<float>(m_w) / static_cast<float>(m_h);
@@ -1261,9 +1214,9 @@ void GemMan :: swapBuffers()
 void GemMan :: lightingOnOff(int state)
 {
   if (state) {
-    s_lightState = 1;
+    m_lightState = 1;
   } else {
-    s_lightState = 0;
+    m_lightState = 0;
   }
 }
 
@@ -1305,17 +1258,17 @@ void GemMan :: frameRate(float framespersecond)
    * so if we are currently at at frame-rate=0,
    * we have to reschedule rendering (else we would wait too long)
    */
-  bool reschedule=(s_deltime<=0.f);
+  bool reschedule=(m_deltime<=0.f);
 
   if (framespersecond == 0.) {
-    s_deltime = 0.;
+    m_deltime = 0.;
     return;
   }
   if (framespersecond < 0.) {
     pd_error(0, "GEM: Invalid frame rate: %f", framespersecond);
     framespersecond = 20;
   }
-  s_deltime = 1000. / framespersecond;
+  m_deltime = 1000. / framespersecond;
 
   if(reschedule) {
     render(NULL);
@@ -1328,7 +1281,7 @@ void GemMan :: frameRate(float framespersecond)
 /////////////////////////////////////////////////////////
 float GemMan :: getFramerate()
 {
-  return (s_deltime != 0.0) ? (1000. / s_deltime) : 0.0;
+  return (m_deltime != 0.0) ? (1000. / m_deltime) : 0.0;
 }
 
 
@@ -1400,7 +1353,7 @@ GLenum GemMan :: requestLight(int specific)
   if (specific > 0) {
     i = specific - 1;
   } else {
-    while(s_lights[i]) {
+    while(m_lights[i]) {
       i++;
       if (i >= NUM_LIGHTS) {
         pd_error(0, "GEM: Unable to allocate light");
@@ -1408,7 +1361,7 @@ GLenum GemMan :: requestLight(int specific)
       }
     }
   }
-  s_lights[i]++;
+  m_lights[i]++;
   GLenum retLight;
   switch(i) {
   case (0) :
@@ -1479,10 +1432,10 @@ void GemMan :: freeLight(GLenum lightNum)
     pd_error(0, "GEM: Error freeing a light - bad number");
     return;
   }
-  s_lights[i]--;
-  if (s_lights[i] < 0) {
+  m_lights[i]--;
+  if (m_lights[i] < 0) {
     pd_error(0, "GEM: light ref count below zero: %d", i);
-    s_lights[i] = 0;
+    m_lights[i] = 0;
   }
 }
 
@@ -1528,7 +1481,7 @@ void GemMan :: printInfo()
   post("full screen: %d", m_fullscreen);
   post("width: %d, height %d", m_width, m_height);
   post("offset: %d+%d", m_xoffset, m_yoffset);
-  post("frame rate: %f", (0.0 != s_deltime) ? 1000. / s_deltime : 0.0);
+  post("frame rate: %f", (0.0 != m_deltime) ? 1000. / m_deltime : 0.0);
 
   GLint bitnum = 0;
   glGetIntegerv(GL_RED_BITS, &bitnum);
@@ -1540,9 +1493,9 @@ void GemMan :: printInfo()
   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &bitnum);
   post("max texture: %d", bitnum);
 
-  post("lighting %d", s_lightState);
+  post("lighting %d", m_lightState);
   for (int i = 0; i < NUM_LIGHTS; i++) {
-    if (s_lights[i]) {
+    if (m_lights[i]) {
       post("light%d: on", i);
     }
   }
@@ -1579,18 +1532,18 @@ WindowInfo &GemMan :: getConstWindowInfo()
 
 void initGemWindow()
 {
-    GemMan::windowInit();
+    GemMan::get()->windowInit();
 }
 
 void gemBeginExternalResize()
 {
-    GemMan::pauseRendering();
+    GemMan::get()->pauseRendering();
 }
 
 void gemEndExternalResize()
 {
     // Resume rendering on audio thread
-    clock_delay(s_render_start_clock, 10);
+    clock_delay(GemMan::get()->m_render_start_clock, 10);
 }
 
 #endif /* GEM_MULTICONTEXT */

@@ -85,7 +85,7 @@ void gemlist :: postrender(GemState *)
 
 void gemlist :: sendCacheState(GemCache *cache, GemState*state)
 {
-  if  ( !GemMan::windowExists() ) {
+  if  ( !GemMan::get()->windowExists() ) {
     // LATER: shouldn't this test for a valid context rather than an existing window??
     //  pd_error(0, "you should not bang the gemlist now");
     return;
@@ -116,7 +116,7 @@ void gemlist :: trigger()
     // outlet the current state when banged
     sendCacheState(m_cache, &m_state);
   } else {
-    //    GemMan::fillGemState(state);
+    //    GemMan::get()->fillGemState(state);
     sendCacheState(NULL, &m_mystate);
   }
 }

@@ -37,25 +37,6 @@ CPPEXTERN_NEW_WITH_ONE_ARG(gemwin, t_floatarg, A_DEFFLOAT);
 
 void GemCallOnMessageThread(std::function<void()> callback);
 
-static bool StillHaveGemWin(bool up)
-{
-  static int ref_counter = 0;
-
-  if (up) {
-    ref_counter++;
-    if (ref_counter==1) {
-      return false;
-    }
-  } else {
-    ref_counter--;
-    if (ref_counter<0) {
-      ref_counter=0;
-    }
-    return (ref_counter!=0);
-  }
-  return true;
-}
-
 /////////////////////////////////////////////////////////
 //
 // gemwin
@@ -67,15 +48,15 @@ static bool StillHaveGemWin(bool up)
 gemwin :: gemwin(t_floatarg framespersecond)
   : m_FrameRate(NULL)
 {
-  if(!StillHaveGemWin(true)) {
+  if(!GemMan::get()->stillHaveGemWin(true)) {
     /* this is the only [gemwin] */
-    GemMan::resetState();
+    GemMan::get()->resetState();
     if (framespersecond > 0.) {
-      GemMan::frameRate(framespersecond);
+      GemMan::get()->frameRate(framespersecond);
     }
   } else {
     if(framespersecond>0.) {
-      GemMan::frameRate(framespersecond);
+      GemMan::get()->frameRate(framespersecond);
     }
   }
 
@@ -88,8 +69,8 @@ gemwin :: gemwin(t_floatarg framespersecond)
 /////////////////////////////////////////////////////////
 gemwin :: ~gemwin()
 {
-  if(!StillHaveGemWin(false)) {
-    GemMan::destroyWindow();
+  if(!GemMan::get()->stillHaveGemWin(false)) {
+    GemMan::get()->destroyWindow();
   }
 }
 
@@ -99,11 +80,11 @@ gemwin :: ~gemwin()
 /////////////////////////////////////////////////////////
 void gemwin :: bangMess()
 {
-  if ( GemMan::windowExists() ) {
-    if(1==GemMan::m_buffer) {
-      GemMan::swapBuffers();
+  if ( GemMan::get()->windowExists() ) {
+    if(1==GemMan::get()->m_buffer) {
+      GemMan::get()->swapBuffers();
     } else { /* double buffered mode */
-      GemMan::render(NULL);
+      GemMan::get()->render(NULL);
     }
   } else {
     pd_error(0, "no window");
@@ -117,9 +98,9 @@ void gemwin :: bangMess()
 void gemwin :: intMess(int state)
 {
   if (state) {
-    GemMan::startRendering();
+    GemMan::get()->startRendering();
   } else {
-    GemMan::stopRendering();
+    GemMan::get()->stopRendering();
   }
 }
 /////////////////////////////////////////////////////////
@@ -128,8 +109,8 @@ void gemwin :: intMess(int state)
 /////////////////////////////////////////////////////////
 void gemwin :: renderMess()
 {
-  if (GemMan::getRenderState()) {
-    GemMan::render(NULL);
+  if (GemMan::get()->getRenderState()) {
+    GemMan::get()->render(NULL);
   } else {
     pd_error(0, "not in render mode");
   }
@@ -140,7 +121,7 @@ void gemwin :: renderMess()
 /////////////////////////////////////////////////////////
 void gemwin :: titleMess(t_symbol* s)
 {
-  GemMan::m_title = s->s_name;
+  GemMan::get()->m_title = s->s_name;
 }
 /////////////////////////////////////////////////////////
 // createMess
@@ -154,20 +135,20 @@ void gemwin :: createMess(t_symbol* s)
     const char* disp = NULL;
 
     /* just in case a "pleaseDestroy" is still pending... */
-    GemMan::pleaseDestroy=false;
+    GemMan::get()->pleaseDestroy=false;
 
     if (s != &s_) {
       disp = s->s_name;
     }
 
-    if ( !GemMan::windowExists() )  {
-      GemMan::createContext(disp);
-      if ( !GemMan::createWindow(disp) )  {
+    if ( !GemMan::get()->windowExists() )  {
+      GemMan::get()->createContext(disp);
+      if ( !GemMan::get()->createWindow(disp) )  {
         pd_error(nullptr, "no window made");
         return;
       }
-      GemMan::swapBuffers();
-      GemMan::swapBuffers();
+      GemMan::get()->swapBuffers();
+      GemMan::get()->swapBuffers();
     } else {
       pd_error(nullptr, "window already made");
     }
@@ -181,9 +162,9 @@ void gemwin :: createMess(t_symbol* s)
 void gemwin :: bufferMess(int buf)
 {
   if (buf == 1) {
-    GemMan::m_buffer = 1;
+    GemMan::get()->m_buffer = 1;
   } else {
-    GemMan::m_buffer = 2;
+    GemMan::get()->m_buffer = 2;
   }
 }
 
@@ -203,7 +184,7 @@ void gemwin :: stereoMess(int mode)
     return;
   }
 
-  GemMan::m_stereo = mode;
+  GemMan::get()->m_stereo = mode;
 }
 
 /////////////////////////////////////////////////////////
@@ -212,7 +193,7 @@ void gemwin :: stereoMess(int mode)
 /////////////////////////////////////////////////////////
 void gemwin :: fullscreenMess(int on)
 {
-  GemMan::m_fullscreen = on;
+  GemMan::get()->m_fullscreen = on;
 }
 
 /////////////////////////////////////////////////////////
@@ -221,7 +202,7 @@ void gemwin :: fullscreenMess(int on)
 /////////////////////////////////////////////////////////
 void gemwin :: menuBarMess(int on)
 {
-  GemMan::m_menuBar = on;
+  GemMan::get()->m_menuBar = on;
 #ifdef __APPLE__
   if (on == 0) {
     SetSystemUIMode( kUIModeAllHidden, kUIOptionDisableAppleMenu |
@@ -242,7 +223,7 @@ void gemwin :: menuBarMess(int on)
 /////////////////////////////////////////////////////////
 void gemwin :: secondscreenMess(int on)
 {
-  GemMan::m_secondscreen = on;
+  GemMan::get()->m_secondscreen = on;
 }
 
 /////////////////////////////////////////////////////////
@@ -260,10 +241,10 @@ void gemwin :: dimensionsMess(int width, int height)
     pd_error(0, "height must be greater than 0");
     return;
   }
-  GemMan::m_width = width;
-  GemMan::m_height = height;
+  GemMan::get()->m_width = width;
+  GemMan::get()->m_height = height;
     
-  gemWinResize(GemMan::getWindowInfo(), width, height);
+  gemWinResize(GemMan::get()->getWindowInfo(), width, height);
 }
 /////////////////////////////////////////////////////////
 // offsetMess
@@ -271,8 +252,8 @@ void gemwin :: dimensionsMess(int width, int height)
 /////////////////////////////////////////////////////////
 void gemwin :: offsetMess(int x, int y)
 {
-  GemMan::m_xoffset = x;
-  GemMan::m_yoffset = y;
+  GemMan::get()->m_xoffset = x;
+  GemMan::get()->m_yoffset = y;
 }
 /////////////////////////////////////////////////////////
 // colorMess
@@ -280,11 +261,11 @@ void gemwin :: offsetMess(int x, int y)
 /////////////////////////////////////////////////////////
 void gemwin :: colorMess(float red, float green, float blue, float alpha)
 {
-  GemMan::m_clear_color[0] = red;
-  GemMan::m_clear_color[1] = green;
-  GemMan::m_clear_color[2] = blue;
-  GemMan::m_clear_color[3] = alpha;
-  if ( GemMan::windowExists() )  {
+  GemMan::get()->m_clear_color[0] = red;
+  GemMan::get()->m_clear_color[1] = green;
+  GemMan::get()->m_clear_color[2] = blue;
+  GemMan::get()->m_clear_color[3] = alpha;
+  if ( GemMan::get()->windowExists() )  {
     glClearColor(red, green, blue, alpha);
   }
 }
@@ -294,7 +275,7 @@ void gemwin :: colorMess(float red, float green, float blue, float alpha)
 /////////////////////////////////////////////////////////
 void gemwin :: clearmaskMess(float bitmask)
 {
-  GemMan::m_clear_mask = static_cast<GLbitfield>(bitmask);
+  GemMan::get()->m_clear_mask = static_cast<GLbitfield>(bitmask);
 }
 
 /////////////////////////////////////////////////////////
@@ -303,10 +284,10 @@ void gemwin :: clearmaskMess(float bitmask)
 /////////////////////////////////////////////////////////
 void gemwin :: ambientMess(float red, float green, float blue, float alpha)
 {
-  GemMan::m_mat_ambient[0] = red;
-  GemMan::m_mat_ambient[1] = green;
-  GemMan::m_mat_ambient[2] = blue;
-  GemMan::m_mat_ambient[3] = blue;
+  GemMan::get()->m_mat_ambient[0] = red;
+  GemMan::get()->m_mat_ambient[1] = green;
+  GemMan::get()->m_mat_ambient[2] = blue;
+  GemMan::get()->m_mat_ambient[3] = blue;
 }
 
 /////////////////////////////////////////////////////////
@@ -316,10 +297,10 @@ void gemwin :: ambientMess(float red, float green, float blue, float alpha)
 void gemwin :: specularMess(float red, float green, float blue,
                             float alpha)
 {
-  GemMan::m_mat_specular[0] = red;
-  GemMan::m_mat_specular[1] = green;
-  GemMan::m_mat_specular[2] = blue;
-  GemMan::m_mat_specular[2] = alpha;
+  GemMan::get()->m_mat_specular[0] = red;
+  GemMan::get()->m_mat_specular[1] = green;
+  GemMan::get()->m_mat_specular[2] = blue;
+  GemMan::get()->m_mat_specular[2] = alpha;
 
 }
 
@@ -329,7 +310,7 @@ void gemwin :: specularMess(float red, float green, float blue,
 /////////////////////////////////////////////////////////
 void gemwin :: shininessMess(float val)
 {
-  GemMan::m_mat_shininess = val;
+  GemMan::get()->m_mat_shininess = val;
 }
 
 /////////////////////////////////////////////////////////
@@ -342,7 +323,7 @@ void gemwin :: fogDensityMess(float val)
     val = 0.f;
   }
 
-  GemMan::m_fog = val;
+  GemMan::get()->m_fog = val;
 }
 
 /////////////////////////////////////////////////////////
@@ -359,8 +340,8 @@ void gemwin :: fogRangeMess(float start, float end)
     end  = 0.f;
   }
 
-  GemMan::m_fogStart = start;
-  GemMan::m_fogEnd = end;
+  GemMan::get()->m_fogStart = start;
+  GemMan::get()->m_fogEnd = end;
 }
 
 /////////////////////////////////////////////////////////
@@ -370,10 +351,10 @@ void gemwin :: fogRangeMess(float start, float end)
 void gemwin :: fogColorMess(float red, float green, float blue,
                             float alpha)
 {
-  GemMan::m_fogColor[0] = red;
-  GemMan::m_fogColor[1] = green;
-  GemMan::m_fogColor[2] = blue;
-  GemMan::m_fogColor[3] = alpha;
+  GemMan::get()->m_fogColor[0] = red;
+  GemMan::get()->m_fogColor[1] = green;
+  GemMan::get()->m_fogColor[2] = blue;
+  GemMan::get()->m_fogColor[3] = alpha;
 }
 
 /////////////////////////////////////////////////////////
@@ -384,19 +365,19 @@ void gemwin :: fogModeMess(int mode)
 {
   switch (mode) {
   case 0 :
-    GemMan::m_fogMode = GemMan::FOG_OFF;
+    GemMan::get()->m_fogMode = GemMan::get()->FOG_OFF;
     break;
 
   case 1 :
-    GemMan::m_fogMode = GemMan::FOG_LINEAR;
+    GemMan::get()->m_fogMode = GemMan::get()->FOG_LINEAR;
     break;
 
   case 2 :
-    GemMan::m_fogMode = GemMan::FOG_EXP;
+    GemMan::get()->m_fogMode = GemMan::get()->FOG_EXP;
     break;
 
   case 3 :
-    GemMan::m_fogMode = GemMan::FOG_EXP2;
+    GemMan::get()->m_fogMode = GemMan::get()->FOG_EXP2;
     break;
 
   default :
@@ -411,7 +392,7 @@ void gemwin :: fogModeMess(int mode)
 /////////////////////////////////////////////////////////
 void gemwin :: cursorMess(float setting)
 {
-  GemMan :: cursorOnOff(static_cast<int>(setting));
+  GemMan::get()->cursorOnOff(static_cast<int>(setting));
 }
 
 /////////////////////////////////////////////////////////
@@ -420,7 +401,7 @@ void gemwin :: cursorMess(float setting)
 /////////////////////////////////////////////////////////
 void gemwin :: topmostMess(float topmost)
 {
-  GemMan::topmostOnOff(static_cast<int>(topmost));
+  GemMan::get()->topmostOnOff(static_cast<int>(topmost));
 }
 
 
@@ -431,7 +412,7 @@ void gemwin :: topmostMess(float topmost)
 void gemwin :: blurMess(float setting)
 {
   if (setting>=0.f && setting <= 1.f) {
-    GemMan :: m_motionBlur = setting;
+    GemMan::get()->m_motionBlur = setting;
   }
 }
 
@@ -441,7 +422,7 @@ void gemwin :: blurMess(float setting)
 /////////////////////////////////////////////////////////
 void gemwin :: fpsMess()
 {
-  outlet_float(m_FrameRate,GemMan :: fps);
+  outlet_float(m_FrameRate,GemMan::get()->fps);
 }
 
 /////////////////////////////////////////////////////////
@@ -451,9 +432,9 @@ void gemwin :: fpsMess()
 void gemwin :: fsaaMess(int value)
 {
   if (value == 2 || value == 4 || value == 8) {
-    GemMan :: fsaa = value;
+    GemMan::get()->fsaa = value;
   } else {
-    GemMan :: fsaa = value;
+    GemMan::get()->fsaa = value;
   }
 }
 
@@ -567,15 +548,15 @@ void gemwin :: obj_setupCallback(t_class *classPtr)
 }
 void gemwin :: printMessCallback(void *)
 {
-  GemMan::printInfo();
+  GemMan::get()->printInfo();
 }
 void gemwin :: profileMessCallback(void *, t_float state)
 {
-  GemMan::m_profile = static_cast<int>(state);
+  GemMan::get()->m_profile = static_cast<int>(state);
 }
 void gemwin :: lightingMessCallback(void *, t_float state)
 {
-  GemMan::lightingOnOff(static_cast<int>(state));
+  GemMan::get()->lightingOnOff(static_cast<int>(state));
 }
 void gemwin :: fogMessCallback(void *data, t_symbol*, int argc,
                                t_atom *argv)
@@ -619,35 +600,35 @@ void gemwin :: stereoMessCallback(void *data, t_float state)
     return;
   }
 
-  GemMan::m_stereo = mode;
+  GemMan::get()->m_stereo = mode;
 }
 void gemwin :: stereoSepMessCallback(void *, t_float state)
 {
-  GemMan::m_stereoSep = state;
+  GemMan::get()->m_stereoSep = state;
 }
 void gemwin :: stereoFocMessCallback(void *, t_float state)
 {
-  GemMan::m_stereoFocal = state;
+  GemMan::get()->m_stereoFocal = state;
 }
 void gemwin :: stereoLineMessCallback(void *, t_float state)
 {
-  GemMan::m_stereoLine = (state!=0.0);
+  GemMan::get()->m_stereoLine = (state!=0.0);
 }
 void gemwin :: borderMessCallback(void *, t_float state)
 {
-  GemMan::m_border = static_cast<int>(state);
+  GemMan::get()->m_border = static_cast<int>(state);
 }
 void gemwin :: destroyMessCallback(void *)
 {
-  GemMan::destroyWindow();
+  GemMan::get()->destroyWindow();
 }
 void gemwin :: resetMessCallback(void *)
 {
-  GemMan::resetState();
+  GemMan::get()->resetState();
 }
 void gemwin :: frameMessCallback(void *, t_float rate)
 {
-  GemMan::frameRate(static_cast<float>(rate));
+  GemMan::get()->frameRate(static_cast<float>(rate));
 }
 void gemwin :: perspectiveMessCallback(void *data, t_symbol*, int argc,
                                        t_atom *argv)
@@ -656,12 +637,12 @@ void gemwin :: perspectiveMessCallback(void *data, t_symbol*, int argc,
     GetMyClass(data)->error("perspec message needs 6 arguments");
     return;
   }
-  GemMan::m_perspect[0] = atom_getfloat(&argv[0]);      // left
-  GemMan::m_perspect[1] = atom_getfloat(&argv[1]);      // right
-  GemMan::m_perspect[2] = atom_getfloat(&argv[2]);      // bottom
-  GemMan::m_perspect[3] = atom_getfloat(&argv[3]);      // top
-  GemMan::m_perspect[4] = atom_getfloat(&argv[4]);      // front
-  GemMan::m_perspect[5] = atom_getfloat(&argv[5]);      // back
+  GemMan::get()->m_perspect[0] = atom_getfloat(&argv[0]);      // left
+  GemMan::get()->m_perspect[1] = atom_getfloat(&argv[1]);      // right
+  GemMan::get()->m_perspect[2] = atom_getfloat(&argv[2]);      // bottom
+  GemMan::get()->m_perspect[3] = atom_getfloat(&argv[3]);      // top
+  GemMan::get()->m_perspect[4] = atom_getfloat(&argv[4]);      // front
+  GemMan::get()->m_perspect[5] = atom_getfloat(&argv[5]);      // back
 }
 void gemwin :: viewMessCallback(void *data, t_symbol*, int argc,
                                 t_atom *argv)
@@ -671,22 +652,22 @@ void gemwin :: viewMessCallback(void *data, t_symbol*, int argc,
   float theta = 0.f;
   float distance = 1.f;
 
-  if (GemMan::m_stereoFocal > 0) {
-    distance = GemMan::m_stereoFocal;
+  if (GemMan::get()->m_stereoFocal > 0) {
+    distance = GemMan::get()->m_stereoFocal;
   }
 
   switch (argc) {
   // setting all lookat values directly
   case 9 :
-    GemMan::m_lookat[0] = atom_getfloat(&argv[0]);    // eyex
-    GemMan::m_lookat[1] = atom_getfloat(&argv[1]);    // eyey
-    GemMan::m_lookat[2] = atom_getfloat(&argv[2]);    // eyez
-    GemMan::m_lookat[3] = atom_getfloat(&argv[3]);    // centerx
-    GemMan::m_lookat[4] = atom_getfloat(&argv[4]);    // centery
-    GemMan::m_lookat[5] = atom_getfloat(&argv[5]);    // centerz
-    GemMan::m_lookat[6] = atom_getfloat(&argv[6]);    // upx
-    GemMan::m_lookat[7] = atom_getfloat(&argv[7]);    // upy
-    GemMan::m_lookat[8] = atom_getfloat(&argv[8]);    // upz
+    GemMan::get()->m_lookat[0] = atom_getfloat(&argv[0]);    // eyex
+    GemMan::get()->m_lookat[1] = atom_getfloat(&argv[1]);    // eyey
+    GemMan::get()->m_lookat[2] = atom_getfloat(&argv[2]);    // eyez
+    GemMan::get()->m_lookat[3] = atom_getfloat(&argv[3]);    // centerx
+    GemMan::get()->m_lookat[4] = atom_getfloat(&argv[4]);    // centery
+    GemMan::get()->m_lookat[5] = atom_getfloat(&argv[5]);    // centerz
+    GemMan::get()->m_lookat[6] = atom_getfloat(&argv[6]);    // upx
+    GemMan::get()->m_lookat[7] = atom_getfloat(&argv[7]);    // upy
+    GemMan::get()->m_lookat[8] = atom_getfloat(&argv[8]);    // upz
     break;
 
   case 5 :
@@ -701,15 +682,15 @@ void gemwin :: viewMessCallback(void *data, t_symbol*, int argc,
     const float dy =  static_cast<float>(sin(theta));
     const float dz = -static_cast<float>(cos(theta) * cosf(azimuth));
 
-    GemMan::m_lookat[0] = atom_getfloat(&argv[0]);          // eyex
-    GemMan::m_lookat[1] = atom_getfloat(&argv[1]);          // eyey
-    GemMan::m_lookat[2] = atom_getfloat(&argv[2]);          // eyez
-    GemMan::m_lookat[3] = GemMan::m_lookat[0] + dx * distance;      // centerx
-    GemMan::m_lookat[4] = GemMan::m_lookat[1] + dy * distance;      // centery
-    GemMan::m_lookat[5] = GemMan::m_lookat[2] + dz * distance;      // centery
-    GemMan::m_lookat[6] = -dx*dy;                                   // upx
-    GemMan::m_lookat[7] = dx*dx+dz*dz;                              // upy
-    GemMan::m_lookat[8] = -dy*dz;                                   // upz
+    GemMan::get()->m_lookat[0] = atom_getfloat(&argv[0]);          // eyex
+    GemMan::get()->m_lookat[1] = atom_getfloat(&argv[1]);          // eyey
+    GemMan::get()->m_lookat[2] = atom_getfloat(&argv[2]);          // eyez
+    GemMan::get()->m_lookat[3] = GemMan::get()->m_lookat[0] + dx * distance;      // centerx
+    GemMan::get()->m_lookat[4] = GemMan::get()->m_lookat[1] + dy * distance;      // centery
+    GemMan::get()->m_lookat[5] = GemMan::get()->m_lookat[2] + dz * distance;      // centery
+    GemMan::get()->m_lookat[6] = -dx*dy;                                   // upx
+    GemMan::get()->m_lookat[7] = dx*dx+dz*dz;                              // upy
+    GemMan::get()->m_lookat[8] = -dy*dz;                                   // upz
   }
   break;
 

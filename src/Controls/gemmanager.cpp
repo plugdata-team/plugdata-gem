@@ -42,7 +42,7 @@ gemmanager :: ~gemmanager()
 /////////////////////////////////////////////////////////
 void gemmanager :: dimenMess(int w, int h)
 {
-  GemMan::setDimen(w, h);
+  GemMan::get()->setDimen(w, h);
 }
 
 

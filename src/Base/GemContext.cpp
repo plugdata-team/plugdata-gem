@@ -173,7 +173,7 @@ Context::Context(void)
   /* update the stack variables (late initialization) */
   push();
   pop();
-  GemMan::m_windowState++;
+  GemMan::get()->m_windowState++;
 }
 
 Context::Context(const Context&c)
@@ -207,18 +207,18 @@ Context::~Context(void)
     delete m_pimpl;
   }
   m_pimpl=NULL;
-  GemMan::m_windowState--;
+  GemMan::get()->m_windowState--;
 }
 
 bool Context::push(void)
 {
-  GemMan::maxStackDepth[GemMan::STACKMODELVIEW]=
+  GemMan::get()->maxStackDepth[GemMan::STACKMODELVIEW]=
     m_pimpl->maxStackDepth[GemMan::STACKMODELVIEW];
-  GemMan::maxStackDepth[GemMan::STACKCOLOR]=
+  GemMan::get()->maxStackDepth[GemMan::STACKCOLOR]=
     m_pimpl->maxStackDepth[GemMan::STACKCOLOR];
-  GemMan::maxStackDepth[GemMan::STACKTEXTURE]=
+  GemMan::get()->maxStackDepth[GemMan::STACKTEXTURE]=
     m_pimpl->maxStackDepth[GemMan::STACKTEXTURE];
-  GemMan::maxStackDepth[GemMan::STACKPROJECTION]=
+  GemMan::get()->maxStackDepth[GemMan::STACKPROJECTION]=
     m_pimpl->maxStackDepth[GemMan::STACKPROJECTION];
 
   m_pimpl->s_context=m_pimpl->context;

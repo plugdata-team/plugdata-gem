@@ -123,7 +123,7 @@ void pix_write :: doWrite(void)
   int width  = m_width;
   int height = m_height;
 
-  GemMan::getDimen(((m_width >0)?NULL:&width ),
+  GemMan::get()->getDimen(((m_width >0)?NULL:&width ),
                    ((m_height>0)?NULL:&height));
 
   m_originalImage->xsize = width;

@@ -204,7 +204,7 @@ void GemState :: reset()
   HaveTexCoordArray = 0;
   drawType = 0;
 
-  if(GemMan::windowExists()) {
+  if(GemMan::get()->windowExists()) {
     GLStack *stacks;
     get(GemState::_GL_STACKS, stacks);
     stacks->reset();

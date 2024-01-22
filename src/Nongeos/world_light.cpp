@@ -47,7 +47,7 @@ world_light :: world_light(t_floatarg lightNum)
   } else {
     num = static_cast<int>(lightNum);
   }
-  m_light = GemMan::requestLight(num);
+  m_light = GemMan::get()->requestLight(num);
   m_on = 1;
   m_change = 1;
 
@@ -68,7 +68,7 @@ world_light :: ~world_light()
   }
 
   if (m_light) {
-    GemMan::freeLight(m_light);
+    GemMan::get()->freeLight(m_light);
   }
 
 }

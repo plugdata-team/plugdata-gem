@@ -161,7 +161,7 @@ void pix_snap2tex :: snapMess(void)
   int width  = m_width;
   int height = m_height;
 
-  GemMan::getDimen(((m_width >0)?NULL:&width ),
+  GemMan::get()->getDimen(((m_width >0)?NULL:&width ),
                    ((m_height>0)?NULL:&height));
 
   if (width <= 0 || height <= 0) {

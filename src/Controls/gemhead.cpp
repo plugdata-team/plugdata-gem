@@ -156,7 +156,7 @@ void gemhead :: renderGL(GemState *state)
   }
 
   // are we profiling and need to send new images?
-  if (GemMan::getProfileLevel() >= 2) {
+  if (GemMan::get()->getProfileLevel() >= 2) {
     m_cache->resendImage = 1;
   }
 
@@ -195,7 +195,7 @@ void gemhead :: bangMess()
 
   // make a dummy GemState
   GemState tempState;
-  GemMan::fillGemState(tempState);
+  GemMan::get()->fillGemState(tempState);
 
   m_renderOn = 1;
   renderGL(&tempState);
@@ -246,7 +246,7 @@ void gemhead :: setContext(const std::string&contextName)
 }
 
 bool gemhead :: activateContext(void) {
-  if(!GemMan::windowExists())
+  if(!GemMan::get()->windowExists())
     return false;
 
   t_symbol*window_sym = gensym("__gem_window");

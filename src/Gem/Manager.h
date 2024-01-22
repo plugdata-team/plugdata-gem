@@ -21,7 +21,14 @@
 
 #include "Gem/ExportDef.h"
 
+#ifndef GEM_MULTICONTEXT
+# include "Base/GemWinCreate.h"
+#endif
+
 #include <string>
+#include <map>
+
+#include <m_pd.h>
 
 struct _symbol;
 
@@ -39,7 +46,7 @@ class Context;
   CLASS
   GemMan
 
-  A static class to create windows, etc.
+  A class to create windows, etc.
 
   DESCRIPTION
 
@@ -50,166 +57,168 @@ public:
 
   //////////
   // Should only be called once (usually by GemSetup)
-  static void       initGem(void);
+  void       initGem(void);
 
   //////////
-  static void       addObj(gemhead *obj, float priority);
+  void       addObj(gemhead *obj, float priority);
 
   //////////
-  static void       removeObj(gemhead *obj, float priority);
+  void       removeObj(gemhead *obj, float priority);
 
   //////////
   // Is there a window.
-  static int        windowExists(void);
+  int        windowExists(void);
 
   //////////
   // Are we rendering.
-  static int        getRenderState(void);
+  int        getRenderState(void);
 
   //////////
   // is there a context (has its meaning under X)
-  static void         createContext(const char* disp);
-  static int        contextExists(void);
+  void         createContext(const char* disp);
+  int        contextExists(void);
 
   //////////
   // If an object needs to know if the window changed.
   // This is important for display lists.
-  static int        windowNumber(void);
+  int        windowNumber(void);
 
   //////////
   // reset to the initial state
-  static void       resetState(void);
+  void       resetState(void);
     
   //////////
   // Just send out one frame (if double buffered, will swap buffers)
   static void       render(void *);
 
-  static void       renderChain(struct _symbol *head, bool start);
-  static void       renderChain(struct _symbol *head, GemState *state);
+  void       renderChain(struct _symbol *head, bool start);
+  void       renderChain(struct _symbol *head, GemState *state);
 
 
     
-  static void       pauseRendering();
-  static void       resumeRendering(void *);
+  void       pauseRendering();
+  static void resumeRendering(void *);
     
   //////////
   // Start a clock to do rendering.
-  static void       startRendering();
+  void       startRendering();
 
   //////////
   // Stop the clock to do rendering.
-  static void       stopRendering();
+  void       stopRendering();
 
   //////////
   // Create the window with the current parameters
-  static int        createWindow(const char* disp = 0);
+  int        createWindow(const char* disp = 0);
 
   //////////
   // Destroy the window
-  static void       destroyWindow(void);
+  void       destroyWindow(void);
   // Destroy the window after a minimal delay
-  static void       destroyWindowSoon(void);
+  void       destroyWindowSoon(void);
 
   //////////
   // Swap the buffers.
   // If single buffered, just clears the window
-  static void       swapBuffers(void);
+  void       swapBuffers(void);
 
   //////////
   // Set the frame rate
-  static void       frameRate(float framespersecond);
+  void       frameRate(float framespersecond);
   //////////
   // Get the frame rate
-  static float      getFramerate(void);
+  float      getFramerate(void);
 
-  static int        getProfileLevel(void);
+  int        getProfileLevel(void);
 
-  static void getDimen(int*width, int*height);
-  static void getRealDimen(int*width, int*height);
-  static void getOffset(int*x, int*y);
-  static void setDimen(int width, int height);
+  void getDimen(int*width, int*height);
+  void getRealDimen(int*width, int*height);
+  void getOffset(int*x, int*y);
+  void setDimen(int width, int height);
 
   //////////
   // Turn on/off lighting
-  static void       lightingOnOff(int state);
+  void       lightingOnOff(int state);
 
   //////////
   // Turn on/off cursor
-  static void         cursorOnOff(int state);
+  void         cursorOnOff(int state);
 
   //////////
   // Turn on/off topmost position
-  static void         topmostOnOff(int state);
+  void         topmostOnOff(int state);
 
-  static void       windowInit(void);
+  void       windowInit(void);
+    
+  bool       stillHaveGemWin(bool up);
     
   //////////
   // Request a lighting value - it is yours until you free it.
   // The return can be 0, in which there are too many lights
   // [in] specific - If you want a specific light.  == 0 means that you don't care.
-  static GLenum     requestLight(int specific = 0);
+  GLenum     requestLight(int specific = 0);
 
   //////////
   // Free a lighting value
-  static void       freeLight(GLenum lightNum);
+  void       freeLight(GLenum lightNum);
 
   //////////
   // Print out information
-  static void       printInfo(void);
+  void       printInfo(void);
 
   //////////
-  static void       fillGemState(GemState &);
+  void       fillGemState(GemState &);
 
-  static int       texture_rectangle_supported;
+  int       texture_rectangle_supported = 0;
 
   enum GemStackId { STACKMODELVIEW, STACKCOLOR, STACKTEXTURE, STACKPROJECTION };
-  static GLint     maxStackDepth[4]; // for push/pop of matrix-stacks
+  GLint     maxStackDepth[4]; // for push/pop of matrix-stacks
 
 
-  static float     m_perspect[6];       // values for the perspective matrix
-  static float     m_lookat[9]; // values for the lookat matrix
+  float     m_perspect[6];       // values for the perspective matrix
+  float     m_lookat[9]; // values for the lookat matrix
 
   // LATER make this private (right now it is needed in gem2pdp)
-  static int       m_buffer;            // single(1) or double(2)
+  int       m_buffer;            // single(1) or double(2)
 
 private:
 
   //////////
   // computer and window information
-  static std::string m_title;             // title to be displayed
-  static int       m_fullscreen;        // fullscreen (1) or not (0!)
-  static int
+  std::string m_title = "Gem";             // title to be displayed
+  int       m_fullscreen = 0;        // fullscreen (1) or not (0!)
+  int
   m_menuBar;           // hide (0), show(1), hide but autoshow(-1)
-  static int       m_secondscreen;      // set the second screen
-  static int       m_height;            // window height
-  static int       m_width;             // window width
-  static int
-  m_w;                 // the real window width (reported by gemCreateWindow())
-  static int       m_h;                 // the real window height
-  static int       m_xoffset;           // window offset (x)
-  static int       m_yoffset;           // window offset (y)
+  int       m_secondscreen = 0;      // set the second screen
+  int       m_height = 500;            // window height
+  int       m_width = 500;             // window width
+  int
+  m_w = 500;                 // the real window width (reported by gemCreateWindow())
+  int       m_h = 500;                 // the real window height
+  int       m_xoffset = 0;           // window offset (x)
+  int       m_yoffset = 0;           // window offset (y)
 
-  static int       m_border;            // window border
-  static int       m_stereo;            // stereoscopic
+  int       m_border = 1;            // window border
+  int       m_stereo = 0;            // stereoscopic
 
-  static int
-  m_profile;           // off(0), on(1), w/o image caching(2)
-  static int       m_rendering;
+  int
+  m_profile = 0;           // off(0), on(1), w/o image caching(2)
+  int       m_rendering = 0;
 
-  static float     m_fog;                       // fog density
+  float     m_fog;                       // fog density
   enum FOG_TYPE
   { FOG_OFF = 0, FOG_LINEAR, FOG_EXP, FOG_EXP2 };
-  static FOG_TYPE  m_fogMode;           // what kind of fog we have
-  static GLfloat   m_fogColor[4];       // colour of the fog
-  static float     m_fogStart;          // start of the linear fog
-  static float     m_fogEnd;            // start of the linear fog
+  FOG_TYPE  m_fogMode;           // what kind of fog we have
+  GLfloat   m_fogColor[4];       // colour of the fog
+  float     m_fogStart;          // start of the linear fog
+  float     m_fogEnd;            // start of the linear fog
 
-  static float
-  m_motionBlur;        // motion-blur factor in double-buffer mode
+  float
+  m_motionBlur = 0.0f;        // motion-blur factor in double-buffer mode
 
-  static float     fps;
-  static int       fsaa;
-  static bool      pleaseDestroy;
+  float     fps;
+  int       fsaa = 0;
+  bool      pleaseDestroy = false;
 
 #ifndef GEM_MULTICONTEXT
   //////////
@@ -217,51 +226,80 @@ private:
   // This is current rendering window information
   // The window is created and destroyed by the user, so
   //            if there is no window, this will contain NULL pointers.
-  static WindowInfo   &getWindowInfo(void);
+  WindowInfo   &getWindowInfo(void);
 
   //////////
   // Changing these variables is likely to crash GEM
   // This is constant rendering window information
   // This window is always available (although not visible)
-  static WindowInfo   &getConstWindowInfo(void);
+  WindowInfo   &getConstWindowInfo(void);
 #endif /* GEM_MULTICONTEXT */
-  static int        createConstWindow(const char* disp = 0);
+  int        createConstWindow(const char* disp = 0);
 
   // gemwin is allowed to modifying "global" window attributes
   friend class gemwin;
   friend class gem::Context;
 
-  static GLfloat    m_clear_color[4];   // the frame buffer clear
-  static GLbitfield m_clear_mask;               // the clear bitmask
-  static GLfloat    m_mat_ambient[4];   // default ambient material
-  static GLfloat    m_mat_specular[4];  // default specular material
-  static GLfloat    m_mat_shininess;    // default shininess material
+  GLfloat    m_clear_color[4];   // the frame buffer clear
+  GLbitfield m_clear_mask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;               // the clear bitmask
+  GLfloat    m_mat_ambient[4];   // default ambient material
+  GLfloat    m_mat_specular[4];  // default specular material
+  GLfloat    m_mat_shininess;    // default shininess material
 
-  static GLfloat    m_stereoSep;                // stereo separation
-  static GLfloat    m_stereoFocal;              // distance to focal point
-  static bool
-  m_stereoLine;               // draw a line between 2 stereo-screens
+  GLfloat    m_stereoSep = -15.f;                // stereo separation
+  GLfloat    m_stereoFocal = 0.f;              // distance to focal point
+  bool
+  m_stereoLine = true;               // draw a line between 2 stereo-screens
 
-  static double
-  m_lastRenderTime;   // the time of the last rendered frame
+  double
+  m_lastRenderTime = 0.;   // the time of the last rendered frame
 
   // gemwin should not touch the following member variables and member functions
-  static int        m_windowState;
-  static int        m_windowNumber;
-  static int        m_windowContext;
-  static int        m_cursor;
-  static int        m_topmost;
+  int        m_windowState = 0;
+  int        m_windowNumber = 0;
+  int        m_windowContext = 0;
+  int        m_cursor = 1;
+  int        m_topmost = 0;
+    
+  bool glewInitialized = false;
+  
+  // static data
+  static constexpr int NUM_LIGHTS = 8;        // the maximum number of lights
+  int m_lightState = 0;        // is lighting on or off
+  int m_lights[NUM_LIGHTS];    // the lighting array
+  
+  t_clock *m_clock = NULL;
+  double m_deltime = 50.;
+  int m_hit = 0;
+  int m_window_ref_count = 0;
 
-
-  static void       windowCleanup(void);
-  static void       resetValues(void);
+  void       windowCleanup(void);
+  void       resetValues(void);
 
   static void resizeCallback(int xsize, int ysize, void*);
-  static void dispatchWinmessCallback(void *owner);
+  void dispatchWinmessCallback(void *owner);
 
   //////////
   // check for supported openGL extensions we might need
-  static void checkOpenGLExtensions(void);
+  void checkOpenGLExtensions(void);
+    
+  static inline std::map<void*, GemMan> instances = std::map<void*, GemMan>();
+    
+public:
+  static inline GemMan* get()
+  {
+      bool existed = instances.count(pd_this);
+      auto* instance = &instances[reinterpret_cast<void*>(pd_this)];
+      if(!existed) instance->initGem();
+      return instance;
+  }
+    
+#ifndef GEM_MULTICONTEXT
+   WindowInfo gfxInfo;
+   WindowInfo constInfo;
+#endif /* GEM_MULTICONTEXT */
+    
+   t_clock *m_render_start_clock = NULL;
 };
 
 #endif

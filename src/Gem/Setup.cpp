@@ -278,7 +278,7 @@ void setup()
 
   gem::Settings::init();
   addownpath("Gem-meta.pd");
-  GemMan::initGem();
+  GemMan::get()->initGem();
 
 
   // initialize some plugins
