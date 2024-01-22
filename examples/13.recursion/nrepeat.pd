@@ -25,7 +25,7 @@
 #X text 119 381 counter;
 #X text 30 419 nrepeat.pd (GPL) <claude@mathr.co.uk>;
 #X obj 227 386 declare -path zexy -lib zexy;
-#X obj 131 121 gemrepeat \$1;
+#X obj 128 103 gemrepeat;
 #X connect 0 0 1 0;
 #X connect 1 0 6 0;
 #X connect 1 1 25 0;

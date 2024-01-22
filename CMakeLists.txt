@@ -121,6 +121,7 @@ file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Manips/rotate.cpp
   ${GEM_SOURCE_PATH}/Manips/rotateXYZ.cpp
   ${GEM_SOURCE_PATH}/Manips/scale.cpp
+  ${GEM_SOURCE_PATH}/Manips/gemrepeat.cpp
   ${GEM_SOURCE_PATH}/Manips/scaleXYZ.cpp
   ${GEM_SOURCE_PATH}/Manips/separator.cpp
   ${GEM_SOURCE_PATH}/Manips/shearXY.cpp
