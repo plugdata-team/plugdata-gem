@@ -15,14 +15,9 @@
 #X text 297 265 this produces an output like;
 #X text 292 285 "r1 g1 b1 a1 r2 g2 b2 a2 r3 ...";
 #X text 292 302 (r=red \; g=green \; b=blue \; a=alpha);
-#X obj 474 371 repack;
-#X text 278 369 maybe you would like to use;
-#X text 525 373 (part of zexy);
-#X text 275 389 to excerpt pixel information out of this;
 #X text 101 487 maybe have a look at;
 #X obj 250 487 pix_set;
-#X obj 455 54 cnv 15 220 70 empty empty empty 20 12 0 14 -195568 -66577
-0;
+#X obj 455 54 cnv 15 220 70 empty empty empty 20 12 0 14 #bcbcbc #404040 0;
 #N canvas 0 22 454 304 gemwin 0;
 #X obj 132 136 gemwin;
 #X obj 67 89 outlet;
@@ -54,13 +49,13 @@
 #X text 456 54 Create window and render;
 #X obj 143 135 pix_image ../data/blob2.tif;
 #X obj 652 5 declare -lib Gem;
-#X connect 0 0 25 0;
+#X connect 0 0 21 0;
 #X connect 1 0 5 0;
 #X connect 1 1 11 0;
 #X connect 4 0 1 0;
 #X connect 5 0 7 0;
 #X connect 6 0 5 0;
 #X connect 8 0 6 0;
-#X connect 22 0 23 0;
-#X connect 23 0 22 0;
-#X connect 25 0 1 0;
+#X connect 18 0 19 0;
+#X connect 19 0 18 0;
+#X connect 21 0 1 0;
