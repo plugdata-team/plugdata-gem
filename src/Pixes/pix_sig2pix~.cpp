@@ -18,6 +18,15 @@
 #include "Gem/State.h"
 #include "Utils/Functions.h"
 
+#ifdef _MSC_VER
+#    ifdef _WIN64
+typedef unsigned __int64 ssize_t;
+#    else
+typedef _W64 unsigned int ssize_t;
+#    endif
+#    define _SSIZE_T_DEFINED
+#endif
+
 CPPEXTERN_NEW_NAMED_WITH_TWO_ARGS(pix_sig2pix, pix_sig2pix~, t_float,A_DEFFLOAT,t_float,
     A_DEFFLOAT);
 
