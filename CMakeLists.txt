@@ -237,7 +237,7 @@ file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Pixes/pix_noise.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_normalize.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_offset.cpp
-  ${GEM_SOURCE_PATH}/Pixes/pix_pix2sig.cpp
+  ${GEM_SOURCE_PATH}/Pixes/pix_pix2sig~.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_posterize.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_puzzle.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_rds.cpp
@@ -254,7 +254,7 @@ file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Pixes/pix_set.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_share_read.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_share_write.cpp
-  ${GEM_SOURCE_PATH}/Pixes/pix_sig2pix.cpp
+  ${GEM_SOURCE_PATH}/Pixes/pix_sig2pix~.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_snap.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_snap2tex.cpp
   ${GEM_SOURCE_PATH}/Pixes/pix_subtract.cpp

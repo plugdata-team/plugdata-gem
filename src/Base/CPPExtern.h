@@ -291,6 +291,15 @@ static void obj_setupCallback(t_class *classPtr);
          PD_TYPE, PD_TWO, PD_THREE, PD_FOUR, PD_FIVE           \
     REAL_NEW__SETUP2(NEW_CLASS)
 
+#define CPPEXTERN_NEW_NAMED(NEW_CLASS, CLASS_NAME) \
+  REAL_NEW__CLASS(NEW_CLASS);                      \
+  static void* create_ ## NEW_CLASS (void)         \
+    REAL_NEW__CREATE1(NEW_CLASS)                   \
+    obj->data = new NEW_CLASS();                   \
+    REAL_NEW__CREATE2(NEW_CLASS)                   \
+    REAL_NEW__SETUP(NEW_CLASS, CLASS_NAME)         \
+    REAL_NEW__SETUP2(NEW_CLASS)
+
 
 #define CPPEXTERN_NEW_NAMED_WITH_ONE_ARG(NEW_CLASS, CLASS_NAME, TYPE, PD_TYPE)    \
   REAL_NEW__CLASS(NEW_CLASS);                    \
@@ -302,7 +311,15 @@ static void obj_setupCallback(t_class *classPtr);
          PD_TYPE,                                \
     REAL_NEW__SETUP2(NEW_CLASS)
 
-
+#define CPPEXTERN_NEW_NAMED_WITH_TWO_ARGS(NEW_CLASS, CLASS_NAME, TYPE, PD_TYPE, TTWO, PD_TWO)    \
+  REAL_NEW__CLASS(NEW_CLASS);                               \
+  static void* create_ ## NEW_CLASS (TYPE arg, TTWO arg2)   \
+    REAL_NEW__CREATE1(NEW_CLASS)                            \
+    obj->data = new NEW_CLASS(arg, arg2);                   \
+    REAL_NEW__CREATE2(NEW_CLASS)                            \
+    REAL_NEW__SETUP(NEW_CLASS, CLASS_NAME)                  \
+         PD_TYPE, PD_TWO,                                   \
+    REAL_NEW__SETUP2(NEW_CLASS)
 
 //////////////////////////////////////////////////////////////////////////////
 // These should never be called or used directly!!!
