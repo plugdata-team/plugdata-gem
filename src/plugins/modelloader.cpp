@@ -99,8 +99,9 @@ public:
     m_handle(NULL),
     m_canThread(true)
   {
-    gem::PluginFactory<gem::plugins::modelloader>::loadPlugins("model");
-    std::vector<std::string>ids=
+    //gem::PluginFactory<gem::plugins::modelloader>::loadPlugins("model");
+    
+      std::vector<std::string>ids=
       gem::PluginFactory<gem::plugins::modelloader>::getIDs();
 
     //addPlugin(ids, "MPEG1");
