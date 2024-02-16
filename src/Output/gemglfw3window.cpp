@@ -647,7 +647,10 @@ void gemglfw3window :: bufferMess(int buf)
   case 2:
     m_buffer=buf;
     if(m_window) {
-      post("changing buffer type will only effect newly created windows");
+      static int warned = 0;
+      if(!warned)
+        post("changing buffer type will only effect newly created windows");
+      warned = 1;
     }
     break;
   default:
@@ -858,6 +861,8 @@ bool gemglfw3window :: create(void)
   dispatch();
 
   int fb_width=0, fb_height=0;
+  glfwGetWindowSize(m_window, &fb_width, &fb_height);
+  dimension(fb_width, fb_height);
   glfwGetFramebufferSize(m_window, &fb_width, &fb_height);
   framebuffersize(fb_width, fb_height);
 

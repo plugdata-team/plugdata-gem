@@ -278,6 +278,32 @@ namespace {
     return buf;
   }
 
+  const unsigned char format2csize(int fmt) {
+    switch(fmt) {
+    case GL_LUMINANCE:
+      return 1;
+    case GL_YUV422_GEM:
+      return 2;
+    case GL_RGB:
+    case GL_BGR:
+      return 3;
+    case GL_RGBA:
+    case GL_BGRA:
+#ifdef GL_ABGR_EXT
+    case GL_ABGR_EXT:
+#endif
+#ifdef GL_ARGB_EXT
+    case GL_ARGB_EXT:
+#endif
+      return 4;
+    default:
+      break;
+    }
+    /* default */
+    return 4;
+  }
+
+
   const bool needsReverseOrdering(unsigned int type) {
     const bool isBigEndian =
 #ifdef __BIG_ENDIAN__
@@ -518,13 +544,13 @@ imageStruct&imageStruct::operator=(const imageStruct&org)
 }
 
 
-GEM_EXTERN int imageStruct::setCsizeByFormat(int setformat)
+GEM_EXTERN int imageStruct::setFormat(int setformat)
 {
+  csize = format2csize(setformat);
   switch(setformat) {
   case GL_LUMINANCE:
     format=setformat;
     type=GL_UNSIGNED_BYTE;
-    csize=1;
     break;
 
   case GL_YUV422_GEM:
@@ -540,14 +566,12 @@ GEM_EXTERN int imageStruct::setCsizeByFormat(int setformat)
       GL_UNSIGNED_BYTE
 #endif
       ;
-    csize=2;
     break;
 
   case GL_RGB:
   case GL_BGR:
     format=setformat;
     type=GL_UNSIGNED_BYTE;
-    csize=3;
     break;
 
   case GL_RGBA:
@@ -569,15 +593,15 @@ GEM_EXTERN int imageStruct::setCsizeByFormat(int setformat)
 # endif
 #endif
       ;
-    csize=4;
     break;
   }
 
   return csize;
 }
-GEM_EXTERN int imageStruct::setCsizeByFormat(void)
+
+GEM_EXTERN int imageStruct::setFormat(void)
 {
-  return setCsizeByFormat(format);
+  return setFormat(format);
 }
 
 void pix_addsat(unsigned char *leftPix, unsigned char *rightPix,
@@ -667,7 +691,7 @@ GEM_EXTERN bool imageStruct::convertFrom(const imageStruct *from,
   ysize=from->ysize;
 
   if(to_format>0) {
-    setCsizeByFormat(to_format);
+    setFormat(to_format);
   }
 
   upsidedown=from->upsidedown;
@@ -723,7 +747,7 @@ GEM_EXTERN bool imageStruct::fromRGB(const unsigned char *rgbdata)
   if(!rgbdata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -771,7 +795,7 @@ GEM_EXTERN bool imageStruct::fromRGB16(const unsigned char *rgb16data)
     return false;
   }
   const unsigned short*rgbdata=(const unsigned short*)rgb16data;
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -803,7 +827,7 @@ GEM_EXTERN bool imageStruct::fromRGBA(const unsigned char *rgbadata)
   if(!rgbadata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -857,7 +881,7 @@ GEM_EXTERN bool imageStruct::fromBGR(const unsigned char *bgrdata)
   if(!bgrdata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -901,7 +925,7 @@ GEM_EXTERN bool imageStruct::fromBGRA(const unsigned char *bgradata)
   if(!bgradata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -949,7 +973,7 @@ GEM_EXTERN bool imageStruct::fromABGR(const unsigned char *abgrdata)
   if(!abgrdata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -999,7 +1023,7 @@ GEM_EXTERN bool imageStruct::fromARGB(const unsigned char *argbdata)
   if(!argbdata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -1051,7 +1075,7 @@ GEM_EXTERN bool imageStruct::fromGray(const unsigned char *greydata)
   if(!greydata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -1096,7 +1120,7 @@ GEM_EXTERN bool imageStruct::fromGray(const short *greydata_)
   if(!greydata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -1162,7 +1186,7 @@ GEM_EXTERN bool imageStruct::fromYV12(const unsigned char*Y,
     return false;
   }
 
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -1220,7 +1244,7 @@ GEM_EXTERN bool imageStruct::fromYV12(const short*Y, const short*U,
     return false;
   }
 
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -1268,7 +1292,7 @@ GEM_EXTERN bool imageStruct::fromUYVY(const unsigned char *yuvdata)
   if(!yuvdata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
 
   bool reverse = needsReverseOrdering(type);
@@ -1328,7 +1352,7 @@ GEM_EXTERN bool imageStruct::fromYUY2(const unsigned char*yuvdata)   // YUYV
   if(!yuvdata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   reallocate();
   bool reverse = needsReverseOrdering(type);
 
@@ -1372,7 +1396,7 @@ GEM_EXTERN bool imageStruct::fromYVYU(const unsigned char *yuvdata)
   if(!yuvdata) {
     return false;
   }
-  setCsizeByFormat();
+  setFormat();
   bool reverse = needsReverseOrdering(type);
 
   reallocate();
@@ -1450,78 +1474,89 @@ GEM_EXTERN void imageStruct::fixUpDown(void)
   upsidedown=true;
 }
 
+namespace {
+  template <class T>
+  void _yuv2rgb(const T y, const T u, const T v,
+                T&r, T&g, T&b) {
+    const T Y = y*static_cast<T>(YUV2RGB_11);
+    r = CLAMP(Y + u*static_cast<T>(YUV2RGB_12) + v*static_cast<T>(YUV2RGB_13));
+    g = CLAMP(Y + u*static_cast<T>(YUV2RGB_22) + v*static_cast<T>(YUV2RGB_23));
+    b = CLAMP(Y + u*static_cast<T>(YUV2RGB_32) + v*static_cast<T>(YUV2RGB_33));
+  }
+  template<>
+  void _yuv2rgb(const unsigned char y, const unsigned char u, const unsigned char v,
+                unsigned char&r, unsigned char&g, unsigned char&b) {
+    const int Y = YUV2RGB_11*(y - Y_OFFSET);
+    const int U = u - UV_OFFSET;
+    const int V = v - UV_OFFSET;
+    const int uv_r=YUV2RGB_12*U + YUV2RGB_13*V;
+    const int uv_g=YUV2RGB_22*U + YUV2RGB_23*V;
+    const int uv_b=YUV2RGB_32*U + YUV2RGB_33*V;
+    r = CLAMP((Y + uv_r) >> 8);
+    g = CLAMP((Y + uv_g) >> 8);
+    b = CLAMP((Y + uv_b) >> 8);
+  }
+
+  template <class T>
+  void _getRGB(const T*data, unsigned int format, size_t position, T&red, T&green, T&blue, T&alpha) {
+    int csize = format2csize(format);
+    const T*pixels = data+position*csize;
+    switch(format) {
+    case GL_LUMINANCE:
+      red=green=blue=pixels[0];
+      alpha=255;
+      break;
+    case GL_RGB:
+      red=pixels[0];
+      green=pixels[1];
+      blue=pixels[2];
+      break;
+    case GL_BGR:
+      red=pixels[0];
+      green=pixels[1];
+      blue=pixels[2];
+      break;
+    case GL_RGBA:
+      red=pixels[0];
+      green=pixels[1];
+      blue=pixels[2];
+      alpha=pixels[3];
+      break;
+    case GL_BGRA:
+#ifdef __APPLE__
+      /* ARGB */
+      red=pixels[1];
+      green=pixels[2];
+      blue=pixels[3];
+      alpha=pixels[0];
+#else
+      red=pixels[2];
+      green=pixels[1];
+      blue=pixels[0];
+      alpha=pixels[3];
+#endif
+      break;
+    case GL_YUV422_GEM:
+      pixels = data + ((position>>1)<<1)*csize;
+      _yuv2rgb(pixels[(position%2)?chY1:chY0], pixels[chU], pixels[chV], red, green, blue);
+      break;
+    default:
+      break;
+    }
+  }
+};
 
 GEM_EXTERN bool imageStruct::getRGB(int X, int Y, unsigned char*r,
                                     unsigned char*g, unsigned char*b, unsigned char*a) const
 {
+  bool reverse = needsReverseOrdering(type);
   unsigned char red=0, green=0, blue=0, alpha=255;
   int position = (X+(upsidedown?(ysize-Y-1):Y)*xsize);
-  const unsigned char*pixels=data+position*csize;
-
-  switch(format) {
-  case GL_LUMINANCE:
-    red=green=blue=pixels[0];
-    alpha=255;
-    break;
-  case GL_RGB:
-    red=pixels[0];
-    green=pixels[1];
-    blue=pixels[2];
-    break;
-  case GL_BGR:
-    red=pixels[0];
-    green=pixels[1];
-    blue=pixels[2];
-    break;
-  case GL_RGBA:
-    red=pixels[0];
-    green=pixels[1];
-    blue=pixels[2];
-    alpha=pixels[3];
-    break;
-  case GL_BGRA:
-#ifdef __APPLE__
-    red=pixels[1];
-    green=pixels[2];
-    blue=pixels[3];
-    alpha=pixels[0];
-#else
-    red=pixels[2];
-    green=pixels[1];
-    blue=pixels[0];
-    alpha=pixels[3];
-#endif
-    break;
-  case GL_YUV422_GEM: {
-    position = (((X+(upsidedown?(ysize-Y-1):Y)*xsize)>>1)<<1);
-    pixels=data+position*csize;
-    int y=YUV2RGB_11*(pixels[(X%2)?chY1:chY0]-Y_OFFSET);
-    int u=pixels[chU] - UV_OFFSET;
-    int v=pixels[chV] - UV_OFFSET;
-    int uv_r=YUV2RGB_12*u+YUV2RGB_13*v;
-    int uv_g=YUV2RGB_22*u+YUV2RGB_23*v;
-    int uv_b=YUV2RGB_32*u+YUV2RGB_33*v;
-
-    red =   CLAMP((y + uv_r) >> 8);
-    green = CLAMP((y + uv_g) >> 8);
-    blue =  CLAMP((y + uv_b) >> 8);
-  }
-  break;
-  default:
-    break;
-  }
-  if(r) {
-    *r=red;
-  }
-  if(g) {
-    *g=green;
-  }
-  if(b) {
-    *b=blue;
-  }
-  if(a) {
-    *a=alpha;
-  }
+  _getRGB(data, format, position, red, green, blue, alpha);
+  if(r) *r=red;
+  if(g) *g=green;
+  if(b) *b=blue;
+  if(a) *a=alpha;
   return true;
 }
 GEM_EXTERN bool imageStruct::getGrey(int X, int Y, unsigned char*g) const

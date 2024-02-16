@@ -50,7 +50,7 @@ static volatile unsigned char getRandom(void)
   return (random_nextseed % 0xFF);
 }
 
-static void makeSMPTE_RGBA(unsigned int rows, unsigned int cols,
+static void makeSMPTE_RGBA(unsigned int cols, unsigned int rows,
                            unsigned char*DATA, float scale)
 {
   unsigned char*data=DATA;
@@ -104,7 +104,7 @@ static void makeSMPTE_RGBA(unsigned int rows, unsigned int cols,
     data+=4;
   }
 }
-static void makeSMPTE_RGB(unsigned int rows, unsigned int cols,
+static void makeSMPTE_RGB(unsigned int cols, unsigned int rows,
                           unsigned char*DATA, float scale)
 {
   unsigned char*data=DATA;
@@ -154,7 +154,7 @@ static void makeSMPTE_RGB(unsigned int rows, unsigned int cols,
     data+=3;
   }
 }
-void makeSMPTE_YUV(unsigned int rows, unsigned int cols,
+void makeSMPTE_YUV(unsigned int cols, unsigned int rows,
                    unsigned char*DATA, float scale)
 {
   unsigned char*data=DATA;
@@ -206,7 +206,7 @@ void makeSMPTE_YUV(unsigned int rows, unsigned int cols,
     data+=2;
   }
 }
-void makeSMPTE_Grey(unsigned int rows, unsigned int cols,
+void makeSMPTE_Grey(unsigned int cols, unsigned int rows,
                     unsigned char*data, float scale)
 {
   unsigned int r,c;
@@ -281,13 +281,13 @@ pix_test :: pix_test(int argc, t_atom*argv)
     break;
   }
 
-  m_pix.image.setCsizeByFormat(GEM_RGBA);
+  m_pix.image.setFormat(GEM_RGBA);
   m_pix.image.reallocate();
 }
 pix_test :: pix_test()
 {
   m_pix.image.xsize=m_pix.image.ysize=128;
-  m_pix.image.setCsizeByFormat(GEM_RGBA);
+  m_pix.image.setFormat(GEM_RGBA);
   m_pix.image.reallocate();
 }
 
@@ -311,19 +311,19 @@ void pix_test :: render(GemState*state)
   unsigned char* data=m_pix.image.data;
   switch (m_pix.image.format) {
   case GEM_RGBA:
-    makeSMPTE_RGBA(m_pix.image.ysize, m_pix.image.ysize, m_pix.image.data,
+    makeSMPTE_RGBA(m_pix.image.xsize, m_pix.image.ysize, m_pix.image.data,
                    scale);
     break;
   case GEM_RGB:
-    makeSMPTE_RGB(m_pix.image.ysize, m_pix.image.ysize, m_pix.image.data,
+    makeSMPTE_RGB(m_pix.image.xsize, m_pix.image.ysize, m_pix.image.data,
                   scale);
     break;
   case GEM_YUV:
-    makeSMPTE_YUV(m_pix.image.ysize, m_pix.image.ysize, m_pix.image.data,
+    makeSMPTE_YUV(m_pix.image.xsize, m_pix.image.ysize, m_pix.image.data,
                   scale);
     break;
   case GEM_GRAY:
-    makeSMPTE_Grey(m_pix.image.ysize, m_pix.image.ysize, m_pix.image.data,
+    makeSMPTE_Grey(m_pix.image.xsize, m_pix.image.ysize, m_pix.image.data,
                    scale);
     break;
   }
@@ -356,6 +356,7 @@ void pix_test :: csMess(std::string cs)
     for(i=0; i<len; i++) {
       col[i] = tolower(cs[i]);
     }
+    col[len] = 0;
     color = col;
   }
   if ("rgba" == color) {
@@ -371,9 +372,9 @@ void pix_test :: csMess(std::string cs)
           cs.c_str());
     return;
   }
-  m_pix.image.setCsizeByFormat(fmt);
-  m_pix.image.reallocate();
-  m_pix.newfilm=true;
+  m_pix.image.setFormat(fmt);
+  dimenMess(m_pix.image.xsize, m_pix.image.ysize);
+
 }
 void pix_test :: postrender(GemState *state)
 {
@@ -386,6 +387,8 @@ void pix_test :: dimenMess(unsigned int w, unsigned int h)
 {
   m_pix.image.xsize=w;
   m_pix.image.ysize=h;
+  if(GEM_YUV == m_pix.image.format && m_pix.image.xsize%2)
+    m_pix.image.xsize+=1;
   m_pix.image.reallocate();
   m_pix.newfilm=true;
 }

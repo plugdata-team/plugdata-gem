@@ -186,6 +186,11 @@ bool filmGMERLIN :: open(const std::string&sfilename,
     bgav_options_set_network_bandwidth(m_opt, network_bandwidth);
   */
   bgav_options_set_seek_subtitles(m_opt, 0);
+
+  /* requesting seample-accurate seeking here, and opening a single-frame file (foo.jpg)
+   * will crash on bgav_open()!
+   * OTOH, we do want sample accurate seeking whenever possible. how to fix this?
+   */
   bgav_options_set_sample_accurate(m_opt, 1);
 
   SET_LOG_CALLBACK(m_opt, this);
@@ -286,14 +291,13 @@ bool filmGMERLIN :: open(const std::string&sfilename,
 #endif
 
   m_finalframe = gavl_video_frame_create_nopad(finalformat);
-  m_doConvert= (gavl_video_converter_init (m_gconverter, gformat,
-                finalformat)>0);
+  m_doConvert = (gavl_video_converter_init (m_gconverter, gformat, finalformat)>0);
   m_image.image.xsize=gformat->frame_width;
   m_image.image.ysize=gformat->frame_height;
 #ifdef __APPLE__
-  m_image.image.setCsizeByFormat(GEM_YUV);
+  m_image.image.setFormat(GEM_YUV);
 #else
-  m_image.image.setCsizeByFormat(GEM_RGBA);
+  m_image.image.setFormat(GEM_RGBA);
 #endif
   m_image.image.not_owned=true;
   m_image.image.upsidedown=true;
