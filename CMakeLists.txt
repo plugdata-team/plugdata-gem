@@ -8,8 +8,11 @@ set(GEM_SOURCE_PATH "./src")
 
 cmake_policy(SET CMP0077 NEW)
 
-cmake_policy(SET CMP0063 NEW)
+cmake_policy(SET CMP0063 NEW)  # add_library standard visibility
 set(CMAKE_POLICY_DEFAULT_CMP0063 NEW) # also set for subprojects
+
+cmake_policy(SET CMP0072 NEW) # for FindOpenGL 
+set(CMAKE_POLICY_DEFAULT_CMP0072 NEW) # also set for subprojects
 
 add_compile_options(-Wno-deprecated -Wno-conversion)
 
