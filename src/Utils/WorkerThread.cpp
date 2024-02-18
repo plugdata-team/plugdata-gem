@@ -18,7 +18,9 @@
 
 #include "WorkerThread.h"
 #ifdef WORKERTHREAD_DEQUEUE
+#pragma GCC visibility push(hidden) // Hide standard library functions to prevent linker warnings
 # include <deque>
+#pragma GCC visibility pop
 # define QUEUE std::deque
 # define POP pop_front
 # define PUSH push_back

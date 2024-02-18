@@ -458,6 +458,8 @@ add_library(freetype
   ${BASE_SRCS}
 )
 
+add_compile_options(-Wno-conversion)
+
 set_target_properties(
   freetype PROPERTIES
     C_VISIBILITY_PRESET hidden)

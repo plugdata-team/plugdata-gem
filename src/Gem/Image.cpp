@@ -254,7 +254,7 @@ namespace {
     default:
       break;
     }
-    sprintf(buf, "<type:%d>", type);
+    snprintf(buf, 1024, "<type:%d>", type);
     return buf;
   }
   const char*format2name(unsigned int format) {
@@ -274,7 +274,7 @@ namespace {
     case GL_YUV422_GEM: return "YUV422";
     default: break;
     }
-    sprintf(buf, "<format:%d>", format);
+    snprintf(buf, 1024, "<format:%d>", format);
     return buf;
   }
 

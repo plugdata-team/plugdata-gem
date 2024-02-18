@@ -499,7 +499,7 @@ void modelfiler :: tableMess(t_symbol*s, int argc, t_atom*argv)
   }
 
   if((argc != 1) && (argc != extensions.size()) && (argc != extensions.size() + 1)) {
-    pd_error(0, "'%s' requires %d array names", s->s_name, extensions.size());
+    pd_error(0, "'%s' requires %lu array names", s->s_name, extensions.size());
     return;
   }
   if(argc == extensions.size()) {

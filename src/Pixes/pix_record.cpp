@@ -441,7 +441,7 @@ void pix_record :: codecMess(t_atom *argv)
     if(id>0 && ((unsigned int)id)<codecs.size()) {
       sid=codecs[id];
     } else {
-      pd_error(0, "invalid codec# %d (0..%d)", id, codecs.size());
+      pd_error(0, "invalid codec# %d (0..%lu)", id, codecs.size());
       return;
     }
   }

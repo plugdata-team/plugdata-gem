@@ -302,7 +302,7 @@ bool pix_video :: driverMess(int dev)
   if(dev>=0) {
     unsigned int udev=(unsigned int)dev;
     if(udev>=m_videoHandles.size()) {
-      pd_error(0, "driverID (%d) must not exceed %d", udev, m_videoHandles.size());
+      pd_error(0, "driverID (%d) must not exceed %lu", udev, m_videoHandles.size());
       return false;
     }
 

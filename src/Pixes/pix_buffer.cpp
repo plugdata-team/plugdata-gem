@@ -100,7 +100,7 @@ pix_buffer :: pix_buffer(t_symbol* s,t_float f=100.0)
     static int buffercounter=0;
     char cbuf[16];
     buffercounter++;
-    sprintf(cbuf, "pix_buffer_%04d", buffercounter);
+    snprintf(cbuf, 16, "pix_buffer_%04d", buffercounter);
     cbuf[15]=0;
     post("defaulting to name '%s'", cbuf);
     s=gensym(cbuf);

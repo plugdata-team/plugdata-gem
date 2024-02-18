@@ -363,7 +363,7 @@ void multimodel :: open(const std::string&filename, int baseModel,
 void multimodel :: changeModel(int modelNum)
 {
   if (modelNum < 0 || ((unsigned int)modelNum) >= m_loaded.size()) {
-    pd_error(0, "selection %d out of range: 0..%d", modelNum, m_loaded.size()-1);
+    pd_error(0, "selection %d out of range: 0..%lu", modelNum, m_loaded.size()-1);
     return;
   }
 

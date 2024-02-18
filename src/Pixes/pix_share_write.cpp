@@ -410,7 +410,7 @@ void pix_share_write :: render(GemState *state)
       h->upsidedown=pix->upsidedown;
       memcpy(shm_addr+sizeof(t_pixshare_header),pix->data,size);
     } else {
-      pd_error(0, "input image too large: %dx%dx%d=%d>%d",
+      pd_error(0, "input image too large: %dx%dx%d=%d>%lu",
             pix->xsize, pix->ysize, pix->csize,
             pix->xsize*pix->ysize*pix->csize,
             m_size);

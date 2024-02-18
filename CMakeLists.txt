@@ -8,6 +8,11 @@ set(GEM_SOURCE_PATH "./src")
 
 cmake_policy(SET CMP0077 NEW)
 
+cmake_policy(SET CMP0063 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0063 NEW) # also set for subprojects
+
+add_compile_options(-Wno-deprecated -Wno-conversion)
+
 file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Base/CPPExtern.cpp
   ${GEM_SOURCE_PATH}/Base/GemBase.cpp
@@ -1275,7 +1280,7 @@ file(GLOB GEM_HEADERS
 add_subdirectory(glew/build/cmake)
 
 
-include_directories("./glew/include" 
+include_directories("./glew/include"
                     "./ftgl/src"
                     "./ftgl/src/FTFont"
                     "./ftgl/src/FTGL"

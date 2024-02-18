@@ -106,11 +106,13 @@ set(ftlayout_sources
     ${FTGL_SRC}/FTLayout/FTSimpleLayoutImpl.h
 )
 
+add_compile_options(-Wno-deprecated -Wno-conversion)
+
 add_library(ftgl STATIC ${libftgl_la_SOURCES} ${ftgl_headers} ${ftglyph_sources} ${ftfont_sources} ${ftlayout_sources})
 
 target_compile_definitions(ftgl PRIVATE PACKAGE_VERSION="2.3.14")
 target_compile_definitions(ftgl PRIVATE __FUNC__="func")
 
 if(WIN32)
-	target_compile_definitions(ftgl PRIVATE _USE_MATH_DEFINES)
+	target_compile_definitions(ftgl PRIVATE _USE_MATH_DEFINES=1 GL_SILENCE_DEPRECATION=1)
 endif()

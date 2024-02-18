@@ -299,6 +299,8 @@ void pix_pix2sig :: perform(t_sample**out, size_t N)
       m_offsetX = 0;
       m_offsetY = (m_offsetY+1)%height;
     }
+    default:
+        break;
   }
 
  cleanup:

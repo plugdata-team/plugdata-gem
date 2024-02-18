@@ -153,7 +153,7 @@ void vertex_program :: openMess(t_symbol* filename)
     int err=ferror(file);
     fclose(file);
     if(err) {
-      pd_error(0, "error %d reading file (%d<%d)", err, count, size);
+        pd_error(0, "error %d reading file (%lu<%ld)", err, count, size);
       return;
     }
   } else {

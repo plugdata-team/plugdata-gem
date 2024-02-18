@@ -163,7 +163,7 @@ void pix_multiimage :: openMess(t_symbol* filename, int baseImage,
 
   for (i = 0; i < m_numImages; i++, realNum += skipRate) {
     char newName[MAXPDSTRING];
-    sprintf(newName, "%s%d%s", bufName, realNum, postName);
+    snprintf(newName, MAXPDSTRING, "%s%d%s", bufName, realNum, postName);
     newCache->textBind[i] = 0;
     if ( !(newCache->images[i] = image2mem(newName)) ) {
       // a load failed, blow away the cache

@@ -237,8 +237,8 @@ void gemvertexbuffer :: tableMess (gem::VertexBuffer&vb, std::string name,
     return;
   }
 
-  if (argc == vb.dimen || (argc == (vb.dimen+1))
-      && A_FLOAT == argv[vb.dimen].a_type) {  // planar (+offset)
+    if (argc == vb.dimen || ((argc == (vb.dimen+1))
+                             && A_FLOAT == argv[vb.dimen].a_type)) {  // planar (+offset)
     bool resize=true;
     if(((unsigned int)argc)>vb.dimen) {
       offset=atom_getfloat(argv+vb.dimen);
