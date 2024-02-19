@@ -106,7 +106,9 @@ set(ftlayout_sources
     ${FTGL_SRC}/FTLayout/FTSimpleLayoutImpl.h
 )
 
+if(UNIX)
 add_compile_options(-Wno-deprecated -Wno-conversion)
+endif()
 
 add_library(ftgl STATIC ${libftgl_la_SOURCES} ${ftgl_headers} ${ftglyph_sources} ${ftfont_sources} ${ftlayout_sources})
 

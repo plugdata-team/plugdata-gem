@@ -458,7 +458,9 @@ add_library(freetype
   ${BASE_SRCS}
 )
 
+if(UNIX)
 add_compile_options(-Wno-conversion)
+endif()
 
 set_target_properties(
   freetype PROPERTIES
