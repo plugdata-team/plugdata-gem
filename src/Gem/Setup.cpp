@@ -288,7 +288,9 @@ void setup(t_symbol* pluginPath)
 
     
   // initialize some plugins
+#ifndef PDINSTANCE
   gem::plugins::init();
+#endif
 }
 }; // namespace
 
