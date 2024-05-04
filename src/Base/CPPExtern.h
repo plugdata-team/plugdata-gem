@@ -203,8 +203,7 @@ static void obj_setupCallback(t_class *classPtr);
 /////////////////////////////////////////////////
 #define CPPEXTERN_NEW_NAMED(NEW_CLASS, CLASSNAME)                       \
   REAL_NEW__CLASS(NEW_CLASS);                                           \
-  const int typespecs[] = {};                                           \
-  REAL_NEW__CREATE0(NEW_CLASS, typespecs);                              \
+  REAL_NEW__CREATE0_NOARG(NEW_CLASS);                                    \
   REAL_NEW__CREATE1(NEW_CLASS);                                         \
   REAL_NEW__SETOBJ(new NEW_CLASS());                                    \
   REAL_NEW__CREATE2(NEW_CLASS);                                         \
@@ -217,8 +216,7 @@ static void obj_setupCallback(t_class *classPtr);
 /////////////////////////////////////////////////
 #define CPPEXTERN_NEW_NAMED_WITH_GIMME(NEW_CLASS, CLASSNAME)            \
   REAL_NEW__CLASS(NEW_CLASS);                                           \
-  const int typespecs[] = {};                                           \
-  REAL_NEW__CREATE0(NEW_CLASS, typespecs);                               \
+  REAL_NEW__CREATE0_NOARG(NEW_CLASS);                               \
   REAL_NEW__CREATE1(NEW_CLASS);                                         \
   REAL_NEW__SETOBJ(new NEW_CLASS(argc,argv));                           \
   REAL_NEW__CREATE2(NEW_CLASS);                                         \
@@ -324,6 +322,11 @@ static void obj_setupCallback(t_class *classPtr);
   const unsigned int num##types = sizeof(types)/sizeof(*types);         \
   try {                                                                 \
     gem::CPPExtern_proxy proxy(NEW_CLASS ## _class, #NEW_CLASS, s, argc, argv, num##types, types, GEM_ARGMESSAGES)
+
+#define REAL_NEW__CREATE0_NOARG(NEW_CLASS)                             \
+  try {                                                                 \
+    gem::CPPExtern_proxy proxy(NEW_CLASS ## _class, #NEW_CLASS, s, argc, argv, 0, NULL, GEM_ARGMESSAGES)
+
 
 #define REAL_NEW__CREATE1(NEW_CLASS)                                    \
     argc = proxy.getNumArgs()
