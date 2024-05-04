@@ -71,11 +71,9 @@ static const char GEM_OTHERAUTHORS[] =
 # include <m_pd.h>
 # include "RTE/RTE.h"
 
-#if defined HAVE_M_IMP_H
 extern "C" {
 # include <m_imp.h>
 } // for extern "C"
-#endif /* HAVE_M_IMP_H */
 
 
 typedef struct class_setup_list_ {

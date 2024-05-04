@@ -27,7 +27,7 @@ typedef _W64 unsigned int ssize_t;
 #    define _SSIZE_T_DEFINED
 #endif
 
-CPPEXTERN_NEW_NAMED_WITH_TWO_ARGS(pix_sig2pix, pix_sig2pix~, t_float,A_DEFFLOAT,t_float,
+CPPEXTERN_NEW_NAMED_WITH_TWO_ARGS(pix_sig2pix, "pix_sig2pix~", t_floatarg,A_DEFFLOAT,t_floatarg,
     A_DEFFLOAT);
 
 /////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-CPPEXTERN_NEW_NAMED_WITH_ONE_ARG(scopeXYZ, scopeXYZ~, t_floatarg, A_DEFFLOAT);
+CPPEXTERN_NEW_NAMED_WITH_ONE_ARG(scopeXYZ, "scopeXYZ~", t_floatarg, A_DEFFLOAT);
 
 /////////////////////////////////////////////////////////
 //

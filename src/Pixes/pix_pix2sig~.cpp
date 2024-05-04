@@ -17,7 +17,7 @@
 #include "pix_pix2sig~.h"
 #include "Gem/State.h"
 
-CPPEXTERN_NEW_NAMED(pix_pix2sig, pix_pix2sig~);
+CPPEXTERN_NEW_NAMED(pix_pix2sig, "pix_pix2sig~");
 
 /////////////////////////////////////////////////////////
 //

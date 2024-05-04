@@ -22,6 +22,12 @@
 # include <unistd.h>
 #endif
 
+#ifdef _MSC_VER  /* This is only for Microsoft's compiler, not cygwin, e.g. */
+# define snprintf _snprintf
+# define vsnprintf _vsnprintf
+# define close _close
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -31,8 +37,33 @@ void *Obj_header::operator new(size_t, void *location, void *)
   return(location);
 }
 
-t_object * CPPExtern::m_holder=NULL;
-const char* CPPExtern::m_holdname=NULL;
+t_object * CPPExtern::s_holder=NULL;
+const char* CPPExtern::s_holdname=NULL;
+
+namespace {
+  static t_class*s_holdclass = NULL;
+};
+
+struct CPPExtern::PIMPL {
+  t_symbol*objectname;
+  t_canvas*canvas;
+  t_class*cls;
+  mutable bool endpost; /* internal state for startpost/post/endpost */
+  PIMPL(const char*name)
+    : objectname(name?gensym(name):gensym("unknown Gem object"))
+    , canvas(canvas_getcurrent())
+    , cls(s_holdclass)
+    , endpost(true)
+  {  }
+  PIMPL(PIMPL*p)
+    : objectname(p->objectname)
+    , canvas(p->canvas)
+    , cls(p->cls)
+    , endpost(true)
+  {  }
+
+};
+
 
 /////////////////////////////////////////////////////////
 //
@@ -43,24 +74,30 @@ const char* CPPExtern::m_holdname=NULL;
 //
 /////////////////////////////////////////////////////////
 CPPExtern :: CPPExtern()
-  : x_obj(m_holder),
-    m_objectname(NULL),
-    m_canvas(NULL),
-    m_endpost(true)
+  : x_obj(s_holder)
+  , pimpl(new PIMPL(s_holdname))
 {
-  m_canvas = canvas_getcurrent();
-  if(m_holdname) {
-    m_objectname=gensym(m_holdname);
-  } else {
-    m_objectname=gensym("unknown Gem object");
-  }
+  t_symbol*asym = gensym("#A");
+  /* bashily unbind #A -- this would create garbage if #A were
+     multiply bound but we believe in this context it's at most
+     bound to whichever textobj or array was created most recently */
+  asym->s_thing = 0;
+  /* and now bind #A to us to receive following messages in the
+     saved file or copy buffer */
+  pd_bind(&x_obj->ob_pd, asym);
 }
-CPPExtern :: CPPExtern(const CPPExtern&org) :
-  x_obj(org.x_obj),
-  m_objectname(org.m_objectname),
-  m_canvas(org.m_canvas),
-  m_endpost(true)
+CPPExtern :: CPPExtern(const CPPExtern&org)
+  : x_obj(org.x_obj)
+  , pimpl(new PIMPL(org.pimpl))
 {
+  t_symbol*asym = gensym("#A");
+  /* bashily unbind #A -- this would create garbage if #A were
+     multiply bound but we believe in this context it's at most
+     bound to whichever textobj or array was created most recently */
+  asym->s_thing = 0;
+  /* and now bind #A to us to receive following messages in the
+     saved file or copy buffer */
+  pd_bind(&x_obj->ob_pd, asym);
 }
 
 /////////////////////////////////////////////////////////
@@ -68,7 +105,18 @@ CPPExtern :: CPPExtern(const CPPExtern&org) :
 //
 /////////////////////////////////////////////////////////
 CPPExtern :: ~CPPExtern()
-{ }
+{
+
+  if(pimpl->cls) {
+    /* just in case we're still bound to #A from loading... */
+    t_pd*x;
+    while ((x = pd_findbyclass(gensym("#A"), pimpl->cls))) {
+      pd_unbind(x, gensym("#A"));
+    }
+  }
+  delete pimpl;
+  pimpl=0;
+}
 
 
 void CPPExtern :: post(const char*fmt,...) const
@@ -78,13 +126,13 @@ void CPPExtern :: post(const char*fmt,...) const
   va_start(ap, fmt);
   vsnprintf(buf, MAXPDSTRING-1, fmt, ap);
   va_end(ap);
-  if(m_endpost && NULL!=m_objectname && NULL!=m_objectname->s_name
-      && &s_ != m_objectname) {
-    ::post("[%s]: %s", m_objectname->s_name, buf);
+  if(pimpl->endpost && NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
+      && &s_ != pimpl->objectname) {
+    ::post("[%s]: %s", pimpl->objectname->s_name, buf);
   } else {
     ::post("%s", buf);
   }
-  m_endpost=true;
+  pimpl->endpost=true;
 }
 void CPPExtern :: startpost(const char*fmt,...) const
 {
@@ -93,18 +141,18 @@ void CPPExtern :: startpost(const char*fmt,...) const
   va_start(ap, fmt);
   vsnprintf(buf, MAXPDSTRING-1, fmt, ap);
   va_end(ap);
-  if(m_endpost && NULL!=m_objectname && NULL!=m_objectname->s_name
-      && &s_ != m_objectname) {
-    ::startpost("[%s]: %s", m_objectname->s_name, buf);
+  if(pimpl->endpost && NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
+      && &s_ != pimpl->objectname) {
+    ::startpost("[%s]: %s", pimpl->objectname->s_name, buf);
   } else {
     ::startpost("%s", buf);
   }
-  m_endpost=false;
+  pimpl->endpost=false;
 }
 void CPPExtern :: endpost(void) const
 {
   ::endpost();
-  m_endpost=true;
+  pimpl->endpost=true;
 }
 typedef void (*verbose_t)(int level, const char *fmt, ...);
 
@@ -127,16 +175,16 @@ void CPPExtern :: verbose(const int level, const char*fmt,...) const
 
   /* only pd>=0.39(?) supports ::verbose() */
   if(rte_verbose) {
-    if(NULL!=m_objectname && NULL!=m_objectname->s_name
-        && &s_ != m_objectname) {
-      rte_verbose(level, "[%s]: %s", m_objectname->s_name, buf);
+    if(NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
+        && &s_ != pimpl->objectname) {
+      rte_verbose(level, "[%s]: %s", pimpl->objectname->s_name, buf);
     } else {
       rte_verbose(level, "%s", buf);
     }
   } else {
-    if(NULL!=m_objectname && NULL!=m_objectname->s_name
-        && &s_ != m_objectname) {
-      ::post("[%s]: %s", m_objectname->s_name, buf);
+    if(NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
+        && &s_ != pimpl->objectname) {
+      ::post("[%s]: %s", pimpl->objectname->s_name, buf);
     } else {
       ::post("%s", buf);
     }
@@ -150,21 +198,21 @@ void CPPExtern :: error(const char*fmt,...) const
   va_start(ap, fmt);
   vsnprintf(buf, MAXPDSTRING-1, fmt, ap);
   va_end(ap);
-  if(NULL!=m_objectname && NULL!=m_objectname->s_name
-      && &s_ != m_objectname) {
-    const char*objname=m_objectname->s_name;
+  if(NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
+      && &s_ != pimpl->objectname) {
+    const char*objname=pimpl->objectname->s_name;
     if(x_obj) {
       pd_error(x_obj, "[%s]: %s", objname, buf);
-    } else if (m_holder) {
-      pd_error(m_holder, "[%s]: %s", objname, buf);
+    } else if (s_holder) {
+      pd_error(s_holder, "[%s]: %s", objname, buf);
     } else {
       pd_error(0, "[%s]: %s", objname, buf);
     }
   } else {
     if(x_obj) {
       pd_error(x_obj, "%s", buf);
-    } else if (m_holder) {
-      pd_error(m_holder, "%s", buf);
+    } else if (s_holder) {
+      pd_error(s_holder, "%s", buf);
     } else {
       pd_error(0, "%s", buf);
     }
@@ -172,6 +220,11 @@ void CPPExtern :: error(const char*fmt,...) const
 }
 
 typedef int (*close_t)(int fd);
+
+const t_canvas* CPPExtern::getCanvas(void) const {
+  return pimpl->canvas;
+}
+
 
 std::string CPPExtern::findFile(const std::string&f,
                                 const std::string&e) const
@@ -204,15 +257,18 @@ bool CPPExtern :: checkGemVersion(const int major, const int minor)
 CPPExtern&CPPExtern::operator=(const CPPExtern&org)
 {
   x_obj=org.x_obj;
-  m_objectname=org.m_objectname;
-  m_canvas=org.m_canvas;
-  m_endpost=true;
+  pimpl->objectname=org.pimpl->objectname;
+  pimpl->canvas=org.pimpl->canvas;
+  pimpl->cls = org.pimpl->cls;
+  pimpl->endpost = true;
   return *this;
 }
 
 void CPPExtern::beforeDeletion(void)
 {
   //post("CPPExtern to be deleted");
+
+
 }
 
 
@@ -249,8 +305,8 @@ gem::CPPExtern_proxy::CPPExtern_proxy(
   int argc = realargc;
   if(!name && s)
     name=s->s_name;
-  CPPExtern::m_holder = 0;
-  CPPExtern::m_holdname = name;
+  CPPExtern::s_holder = 0;
+  CPPExtern::s_holdname = name;
 
   /* if we want init-messages, check if we have a semi-colon
    * (that marks the beginning of the init-messages),
@@ -273,7 +329,8 @@ gem::CPPExtern_proxy::CPPExtern_proxy(
     throw(GemException("unknown class"));
   }
 
-  CPPExtern::m_holder = &obj->pd_obj;
+  s_holdclass = cls;
+  CPPExtern::s_holder = &obj->pd_obj;
 
   pimpl->obj = obj;
   pimpl->realargc = realargc;
@@ -285,8 +342,8 @@ gem::CPPExtern_proxy::CPPExtern_proxy(
 gem::CPPExtern_proxy::~CPPExtern_proxy()
 {
   delete pimpl;
-  CPPExtern::m_holder = 0;
-  CPPExtern::m_holdname = 0;
+  CPPExtern::s_holder = 0;
+  CPPExtern::s_holdname = 0;
 }
 void gem::CPPExtern_proxy::setObject(CPPExtern*obj)
 {
