@@ -65,7 +65,8 @@ void GemMan :: resizeCallback(int xSize, int ySize, void *)
 {
 #ifndef GEM_MULTICONTEXT
   auto* gemMan = GemMan::get();
-  gemWinMakeCurrent(gemMan->getWindowInfo());
+  
+  //gemWinMakeCurrent(gemMan->getWindowInfo());
     
   float xDivy = (float)xSize / (float)ySize;
   if (ySize == 0) {

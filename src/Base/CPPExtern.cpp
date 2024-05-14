@@ -110,8 +110,9 @@ CPPExtern :: ~CPPExtern()
   if(pimpl->cls) {
     /* just in case we're still bound to #A from loading... */
     t_pd*x;
-    while ((x = pd_findbyclass(gensym("#A"), pimpl->cls))) {
-      pd_unbind(x, gensym("#A"));
+    if(gensym("#A")->s_thing == &pimpl->cls)
+    {
+       pd_unbind(&pimpl->cls, gensym("#A"));
     }
   }
   delete pimpl;
