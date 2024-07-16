@@ -36,14 +36,11 @@
 #define GEM_SETTINGS_FILE "gem.conf"
 static const char*s_configdir[] = {
 #ifdef __linux__
-  "/etc/pd",
-  "~/.config/pure-data",
+  "~/Documents/plugdata/Extra/Gem"
 #elif defined __APPLE__
-  "/Library/Pd",
-  "~/Library/Pd",
+  "~/Documents/plugdata/Extra/Gem",
 #elif defined  _WIN32
-  "%CommonProgramFiles%\\Pd",
-  "%AppData%\\Pd",
+  "%%HOMEPATH%%\\plugdata\\Extra\\Gem",
 #endif
   0 /* $(pwd)/gem.conf */
 };
@@ -210,7 +207,6 @@ struct PIMPL {
         open(GEM_SETTINGS_FILE, s_configdir[i]);
         i++;
       }
-      open(GEM_SETTINGS_FILE, ".");
     }
 
     /* legacy settings via environmental variables */
