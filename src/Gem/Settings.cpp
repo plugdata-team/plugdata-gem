@@ -36,7 +36,7 @@
 #define GEM_SETTINGS_FILE "gem.conf"
 static const char*s_configdir[] = {
 #ifdef __linux__
-  "~/Documents/plugdata/Extra/Gem"
+  "~/Documents/plugdata/Extra/Gem",
 #elif defined __APPLE__
   "~/Documents/plugdata/Extra/Gem",
 #elif defined  _WIN32
