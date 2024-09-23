@@ -1286,7 +1286,7 @@ add_subdirectory(glew/build/cmake)
 
 
 include_directories("./glew/include"
-                    "./ftgl"
+                    "./ftgl/cmake"
                     "./ftgl/src"
                     "./ftgl/src/FTFont"
                     "./ftgl/src/FTGL"
