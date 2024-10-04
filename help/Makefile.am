@@ -186,6 +186,7 @@ dist_gemhelp_DATA += \
 	pix_snap-help.pd \
 	pix_subtract-help.pd \
 	pix_takealpha-help.pd \
+	pix_test-help.pd \
 	pix_texture-help.pd \
 	pix_threshold_bernsen-help.pd \
 	pix_threshold-help.pd \
@@ -237,4 +238,11 @@ dist_gemhelp_DATA += \
 	triangle-help.pd \
 	tube-help.pd \
 	vertex_program-help.pd \
-	world_light-help.pd
+	world_light-help.pd \
+	$(empty)
+
+dist_gemhelp_DATA += \
+	_backendinfo.pd \
+	_gemwin.pd \
+	_pix2rectangle.pd \
+	$(empty)

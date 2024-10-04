@@ -444,16 +444,9 @@ void model :: drawMess(std::string name)
 /////////////////////////////////////////////////////////
 void model :: backendMess(t_symbol*s, int argc, t_atom*argv)
 {
-#if 0
-  gem::any value=ids;
-  m_writeprops.set("backends", value);
-  applyProperties();
-#endif
-  int i;
-
   m_backends.clear();
   if(argc) {
-    for(i=0; i<argc; i++) {
+    for(int i=0; i<argc; i++) {
       if(A_SYMBOL == argv->a_type) {
         t_symbol* b=atom_getsymbol(argv+i);
         m_backends.push_back(b->s_name);
@@ -464,24 +457,25 @@ void model :: backendMess(t_symbol*s, int argc, t_atom*argv)
   } else {
     /* no backend requested, just enumerate them */
     if(m_loader) {
+      const std::string sel = s->s_name;
       std::vector<gem::any>atoms;
       gem::any value;
       gem::Properties props;
       std::vector<std::string> backends;
-      props.set("backends", value);
+      props.set("_backends", value);
       m_loader->getProperties(props);
-      if(props.type("backends")!=gem::Properties::UNSET) {
-        props.get("backends", backends);
+      if(props.type("_backends")!=gem::Properties::UNSET) {
+        props.get("_backends", backends);
       }
       atoms.clear();
       atoms.push_back(value=(int)(backends.size()));
-      m_infoOut.send("loaders", atoms);
+      m_infoOut.send(sel+"s", atoms);
       if(!backends.empty()) {
-        for(i=0; i<backends.size(); i++) {
+        for(int i=0; i<backends.size(); i++) {
           atoms.clear();
           atoms.push_back(value=backends[i]);
           post("loader[%d] %s", i, backends[i].c_str());
-          m_infoOut.send("loader", atoms);
+          m_infoOut.send(sel, atoms);
         }
       } else {
         post("no model-loading backends found!");
@@ -508,7 +502,7 @@ void model :: openMess(const std::string&filename)
   m_loaded = 0;
 
   if(!m_backends.empty()) {
-    wantProps.set("backends", m_backends);
+    wantProps.set("_backends", m_backends);
   }
 
   char buf[MAXPDSTRING];
@@ -600,6 +594,7 @@ void model :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG1(classPtr, "group", groupMess, int);
   CPPEXTERN_MSG (classPtr, "groups", groupsMess);
   CPPEXTERN_MSG (classPtr, "loader", backendMess);
+  CPPEXTERN_MSG (classPtr, "backend", backendMess);
 
   CPPEXTERN_MSG (classPtr, "set", setPropertyMess);
   CPPEXTERN_MSG (classPtr, "get", getPropertyMess);

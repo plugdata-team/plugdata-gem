@@ -55,8 +55,8 @@
 
 using namespace gem::plugins;
 
-REGISTER_IMAGELOADERFACTORY("QT", imageQT);
-REGISTER_IMAGESAVERFACTORY("QT", imageQT);
+REGISTER_IMAGELOADERFACTORY("QuickTime", imageQT);
+REGISTER_IMAGESAVERFACTORY("QuickTime", imageQT);
 
 #if defined __APPLE__
 static OSStatus
@@ -138,7 +138,8 @@ static void InvertGLImage( unsigned char *imageData,
   // FIXXME use a flip function in GemPixUtils for this
 
   // Copy rows into tmp buffer one at a time, reversing their order
-  for (i = 0, j = imageSize - rowBytes; i < imageSize;
+  for (i = 0, j = imageSize - rowBytes;
+       i < imageSize;
        i += rowBytes, j -= rowBytes) {
     memcpy( &outData[j], &imageData[i], static_cast<size_t>(rowBytes) );
   }

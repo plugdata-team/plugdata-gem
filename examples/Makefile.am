@@ -121,6 +121,7 @@ nobase_dist_gemexamples_DATA = \
 	10.glsl/04.game_of_life.pd \
 	10.glsl/05.multitexture.pd \
 	10.glsl/05.multitexture_bis.pd \
+	10.glsl/05.multitexture_basic.pd \
 	10.glsl/06.rectangle_multitexture.pd \
 	10.glsl/07.framebuffer_and_shader.pd \
 	10.glsl/08.multi_pass_rendering.pd \
@@ -132,55 +133,56 @@ nobase_dist_gemexamples_DATA = \
 	10.glsl/14.blur.pd \
 	10.glsl/15.bicubic_image_interpolation.pd \
 	10.glsl/16.vertexbuffer_attributes.pd \
-	10.glsl/bicubic_interpolation.frag \
-	10.glsl/bicubic_interpolation.vert \
-	10.glsl/blur.frag \
-	10.glsl/blur.vert \
-	10.glsl/cam1.jpg \
-	10.glsl/cam2.jpg \
-	10.glsl/cam3.jpg \
-	10.glsl/cam4.jpg \
-	10.glsl/fetching2.frag \
-	10.glsl/fetching2.vert \
-	10.glsl/fetching.frag \
-	10.glsl/fetching.vert \
-	10.glsl/game.frag \
-	10.glsl/game.vert \
-	10.glsl/geo.frag \
-	10.glsl/geo.geom \
-	10.glsl/geo.vert \
+	10.glsl/17.light.pd \
+	10.glsl/18.additive_audio_synthesis.pd \
 	10.glsl/_glsl.pd \
-	10.glsl/GLSL_mix.frag \
-	10.glsl/GLSL_mix.vert \
-	10.glsl/img1.jpg \
-	10.glsl/img2.jpg \
-	10.glsl/img3.jpg \
-	10.glsl/interpol.frag \
-	10.glsl/link.frag \
-	10.glsl/link.vert \
-	10.glsl/mass.frag \
-	10.glsl/mass.vert \
-	10.glsl/multitexture.frag \
-	10.glsl/multitexture_rect.frag \
-	10.glsl/multitexture_rect.vert \
-	10.glsl/multitexture.vert \
-	10.glsl/normal.frag \
-	10.glsl/normal.vert \
-	10.glsl/panoramique.frag \
-	10.glsl/panoramique.vert \
-	10.glsl/P_distord.frag \
-	10.glsl/P_distord.vert \
 	10.glsl/single_blur.pd \
-	10.glsl/T_distord.frag \
-	10.glsl/T_distord.vert \
-	10.glsl/texture.frag \
-	10.glsl/texture_rect.frag \
-	10.glsl/texture.vert \
-	10.glsl/tri2fan.frag \
-	10.glsl/tri2fan.geom \
-	10.glsl/tri2fan.vert \
-	10.glsl/vague.frag \
-	10.glsl/wave.frag \
+	10.glsl/shader/additive.frag \
+	10.glsl/shader/additive.vert \
+	10.glsl/shader/bicubic_interpolation.frag \
+	10.glsl/shader/bicubic_interpolation.vert \
+	10.glsl/shader/blur.frag \
+	10.glsl/shader/blur.vert \
+	10.glsl/shader/fetching2.frag \
+	10.glsl/shader/fetching2.vert \
+	10.glsl/shader/fetching.frag \
+	10.glsl/shader/fetching.vert \
+	10.glsl/shader/game.frag \
+	10.glsl/shader/game.vert \
+	10.glsl/shader/geo.frag \
+	10.glsl/shader/geo.geom \
+	10.glsl/shader/geo.vert \
+	10.glsl/shader/GLSL_mix.frag \
+	10.glsl/shader/GLSL_mix.vert \
+	10.glsl/shader/interpol.frag \
+	10.glsl/shader/light.frag \
+	10.glsl/shader/light.vert \
+	10.glsl/shader/link.frag \
+	10.glsl/shader/link.vert \
+	10.glsl/shader/mass.frag \
+	10.glsl/shader/mass.vert \
+	10.glsl/shader/multitexture.frag \
+	10.glsl/shader/multitexture_rect.frag \
+	10.glsl/shader/multitexture_rect.vert \
+	10.glsl/shader/multitexture.vert \
+	10.glsl/shader/normal.frag \
+	10.glsl/shader/normal.vert \
+	10.glsl/shader/panoramique.frag \
+	10.glsl/shader/panoramique.vert \
+	10.glsl/shader/P_distord.frag \
+	10.glsl/shader/P_distord.vert \
+	10.glsl/shader/T_distord.frag \
+	10.glsl/shader/T_distord.vert \
+	10.glsl/shader/texture.frag \
+	10.glsl/shader/texture_rect.frag \
+	10.glsl/shader/texture.vert \
+	10.glsl/shader/tri2fan.frag \
+	10.glsl/shader/tri2fan.geom \
+	10.glsl/shader/tri2fan.vert \
+	10.glsl/shader/vague.frag \
+	10.glsl/shader/wave.frag \
+	10.glsl/shader/brick.frag \
+	10.glsl/shader/brick.vert \
 	11.obj-exporter/obj_cube.pd \
 	11.obj-exporter/obj_exporter-help.pd \
 	11.obj-exporter/obj_exporter.pd \
@@ -221,13 +223,30 @@ nobase_dist_gemexamples_DATA = \
 	14.multiple_windows/01.basic_example.pd \
 	14.multiple_windows/02.switch_context.pd \
 	14.multiple_windows/03.texture_sharing.pd \
+	15.GLSL4/01.basic.pd \
+	15.GLSL4/02.transformation.pd \
+	15.GLSL4/03.texture.pd \
+	15.GLSL4/shader/01.basic.frag \
+	15.GLSL4/shader/01.basic.vert \
+	15.GLSL4/shader/02.transformation.frag \
+	15.GLSL4/shader/02.transformation.vert \
+	15.GLSL4/shader/03.texture.frag \
+	15.GLSL4/shader/03.texture.vert \
+	15.GLSL4/04.model.pd \
+	15.GLSL4/shader/04.model.vert \
+	15.GLSL4/shader/04.model.frag \
 	99.games/puzzle.pd \
+	data/img1.jpg \
+	data/img2.jpg \
+	data/img3.jpg \
+	data/cam1.jpg \
+	data/cam2.jpg \
+	data/cam3.jpg \
+	data/cam4.jpg \
 	data/64shade.tif \
 	data/alea.mpg \
 	data/anim-1.mov \
 	data/bitmap_font_6x8.bmp \
-	data/brick.frag \
-	data/brick.vert \
 	data/blob0.tif \
 	data/blob1.tif \
 	data/blob2.tif \

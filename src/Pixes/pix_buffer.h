@@ -81,6 +81,10 @@ public:
   virtual void clearProperties( void );
   virtual void setProperties( t_symbol*, int, t_atom*);
 
+  //////////
+  // Set backend to use
+  virtual void  backendMess(t_symbol*s, int argc, t_atom*argv);
+
 protected:
   imageStruct    *m_buffer;
   unsigned int m_numframes;
@@ -88,8 +92,9 @@ protected:
 
   gem::Properties m_writeprops;
 
-  gem::plugins::imagesaver*m_handle;
-  gem::RTE::Outlet*m_outlet;
+ private:
+  class PIMPL;
+  PIMPL*m_pimpl;
 };
 
 #endif  // for header file

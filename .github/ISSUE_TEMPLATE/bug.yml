@@ -1,4 +1,5 @@
-name:  Bug Report
+---
+name: Bug Report
 description: We can only fix problems we know about.
 labels: ["bug"]
 assignees:
@@ -26,7 +27,7 @@ body:
     id: pdversion
     attributes:
       label: Pd Version
-      description: Which version of Pure Data are you using?
+      description: Which version of Pure Data are you using? (also include the Pd-flavour, unless it is Pd-vanilla)
       placeholder: e.g. 0.54-1
   - type: dropdown
     id: OS

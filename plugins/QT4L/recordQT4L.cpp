@@ -33,7 +33,7 @@ using namespace gem::plugins;
 
 #ifdef  GEM_USE_RECORDQT4L
 #include <lqt_version.h>
-REGISTER_RECORDFACTORY("QT4L", recordQT4L);
+REGISTER_RECORDFACTORY("quicktime4linux", recordQT4L);
 #endif
 /////////////////////////////////////////////////////////
 //
@@ -106,27 +106,40 @@ static struct {
 } qtformats[] =  {
   { "qt",       LQT_FILE_QT,        "mov", "Quicktime (QT7 compatible)",   "yuv2" }, /* ffmpeg_mpg4 */
   { "qtold",    LQT_FILE_QT_OLD,    "mov", "Quicktime (qt4l and old lqt)", "yuv2" }, /* mjpa */
-  { "avi",      LQT_FILE_AVI,       "avi", "AVI (< 2G)",                   "yuv2" }, /* ffmpeg_msmpeg4v3 */
   { "avi_odml", LQT_FILE_AVI_ODML,  "avi", "AVI (> 2G)",                   "yuv2" }, /* ffmpeg_msmpeg4v3 */
+  { "avi",      LQT_FILE_AVI,       "avi", "AVI (< 2G)",                   "yuv2" }, /* ffmpeg_msmpeg4v3 */
   { "mp4",      LQT_FILE_MP4,       "mp4", "ISO MPEG-4",                   "yuv2" }, /* ffmpeg_mpg4 */
-  { "m4a",      LQT_FILE_M4A,       "m4a", "m4a (iTunes compatible)",      "yuv2"  }, /* ffmpeg_mpg4 */
+  { "m4a",      LQT_FILE_M4A,       "m4a", "m4a (iTunes compatible)",      "yuv2" }, /* ffmpeg_mpg4 */
 };
+/* get the filetype from the short name */
+static lqt_file_type_t get_qtformat(const char*name)
+{
+  for(unsigned int i = 0; i < sizeof(qtformats)/sizeof(*qtformats); i++) {
+    if(!strcasecmp(name, qtformats[i].name)) {
+      verbose(1, "[GEM:recordQT4L] using format '%s'", qtformats[i].description);
+      return qtformats[i].type;
+    }
+  }
+
+  verbose(0,
+          "[GEM:recordQT4L] unknown extension: encoding will be QuickTime");
+  return LQT_FILE_QT; /* should be save for now */
+}
 /* guess the file-format by inspecting the extension */
 static lqt_file_type_t guess_qtformat(const std::string&filename)
 {
   const char * extension = strrchr(filename.c_str(), '.');
-  unsigned int i=0;
 
   if(!extension) {
-    verbose(0,
-            "[GEM:recordQT4L] no extension given: encoding will be QuickTime");
+    verbose(0, "[GEM:recordQT4L] no extension given: encoding will be QuickTime");
     return LQT_FILE_QT;
   }
 
   extension++;
 
-  for(i = 0; i < sizeof(qtformats)/sizeof(qtformats[0]); i++) {
+  for(unsigned int i = 0; i < sizeof(qtformats)/sizeof(*qtformats); i++) {
     if(!strcasecmp(extension, qtformats[i].extension)) {
+      verbose(1, "[GEM:recordQT4L] detected format '%s'", qtformats[i].description);
       return qtformats[i].type;
     }
   }
@@ -140,14 +153,39 @@ bool recordQT4L :: start(const std::string&filename, gem::Properties&props)
 {
   stop();
 
-  lqt_file_type_t type =  guess_qtformat(filename);
+  lqt_file_type_t format = LQT_FILE_NONE;
+  std::string s;
+  if (props.get("lqtformat", s)) {
+    format = get_qtformat(s.c_str());
+  }
 
-  m_qtfile = lqt_open_write(filename.c_str(), type);
+  if (LQT_FILE_NONE == format) {
+    format =  guess_qtformat(filename);
+  }
+
+  m_curTrack = -1;
+  m_qtfile = lqt_open_write(filename.c_str(), format);
   if(m_qtfile==NULL) {
     pd_error(0, "[GEM:recordQT4L] starting to record to %s failed",
              filename.c_str());
     return false;
   }
+
+#define prop2quicktime(qtfile, propname) \
+  if (props.get(#propname, s)) { quicktime_set_##propname(qtfile, (char*)s.c_str()); }
+#define prop2lqt(qtfile, propname) \
+  if (props.get(#propname, s)) { lqt_set_##propname(qtfile, (char*)s.c_str()); }
+
+  prop2quicktime(m_qtfile, name);
+  prop2quicktime(m_qtfile, copyright);
+  prop2quicktime(m_qtfile, info);
+
+  prop2lqt(m_qtfile, album);
+  prop2lqt(m_qtfile, artist);
+  prop2lqt(m_qtfile, genre);
+  prop2lqt(m_qtfile, track);
+  prop2lqt(m_qtfile, comment);
+  prop2lqt(m_qtfile, author);
 
   m_props=props;
 
@@ -171,12 +209,11 @@ static void applyProperties(quicktime_t*file, int track,
   std::vector<std::string>keys=props.keys();
 
   std::map<std::string, lqt_parameter_type_t>proptypes;
-  int i=0;
-  for(i=0; i<codec->num_encoding_parameters; i++) {
+  for(int i=0; i<codec->num_encoding_parameters; i++) {
     proptypes[codec->encoding_parameters[i].name]=
       codec->encoding_parameters[i].type;
   }
-  for(i=0; i<keys.size(); i++) {
+  for(int i=0; i<keys.size(); i++) {
     std::string key=keys[i];
     std::map<std::string,lqt_parameter_type_t>::iterator it = proptypes.find(
           key);
@@ -240,8 +277,7 @@ static int try_colormodel(quicktime_t *          file,
                           int   track,
                           std::vector<int>      colormodel)
 {
-  int i=0;
-  for(i=0; i<colormodel.size(); i++) {
+  for(int i=0; i<colormodel.size(); i++) {
     int result=try_colormodel(file, track, colormodel[i]);
     if(result) {
       return result;
@@ -256,8 +292,6 @@ bool recordQT4L :: init(const imageStruct*img, double fps)
   int rowspan=0, rowspan_uv=0;
   lqt_codec_info_t*codec=NULL;
   int err=0;
-  int track=0;
-
 
   if(!m_qtfile || !img || fps < 0.) {
     return false;
@@ -295,8 +329,9 @@ bool recordQT4L :: init(const imageStruct*img, double fps)
   if(err!=0) {
     return false;
   }
+  m_curTrack++;
 
-  applyProperties(m_qtfile, track, m_codec, m_props);
+  applyProperties(m_qtfile, m_curTrack, m_codec, m_props);
 
   /* set the colormodel */
   std::vector<int>trycolormodels;
@@ -304,7 +339,7 @@ bool recordQT4L :: init(const imageStruct*img, double fps)
   trycolormodels.push_back(BC_RGB888);
   trycolormodels.push_back(BC_YUV422);
 
-  m_colormodel=try_colormodel(m_qtfile, track, trycolormodels);
+  m_colormodel=try_colormodel(m_qtfile, m_curTrack, trycolormodels);
   if(!m_colormodel) {
     return false;
   }
@@ -321,7 +356,6 @@ bool recordQT4L :: init(const imageStruct*img, double fps)
 
   return true;
 }
-
 /////////////////////////////////////////////////////////
 // do the actual encoding and writing to file
 //
@@ -347,6 +381,11 @@ bool recordQT4L :: write(imageStruct*img)
       return false;
     }
     m_restart=false;
+  }
+
+  if(m_curTrack<0) {
+    pd_error(0, "[GEM:recordQt4L] detected invalid track %d", m_curTrack);
+    return false;
   }
 
   double timestamp_d=(m_useTimeStamp
@@ -385,7 +424,7 @@ bool recordQT4L :: write(imageStruct*img)
     }
   }
 
-  lqt_encode_video(m_qtfile, rowpointers, 0, timestamp);
+  lqt_encode_video(m_qtfile, rowpointers, m_curTrack, timestamp);
   delete[]rowpointers;
   return true;
 }
@@ -440,8 +479,7 @@ bool recordQT4L :: setCodec(const std::string&name)
   if(codecname.empty() && m_qtfile) {
     /* LATER figure out automatically which codec to use */
     lqt_file_type_t type = lqt_get_file_type(m_qtfile);
-    unsigned int i=0;
-    for(i = 0; i < sizeof(qtformats)/sizeof(qtformats[0]); i++) {
+    for(unsigned int i = 0; i < sizeof(qtformats)/sizeof(qtformats[0]); i++) {
       if(type == qtformats[i].type) {
         codecname = qtformats[i].default_video_codec;
       }
@@ -470,12 +508,24 @@ bool recordQT4L :: enumProperties(gem::Properties&props)
     return false;
   }
 
+  props.set("lqtformat", std::string("auto"));
+
+  props.set("name", std::string(""));
+  props.set("copyright", std::string(""));
+  props.set("info", std::string(""));
+
+  props.set("album", std::string(""));
+  props.set("artist", std::string(""));
+  props.set("genre", std::string(""));
+  props.set("track", std::string(""));
+  props.set("comment", std::string(""));
+  props.set("author", std::string(""));
+
   props.set("framerate", 0.f);
 
   const int paramcount=m_codec->num_encoding_parameters;
   lqt_parameter_info_t*params=m_codec->encoding_parameters;
-  int i=0;
-  for(i=0; i<paramcount; i++) {
+  for(int i=0; i<paramcount; i++) {
     gem::any typ;
     switch(params[i].type) {
     case(LQT_PARAMETER_INT):

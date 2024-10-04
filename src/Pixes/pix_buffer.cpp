@@ -24,57 +24,87 @@
 #include "Gem/Files.h"
 
 #include "plugins/imagesaver.h"
+#include "plugins/imageloader.h"
 #include "RTE/Outlet.h"
 
 /* utilities */
-static gem::any atom2any(t_atom*ap)
+struct pix_buffer :: PIMPL
 {
-  gem::any result;
-  if(ap) {
-    switch(ap->a_type) {
-    case A_FLOAT:
-      result=atom_getfloat(ap);
-      break;
-    case A_SYMBOL:
-      result=std::string(atom_getsymbol(ap)->s_name);
-      break;
+  CPPExtern*parent;
+  gem::RTE::Outlet outlet;
+
+  gem::plugins::imagesaver*saver;
+  gem::plugins::imageloader*loader;
+
+  PIMPL(CPPExtern*_parent)
+    : parent(_parent)
+    , outlet(_parent)
+    , saver(gem::plugins::imagesaver::getInstance())
+    , loader(gem::plugins::imageloader::getInstance())
+  {};
+  ~PIMPL(void) {
+    if(saver) {
+      delete saver;
+    }
+    saver=NULL;
+    if(loader) {
+      delete loader;
+    }
+    loader=NULL;
+  };
+
+  std::vector<std::string> savebackends;
+  std::vector<std::string> loadbackends;
+
+  static gem::any atom2any(t_atom*ap)
+  {
+    gem::any result;
+    if(ap) {
+      switch(ap->a_type) {
+      case A_FLOAT:
+        result=atom_getfloat(ap);
+        break;
+      case A_SYMBOL:
+        result=std::string(atom_getsymbol(ap)->s_name);
+        break;
+      default:
+        result=ap->a_w.w_gpointer;
+      }
+    }
+    return result;
+  }
+  void addProperties(gem::Properties&props, int argc, t_atom*argv)
+  {
+    if(!argc) {
+      return;
+    }
+
+    if(argv->a_type != A_SYMBOL) {
+      pd_error(parent, "no key given...");
+      return;
+    }
+    std::string key=std::string(atom_getsymbol(argv)->s_name);
+    std::vector<gem::any> values;
+    argc--;
+    argv++;
+    while(argc-->0) {
+      values.push_back(atom2any(argv++));
+    }
+    switch(values.size()) {
     default:
-      result=ap->a_w.w_gpointer;
+      props.set(key, values);
+      break;
+    case 1:
+      props.set(key, values[0]);
+      break;
+    case 0: {
+      gem::any dummy;
+      props.set(key, dummy);
+    }
+      break;
     }
   }
-  return result;
-}
-static void addProperties(CPPExtern*obj, gem::Properties&props, int argc, t_atom*argv)
-{
-  if(!argc) {
-    return;
-  }
-
-  if(argv->a_type != A_SYMBOL) {
-    pd_error(obj, "no key given...");
-    return;
-  }
-  std::string key=std::string(atom_getsymbol(argv)->s_name);
-  std::vector<gem::any> values;
-  argc--;
-  argv++;
-  while(argc-->0) {
-    values.push_back(atom2any(argv++));
-  }
-  switch(values.size()) {
-  default:
-    props.set(key, values);
-    break;
-  case 1:
-    props.set(key, values[0]);
-    break;
-  case 0: {
-    gem::any dummy;
-    props.set(key, dummy);
-  }
-  break;
-  }
-}
+};
 
 /////////////////////////////////////////////////////////
 //
@@ -90,11 +120,10 @@ CPPEXTERN_NEW_WITH_TWO_ARGS(pix_buffer, t_symbol*,A_DEFSYMBOL,t_float,
 //
 /////////////////////////////////////////////////////////
 pix_buffer :: pix_buffer(t_symbol* s,t_float f=100.0)
-  : m_buffer(NULL),
-    m_numframes(0),
-    m_bindname(NULL),
-    m_handle(NULL),
-    m_outlet(new gem::RTE::Outlet(this))
+  : m_buffer(NULL)
+  , m_numframes(0)
+  , m_bindname(NULL)
+  , m_pimpl(new PIMPL(this))
 {
   if (s==&s_) {
     static int buffercounter=0;
@@ -113,10 +142,7 @@ pix_buffer :: pix_buffer(t_symbol* s,t_float f=100.0)
   m_numframes = (unsigned int)f;
   m_buffer = new imageStruct[m_numframes];
 
-  m_handle = gem::plugins::imagesaver::getInstance();
-
   pd_bind(&this->x_obj->ob_pd, m_bindname);
-  outlet_new(this->x_obj, &s_float);
 }
 /////////////////////////////////////////////////////////
 // Destructor
@@ -130,11 +156,10 @@ pix_buffer :: ~pix_buffer( void )
     delete [] m_buffer;
   }
   m_buffer=NULL;
-  if(m_handle) {
-    delete m_handle;
+  if(m_pimpl) {
+    delete m_pimpl;
   }
-  m_handle=NULL;
-  delete m_outlet;
+  m_pimpl=NULL;
 }
 /////////////////////////////////////////////////////////
 // allocateMess
@@ -217,7 +242,7 @@ void pix_buffer :: resizeMess(int newsize)
 /////////////////////////////////////////////////////////
 void pix_buffer :: bangMess( void )
 {
-  m_outlet->send(m_numframes);
+  m_pimpl->outlet.send(m_numframes);
 }
 unsigned int pix_buffer :: numFrames( void )
 {
@@ -270,6 +295,7 @@ void pix_buffer :: loadMess(std::string filename, int pos)
 
   // load an image into mem
   imageStruct *image = NULL;
+  imageStruct img;
 
   // some checks
   if (pos<0 || pos>=m_numframes) {
@@ -278,16 +304,32 @@ void pix_buffer :: loadMess(std::string filename, int pos)
   }
   std::string file=findFile(filename);
 
-  image = image2mem(file.c_str());
-  if(!image) {
-    pd_error(0, "'%s' is no valid image!", file.c_str());
-    return;
+  if(m_pimpl->loader) {
+    gem::Properties m_loadprops; /* empty for now */
+    m_loadprops.erase("_backends");
+    if(!m_pimpl->loadbackends.empty()) {
+      m_loadprops.set("_backends", m_pimpl->loadbackends);
+    }
+    if(m_pimpl->loader->load(file, img, m_loadprops)) {
+      image = &img;
+    }
+
+    if(!image) {
+      pd_error(0, "unable to load image'%s'!", file.c_str());
+    }
+  } else {
+    image = image2mem(file.c_str());
+    if(!image) {
+      pd_error(0, "'%s' is no valid image!", file.c_str());
+      return;
+    }
   }
 
   putMess(image,pos);
 
   // destroy the image-data
-  delete image;
+  if(image != &img)
+    delete image;
 }
 
 /////////////////////////////////////////////////////////
@@ -307,8 +349,12 @@ void pix_buffer :: saveMess(std::string filename, int pos)
 
   if(img && img->data) {
     std::string fullname=gem::files::getFullpath(filename);
-    if(m_handle) {
-      m_handle->save(*img, fullname, std::string(), m_writeprops);
+    if(m_pimpl->saver) {
+      m_writeprops.erase("_backends");
+      if(!m_pimpl->savebackends.empty()) {
+        m_writeprops.set("_backends", m_pimpl->savebackends);
+      }
+      m_pimpl->saver->save(*img, fullname, std::string(), m_writeprops);
     } else {
       mem2image(img, fullname.c_str(), 0);
     }
@@ -343,8 +389,8 @@ void pix_buffer :: enumProperties(void)
   gem::Properties props;
 
   props.set("quality", 100);
-  if(m_handle) {
-    m_handle->getWriteCapabilities(mimetypes, props);
+  if(m_pimpl->saver) {
+    m_pimpl->saver->getWriteCapabilities(mimetypes, props);
   }
 
   std::vector<gem::any>data;
@@ -355,20 +401,20 @@ void pix_buffer :: enumProperties(void)
   /* mimetypes */
   data.push_back(std::string("numwrite"));
   data.push_back(mimetypes.size());
-  m_outlet->send("mimelist", data);
+  m_pimpl->outlet.send("mimelist", data);
 
   for(i=0; i<mimetypes.size(); i++) {
     data.clear();
     data.push_back(std::string("write"));
     data.push_back(mimetypes[i]);
-    m_outlet->send("mimelist", data);
+    m_pimpl->outlet.send("mimelist", data);
   }
 
   /* write properties */
   data.clear();
   data.push_back(std::string("numwrite"));
   data.push_back(keys.size());
-  m_outlet->send("proplist", data);
+  m_pimpl->outlet.send("proplist", data);
 
   for(i=0; i<keys.size(); i++) {
     std::string key=keys[i];
@@ -402,7 +448,7 @@ void pix_buffer :: enumProperties(void)
       break;
     }
 
-    m_outlet->send("proplist", data);
+    m_pimpl->outlet.send("proplist", data);
   }
 }
 void pix_buffer :: clearProperties(void)
@@ -411,8 +457,74 @@ void pix_buffer :: clearProperties(void)
 }
 void pix_buffer :: setProperties(t_symbol*s, int argc, t_atom*argv)
 {
-  addProperties(this, m_writeprops, argc, argv);
+  m_pimpl->addProperties(m_writeprops, argc, argv);
 }
+/////////////////////////////////////////////////////////
+// backendMess
+//
+/////////////////////////////////////////////////////////
+void pix_buffer :: backendMess(t_symbol*s, int argc, t_atom*argv)
+{
+  const std::string sel = s->s_name;
+  bool saver;
+  if(sel == "loadbackend")
+    saver = false;
+  else if (sel == "savebackend")
+    saver = true;
+  else {
+    error("Use 'loadbackend' to set/get image-loading backends, and 'savebackend' to set/get image-saving backends");
+    return;
+  }
+
+  if(argc) {
+    std::vector<std::string>&backends = saver?m_pimpl->savebackends:m_pimpl->loadbackends;
+    backends.clear();
+    for(int i=0; i<argc; i++) {
+      if(A_SYMBOL == argv->a_type) {
+        t_symbol* b=atom_getsymbol(argv+i);
+        backends.push_back(b->s_name);
+      } else {
+        error("%s must be symbolic", s->s_name);
+      }
+    }
+  } else {
+    /* no backend requested, just enumerate them */
+
+    if((saver && m_pimpl->saver) || (!saver && m_pimpl->loader)) {
+      std::vector<gem::any>atoms;
+      gem::any value;
+      gem::Properties props;
+      std::vector<std::string> backends;
+      props.set("_backends", value);
+      if(saver) {
+        std::vector<std::string> mimetypes;
+        m_pimpl->saver->getWriteCapabilities(mimetypes, props);
+      } else {
+        gem::plugins::imageloader::getProperties(m_pimpl->loader, props);
+      }
+      if(props.type("_backends")!=gem::Properties::UNSET) {
+        props.get("_backends", backends);
+      }
+      atoms.clear();
+      atoms.push_back(value=(int)(backends.size()));
+      m_pimpl->outlet.send(sel+"s", atoms);
+      if(!backends.empty()) {
+        for(int i=0; i<backends.size(); i++) {
+          atoms.clear();
+          atoms.push_back(value=backends[i]);
+          m_pimpl->outlet.send(sel, atoms);
+        }
+      } else {
+        if(saver) {
+          post("no image saving backends found!");
+        } else {
+          post("no image loading backends found!");
+        }
+      }
+    }
+  }
+}
+
 
 /////////////////////////////////////////////////////////
 // static member function
@@ -436,6 +548,10 @@ void pix_buffer :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG0(classPtr, "clearProps", clearProperties);
   CPPEXTERN_MSG (classPtr, "setProp",    setProperties);
   CPPEXTERN_MSG (classPtr, "setProps",   setProperties);
+
+  CPPEXTERN_MSG (classPtr, "backend", backendMess);
+  CPPEXTERN_MSG (classPtr, "loadbackend", backendMess);
+  CPPEXTERN_MSG (classPtr, "savebackend", backendMess);
 }
 void pix_buffer :: allocateMess(t_symbol*s, int argc, t_atom*argv)
 {

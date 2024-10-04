@@ -21,6 +21,7 @@
 
 #include "Base/GemBase.h"
 #include "Gem/Image.h"
+#include "RTE/Outlet.h"
 
 #include "plugins/record.h"
 
@@ -74,6 +75,10 @@ protected:
   virtual void  fileMess(t_symbol*s,int argc, t_atom *argv);
 
   //////////
+  // Set backend to use
+  virtual void  backendMess(t_symbol*s, int argc, t_atom*argv);
+
+  //////////
   // turn recording on/off
   virtual void  recordMess(bool on);
 
@@ -95,9 +100,9 @@ protected:
 
   //////////
   // a outlet for information like #frames
-  t_outlet     *m_outNumFrames;
+  gem::RTE::Outlet m_framesOut;
   // another outlet for extra information (like list of codecs...)
-  t_outlet     *m_outInfo;
+  gem::RTE::Outlet m_infoOut;
 
   int m_currentFrame; //keep track of the number of frames
 
@@ -113,11 +118,6 @@ protected:
 private:
   bool m_recording;
   gem::plugins::record *m_handle;
-  std::vector<std::string>m_ids;
-  std::vector<gem::plugins::record*>m_handles;
-  std::vector<gem::plugins::record*>m_allhandles;
-  virtual bool addHandle(std::vector<std::string>available_ids,
-                         std::string id=std::string(""));
   //////////
   // static member functions
   void  autoMess(bool on);

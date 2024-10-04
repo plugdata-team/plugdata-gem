@@ -119,10 +119,8 @@ public:
    */
   virtual bool enumProperties(gem::Properties&props);
 
-  virtual bool dialog(void)
-  {
-    return false;
-  }
+  virtual void getProperties(gem::Properties&props) {;};
+  virtual bool dialog(void) { return false; }
 
 private:
   quicktime_t *m_qtfile;
@@ -157,6 +155,7 @@ private:
   double m_timeTick;
 
   size_t m_curFrame;
+  int m_curTrack;
 #endif /* QT */
 };
 };

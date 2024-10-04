@@ -29,14 +29,14 @@ namespace gem
 {
 namespace plugins
 {
-class imageloaderMeta : public gem::plugins::imageloader
+struct imageloaderMeta : public gem::plugins::imageloader
 {
-private:
+public:
   static imageloaderMeta*s_instance;
   std::vector<gem::plugins::imageloader*>m_loaders;
   std::vector<std::string>m_ids;
   bool m_canThread;
-public:
+
   imageloaderMeta(void) : m_canThread(true)
   {
     gem::PluginFactory<gem::plugins::imageloader>::loadPlugins("image");
@@ -49,8 +49,7 @@ public:
     static bool firsttime=true;
     if(firsttime && m_ids.size()>0) {
       startpost("GEM: image loading plugins:");
-      unsigned int i;
-      for(i=0; i<m_ids.size(); i++) {
+      for(unsigned int i=0; i<m_ids.size(); i++) {
         startpost(" %s", m_ids[i].c_str());
       }
       endpost();
@@ -58,8 +57,8 @@ public:
     firsttime=false;
 
     m_canThread=true;
-    unsigned int i;
-    for(i=0; i<m_loaders.size(); i++) {
+
+    for(unsigned int i=0; i<m_loaders.size(); i++) {
       if(!m_loaders[i]->isThreadable()) {
         m_canThread=false;
         break;
@@ -86,8 +85,7 @@ public:
       id=available;
     }
 
-    unsigned int i=0;
-    for(i=0; i<id.size(); i++) {
+    for(unsigned int i=0; i<id.size(); i++) {
       std::string key=id[i];
       verbose(2, "trying to add '%s' as backend", key.c_str());
       if(std::find(m_ids.begin(), m_ids.end(), key)==m_ids.end()) {
@@ -113,11 +111,9 @@ public:
     return (count>0);
   }
 
-public:
   virtual ~imageloaderMeta(void)
   {
-    unsigned int i;
-    for(i=0; i<m_loaders.size(); i++) {
+    for(unsigned int i=0; i<m_loaders.size(); i++) {
       delete m_loaders[i];
       m_loaders[i]=NULL;
     }
@@ -126,10 +122,27 @@ public:
   virtual bool load(std::string filename, imageStruct&result,
                     gem::Properties&props)
   {
-    unsigned int i;
-    for(i=0; i<m_loaders.size(); i++) {
-      if(m_loaders[i]->load(filename, result, props)) {
-        return true;
+    std::vector<std::string> backends;
+    if(props.type("_backends")!=gem::Properties::UNSET) {
+      props.get("_backends", backends);
+    }
+    if(!backends.empty()) {
+      /* if the user requested some backends, use these */
+      for(unsigned int j=0; j<backends.size(); j++) {
+        std::string id=backends[j];
+        for(unsigned int i=0; i<m_loaders.size(); i++) {
+          if(id!=m_ids[i])
+            continue;
+          if(m_loaders[i]->load(filename, result, props)) {
+            return true;
+          }
+        }
+      }
+    } else {
+      for(unsigned int i=0; i<m_loaders.size(); i++) {
+        if(m_loaders[i]->load(filename, result, props)) {
+          return true;
+        }
       }
     }
     return false;
@@ -138,6 +151,21 @@ public:
   virtual bool isThreadable(void)
   {
     return m_canThread;
+  }
+
+  void getProperties(gem::Properties&props) {
+    std::vector<std::string> ids;
+    if(props.type("_backends")!=gem::Properties::UNSET) {
+      for(unsigned int i=0; i<m_ids.size(); i++) {
+        ids.push_back(m_ids[i]);
+      }
+    }
+
+    props.clear();
+
+    if(!ids.empty()) {
+      props.set("_backends", ids);
+    }
   }
 };
 };
@@ -148,4 +176,13 @@ gem::plugins::imageloader*gem::plugins::imageloader::getInstance(void)
 {
   gem::plugins::imageloader*result=new imageloaderMeta();
   return result;
+}
+
+void gem::plugins::imageloader::getProperties(gem::plugins::imageloader*loader, gem::Properties&props) {
+  gem::plugins::imageloaderMeta *meta  = dynamic_cast<gem::plugins::imageloaderMeta*>(loader);
+  if (meta != nullptr) {
+    meta->getProperties(props);
+  } else {
+    pd_error(0, "Unable to get properties from generic gem::plugins::imageloader (only meta-loader is supported)");
+  }
 }

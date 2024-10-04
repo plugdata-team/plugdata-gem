@@ -24,7 +24,8 @@ variables:
   gem_defaultwindow:
     value: "gemglfw3window"
     description: "default window backend"
-
+  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_DEPTH: 1
 
 stages:
   - build
@@ -53,24 +54,61 @@ stages:
     set -o shwordsplit || true     # zsh doesn't do wordsplitting by default...
     set -o nonomatch   || true     # zsh bails out if globbing patterns do not expand
 
+.script:set_destdir: &script_set_destdir
+  - DESTDIR="$(pwd)/${ARTIFACTSDIR}/${CI_JOB_NAME%%-*}"
+
+
+.image:windows:
+  tags:
+    - sardinecake
+  image: registry.git.iem.at/devtools/sardinecake/windows:latest
+
+.image:macos:
+  tags:
+    - tart
+  image: ghcr.io/cirruslabs/macos-monterey-xcode:latest
+
 .build:
   stage: build
+  variables:
+    localdeps: ".git-ci/iem-ci/localdeps/localdeps"
   script:
     - *script_zsh_compat
+    # handle Pd64 jobs
+    - if test "${OS}" = "Windows_NT"; then defaultext="dll"; else defaultext="so"; fi
+    # - gnutriplet="$(g++ -dumpmachine)"
+    - arch="${CI_JOB_NAME%-[0-9][0-9]}"
+    - floatsize="${CI_JOB_NAME#${arch}}"
+    - floatsize="${floatsize#-}"
+    - test "${floatsize}" != 32 || floatsize=""
+    - test -z "${floatsize}" || pd_extension="${arch}-${floatsize}.${defaultext}"
+    - if test "${OS}" = "Windows_NT"; then gnutriplet="${CI_JOB_NAME}"; else gnutriplet="${arch}"; fi
+    - configure_floatsize="${floatsize:+--with-floatsize=${floatsize}}"
+    # on Windows, plugins link against Gem, so we cannot share them between floatsizes; other platforms are fine
+    - test -z "${floatsize}" || test "${OS}" = "Windows_NT" || configure_floatsize="${configure_floatsize} --disable-plugins"
+    - echo "arch=${arch} pd_extension=${pd_extension} floatsize=${floatsize}"
+    # print some system information
     - echo building against Pd-${PDVERSION}
     - echo building with ${NUMBER_OF_PROCESSORS:=$(nproc || sysctl -n hw.ncpu || echo 1)} CPUs
     - tools/systeminfo.sh || true
     - date
+    - which autoreconf aclocal glibtoolize libtoolize autoconf autoheader automake g++ || true
+    - for tool in autoreconf aclocal libtoolize glibtoolize autoconf autoheader automake; do "${tool}" --version | grep "^${tool}" || true; done || true
     - g++ -v
+    # the actual build
     - mkdir -pv "${ARTIFACTSDIR}"
     - autoreconf -fiv || ./autogen.sh
-    - ./configure --disable-dependency-tracking ${TARGETARCH:+--host=}${TARGETARCH} ${fat_binary:+--enable-fat-binary=}${fat_binary} ${PDDIR:+--with-pd=}${PDDIR} ${pd_extension:+--with-extension=}${pd_extension} ${gem_defaultwindow:+--with-defaultwindow=}${gem_defaultwindow} --with-DeckLink=local || true
+    - ./configure --disable-dependency-tracking ${TARGETARCH:+--host=}${TARGETARCH} ${fat_binary:+--enable-fat-binary=}${fat_binary} ${PDDIR:+--with-pd=}${PDDIR} ${pd_extension:+--with-extension=}${pd_extension} ${configure_floatsize} ${gem_defaultwindow:+--with-defaultwindow=}${gem_defaultwindow} --with-DeckLink=local || true
     - test -n "${CI_COMMIT_TAG}" || cp -v config.log "${ARTIFACTSDIR}"
     - make check -j"${NUMBER_OF_PROCESSORS}"
-    - make install DESTDIR=$(pwd)/${ARTIFACTSDIR}/${CI_JOB_NAME%_*} libdir=/ extradir=/Gem includedir=/Gem/include
+    - *script_set_destdir
+    # "
+    - make install DESTDIR="${DESTDIR}" libdir=/ extradir=/Gem includedir=/Gem/include
+    # make Gem-plugins co-installable
+    - find "${DESTDIR}" "(" -name "gem_*.so" -or -name "gem_*.dll" ")" -exec .git-ci/rename-gnutriplet.sh -a "${gnutriplet}" {} "+"
     # finally split the binaries from the debug information
     - base_dir_ci=$(pwd)
-    - cd "$(pwd)/${ARTIFACTSDIR}/${CI_JOB_NAME%_*}/Gem"
+    - cd "${DESTDIR}/Gem"
     - du -sh
     - |
       "${base_dir_ci}/.git-ci/split-debug" ${pd_extension:+*.${pd_extension}} *.pd_* *.?_* *.dll *.so || echo "ignoring problems when splitting debug info"
@@ -97,10 +135,8 @@ stages:
 
 .build:macos:
   extends:
+    - .image:macos
     - .build
-  tags:
-    - tart
-  image: ghcr.io/cirruslabs/macos-monterey-xcode:latest
   retry:
     max: 1
     when:
@@ -134,7 +170,7 @@ stages:
     - test ! -f "${IEM_CI_TMPDIR}"/Pd.zip || unzip "${IEM_CI_TMPDIR}"/Pd.zip -d "${IEM_CI_TMPDIR}"
     # the ZIP-file shoud contain a .dmg containing Pd
     - |
-      for dmg in "${IEM_CI_TMPDIR}"/Pd*.dmg; do break; done
+      for dmg in "${IEM_CI_TMPDIR}"/Pd*.dmg ; do break; done
     - pddisk=""
     - test ! -f "${dmg}" || pddisk=$(hdiutil attach "${dmg}" 2>/dev/null | egrep "^/.*/Volumes/" | tail -1 | awk '{print $NF}')
     - rm -rf "${dmg}"
@@ -142,7 +178,7 @@ stages:
       for app in "${pddisk}"/Pd*.app "${IEM_CI_TMPDIR}"/Pd*.app; do if test -d "${app}"; then cp -r "${app}" /Applications/; break; fi; done
     - test ! -d "${pddisk}" || umount "${pddisk}"
     - |
-      rm -rf "${IEM_CI_TMPDIR}"
+      rm -rf "${IEM_CI_TMPDIR}" | true
       dmg=""
       pddisk=""
       app=""
@@ -153,6 +189,7 @@ stages:
     - echo "PDDIR=${PDDIR}"
     - brew bundle --no-upgrade --file=.git-ci/macOS.brew || true
     - brew list --full-name || true
+    - libtoolize --version || glibtoolize --version || brew install libtool || true
     # older versions of assimp are broken with clang>=14
     - sed -e 's|^\([[:space:]]*mTextureCoordsNames = new aiString \*\[AI_MAX_NUMBER_OF_TEXTURECOORDS\]\) {};[[:space:]]*$|\1; for (size_t i=0; i<AI_MAX_NUMBER_OF_TEXTURECOORDS; ++i) {mTextureCoordsNames[i] = nullptr;}|' -i.bak "$(brew --cellar)"/assimp-fat/5.2*/include/assimp/mesh.h || true
     - /usr/local/opt/gettext/bin/gettextize || true
@@ -160,25 +197,28 @@ stages:
     - echo "MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET}"
   after_script:
     - *script_zsh_compat
-    - mkdir -p "${ARTIFACTSDIR}/${CI_JOB_NAME%_*}"
-    - find "${ARTIFACTSDIR}/${CI_JOB_NAME%_*}" -type f "(" -name "*.${pd_extension:-d_*}" -o -name "*.pd_darwin" -o -name "*.so" ")" -exec .git-ci/localdeps.macos.sh {} +
-    - IEM_SIGN_SRCDIR="${ARTIFACTSDIR}/${CI_JOB_NAME%_*}"
+    - *script_set_destdir
+    - mkdir -p "${DESTDIR}"
+    - depdir="${CI_JOB_NAME%-[0-9][0-9]}"
+    - find "${DESTDIR}" -type f "(" -name "*.${pd_extension:-d_*}" -o -name "*.pd_darwin" -o -name "*.so" ")" -exec "${localdeps}.macos.sh" -F -v -d ".${depdir}" {} +
+    - IEM_SIGN_SRCDIR="${DESTDIR}"
     - !reference [.script:codesign:macos]
 
 .build:w64:
   extends:
+    - .image:windows
     - .build
-  tags:
-    - windows
   variables:
     IEMCI_CONFIGURATIONS: mingw64
     pd_downloadsuffix: .msw.zip
   before_script:
     - tools/systeminfo.sh || true
     - export PDDIR="$(pwd)/_pd"
-    - downloadfile="pd-${PDVERSION}${pd_downloadsuffix}"
-    - echo wget -q -O "${downloadfile}" "http://msp.ucsd.edu/Software/pd-${PDVERSION}${pd_downloadsuffix}"
-    - wget -q -O "${downloadfile}" "http://msp.ucsd.edu/Software/pd-${PDVERSION}${pd_downloadsuffix}"
+    - |
+      : ${pd_download_url:="http://msp.ucsd.edu/Software/pd-${PDVERSION}${pd_downloadsuffix}"}
+    - downloadfile="${pd_download_url##*/}"
+    - echo wget -q -O "${downloadfile}" "${pd_download_url}"
+    - wget -q -O "${downloadfile}" "${pd_download_url}"
     - mkdir -p "${PDDIR}"
     - test "x${downloadfile}" = "x${downloadfile%.zip}" || unzip -q "${downloadfile}" -d "${PDDIR}"
     - mv -v "${PDDIR}"/*/* "${PDDIR}"
@@ -186,13 +226,15 @@ stages:
     - rm -f "${PDDIR}"/bin/msvcr*.dll
     - export PD="${PDDIR}/bin/pd.com"
     - result=0
-    - pacman --noconfirm -S --needed $(cat .git-ci/msys2.pacman  | sed -e 's|#.*||' -e "s|@MINGW@|${MINGW_PACKAGE_PREFIX}-|") || result=$?
+    - pacman --noconfirm -S --needed $(sed -e 's|#.*||' -e "s|@MINGW@|${MINGW_PACKAGE_PREFIX}-|" -e '/^\s*$/d' .git-ci/msys2.pacman | while read -r pkg _; do ! pacman -Sp "${pkg}" >/dev/null || echo "${pkg}"; done)
     # if pacman failed, try to continue (but do not mark the run as 'success')
     - echo "pacman returned ${result}"
     - test "${result}" = "0" || result="skip"
   after_script:
-    - mkdir -p "${ARTIFACTSDIR}/${CI_JOB_NAME%_*}"
-    - find "${ARTIFACTSDIR}/${CI_JOB_NAME%_*}" -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +
+    - *script_set_destdir
+    - mkdir -p "${DESTDIR}"
+    - depdir="${CI_JOB_NAME%-[0-9][0-9]}"
+    - find "${DESTDIR}" -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec "${localdeps}.win.sh" -v -d ".${depdir}" {} +
 
 .build:w32:
   extends:
@@ -205,7 +247,7 @@ stages:
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
 
-Source:
+source:
   extends:
     - .artifacts
     - .run-selected
@@ -215,28 +257,46 @@ Source:
     - apt-get update && apt-get --no-install-recommends -y install git
   script:
     # create a source package
-    - git archive --format=tar --prefix="${ARTIFACTSDIR}/Source/${CI_PROJECT_NAME}/" HEAD | tar xf -
+    - git archive --format=tar --prefix="${ARTIFACTSDIR}/${CI_JOB_NAME}}/${CI_PROJECT_NAME}/" HEAD | tar xf -
 
-Linux-amd64-32:
+linux-amd64-32:
   extends:
     - .build:linux
     - .artifacts
     - .run-selected
-Darwin-fat-32:
+  variables:
+    pd_extension: "pd_linux"
+darwin-fat-32:
   extends:
     - .build:macos
     - .artifacts
     - .run-selected
-Windows-i386-32:
+  variables:
+    pd_extension: "d_fat"
+windows-i386-32:
   extends:
     - .build:w32
     - .artifacts
     - .run-selected
-Windows-amd64-32:
+  variables:
+    pd_extension: "dll"
+windows-amd64-32:
   extends:
     - .build:w64
     - .artifacts
     - .run-selected
+  variables:
+    pd_extension: "m_amd64"
+
+# Pd64
+linux-amd64-64:
+  extends: linux-amd64-32
+darwin-fat-64:
+  extends: darwin-fat-32
+windows-amd64-64:
+  extends: windows-amd64-32
+  variables:
+    pd_download_url: "https://get.puredata.info/pure-data/releases/${PDVERSION}-pd64/Pd64-${PDVERSION}.msw.zip"
 
 distcheck:
   extends:
@@ -281,7 +341,7 @@ nodist:
   script:
     ## pre-cleanup
     # get rid of gitignores
-    - find . -name .gitignore -delete
+    - git ls-tree -r HEAD --name-only -z | grep --null-data "\.gitignore" | xargs -0 rm
     - git commit -a -m "Drop .gitignore files"
     ## create 'make dist' package
     - autoreconf -fiv || ./autogen.sh
@@ -307,9 +367,11 @@ macOS:notarize:
   stage: deploy
   image: python:alpine
   dependencies:
-    - Darwin-fat-32
+    - darwin-fat-32
+    - darwin-fat-64
   needs:
-    - Darwin-fat-32
+    - darwin-fat-32
+    - darwin-fat-64
   variables:
     IEM_NOTARIZE_SRCDIR: artifacts
     IEM_NOTARIZE_ARCHIVE: Gem.zip

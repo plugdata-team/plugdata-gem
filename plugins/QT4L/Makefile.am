@@ -4,14 +4,19 @@ AM_CPPFLAGS = -I$(top_srcdir)/src $(GEM_EXTERNAL_CPPFLAGS)
 AM_CXXFLAGS =
 
 pkglib_LTLIBRARIES=
+gemhelpdir=$(pkglibdir)
+dist_gemhelp_DATA =
 
 if HAVE_LIB_LIBQUICKTIME
 pkglib_LTLIBRARIES+= gem_filmQT4L.la
 pkglib_LTLIBRARIES+= gem_recordQT4L.la
-endif
+dist_gemhelp_DATA += quicktime4linux-recordplugin.pd
+else
 if HAVE_LIB_LQT
 pkglib_LTLIBRARIES+= gem_filmQT4L.la
 pkglib_LTLIBRARIES+= gem_recordQT4L.la
+dist_gemhelp_DATA += quicktime4linux-recordplugin.pd
+endif
 endif
 
 AM_LDFLAGS  = -module -avoid-version -shared

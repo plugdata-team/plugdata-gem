@@ -33,8 +33,7 @@ class videoMeta : public gem::plugins::video
 {
 private:
   static videoMeta*s_instance;
-  std::vector<gem::plugins::video*>m_allHandles, // all available handles
-      m_selectedHandles; // handles with the currently selected codec
+  std::vector<gem::plugins::video*>m_handles; // all available handles
   gem::plugins::video*m_handle; // currently opened handle (or NULL)
   std::vector<std::string>m_ids; // list of handle names
   std::string m_codec; // currently selected codec
@@ -80,8 +79,7 @@ private:
       id=available;
     }
 
-    unsigned int i=0;
-    for(i=0; i<id.size(); i++) {
+    for(unsigned int i=0; i<id.size(); i++) {
       std::string key=id[i];
       verbose(2, "Gem::video: trying to add '%s' as backend", key.c_str());
       if(std::find(m_ids.begin(), m_ids.end(), key)==m_ids.end()) {
@@ -98,10 +96,10 @@ private:
           continue;
         }
         m_ids.push_back(key);
-        m_allHandles.push_back(handle);
+        m_handles.push_back(handle);
         count++;
         verbose(2, "Gem::video: added backend#%d '%s'",
-                (int)(m_allHandles.size()-1), key.c_str());
+                (int)(m_handles.size()-1), key.c_str());
       }
     }
     return (count>0);
@@ -126,8 +124,8 @@ public:
     addPlugin(ids, "dv4l");
     addPlugin(ids);
 
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      if(!m_allHandles[i]->isThreadable()) {
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      if(!m_handles[i]->isThreadable()) {
         m_canThread=false;
         break;
       }
@@ -136,8 +134,7 @@ public:
     static bool firsttime=true;
     if(firsttime && ids.size()>0) {
       startpost("GEM: video capture plugins:");
-      unsigned int i;
-      for(i=0; i<ids.size(); i++) {
+      for(unsigned int i=0; i<ids.size(); i++) {
         startpost(" %s", ids[i].c_str());
       }
       endpost();
@@ -148,10 +145,9 @@ public:
   virtual ~videoMeta(void)
   {
     // compat
-    unsigned int i;
-    for(i=0; i<m_allHandles.size(); i++) {
-      delete m_allHandles[i];
-      m_allHandles[i]=NULL;
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      delete m_handles[i];
+      m_handles[i]=NULL;
     }
   }
   virtual std::vector<std::string>enumerate(void)
@@ -162,8 +158,8 @@ public:
      *   "devicename:backend" with ':' being some special character unlikely to be found in devicenames
      */
     std::vector<std::string>result;
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      std::vector<std::string>res=m_allHandles[i]->enumerate();
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      std::vector<std::string>res=m_handles[i]->enumerate();
       for(unsigned int j=0; j<res.size(); j++) {
         result.push_back(res[j]);
       }
@@ -174,8 +170,8 @@ public:
   {
     // compat
     bool result=false;
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      if(m_allHandles[i]->setDevice(ID)) {
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      if(m_handles[i]->setDevice(ID)) {
         result=true;
       }
     }
@@ -185,8 +181,8 @@ public:
   {
     // compat
     bool result=false;
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      if(m_allHandles[i]->setDevice(ID)) {
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      if(m_handles[i]->setDevice(ID)) {
         result=true;
       }
     }
@@ -201,13 +197,38 @@ public:
     if(m_handle) {
       close();
     }
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      if(m_allHandles[i]->open(props)) {
-        m_handle=m_allHandles[i];
-        return true;
+
+    std::vector<std::string> backends;
+    if(props.type("_backends")!=gem::Properties::UNSET) {
+      props.get("_backends", backends);
+    }
+
+    bool tried=false;
+    if(!backends.empty()) {
+      for(unsigned int j=0; !m_handle && j<backends.size(); j++) {
+        std::string id=backends[j];
+        for(unsigned int i=0; i<m_handles.size(); i++) {
+          /* coverity[assign_where_compare_meant] we set 'tried' to true if we have found at least one matching backend */
+          if(id==m_ids[i] && (tried=true)
+              && m_handles[i]->open(props)) {
+            m_handle=m_handles[i];
+            break;
+          }
+        }
       }
     }
-    return false;
+    if(!tried) {
+      if(!backends.empty() && !m_handles.empty()) {
+        verbose(2, "no available backend selected, fall back to valid ones");
+      }
+      for(unsigned int i=0; i<m_handles.size(); i++) {
+        if(m_handles[i] && m_handles[i]->open(props)) {
+          m_handle=m_handles[i];
+          break;
+        }
+      }
+    }
+    return (NULL != m_handle);
   }
   virtual bool start(void)
   {
@@ -256,8 +277,8 @@ public:
     }
 
     bool result=false;
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      if(m_allHandles[i]->reset()) {
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      if(m_handles[i]->reset()) {
         result=true;
       }
     }
@@ -281,9 +302,22 @@ public:
   }
   virtual void getProperties(gem::Properties&props)
   {
-    // OK
+    std::vector<std::string> ids;
+    if(props.type("_backends")!=gem::Properties::UNSET) {
+      for(unsigned int i=0; i<m_ids.size(); i++) {
+        ids.push_back(m_ids[i]);
+      }
+    }
+    props.erase("_backends");
+
     if(m_handle) {
       m_handle->getProperties(props);
+    } else {
+      props.clear();
+    }
+
+    if(!ids.empty()) {
+      props.set("_backends", ids);
     }
   }
   virtual bool dialog(std::vector<std::string>names)
@@ -308,8 +342,8 @@ public:
     }
 
     std::vector<std::string>result;
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      std::vector<std::string>res=m_allHandles[i]->dialogs();
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      std::vector<std::string>res=m_handles[i]->dialogs();
       for(unsigned int j=0; j<res.size(); j++) {
         result.push_back(res[j]);
       }
@@ -340,8 +374,8 @@ public:
     // LATER get rid of that!
     // think about the return value...
     bool result=true;
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      if(!m_allHandles[i]->setColor(color)) {
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      if(!m_handles[i]->setColor(color)) {
         result=false;
       }
     }
@@ -350,8 +384,8 @@ public:
   virtual bool provides(const std::string&ID)
   {
     // OK
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      if(m_allHandles[i]->provides(ID)) {
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      if(m_handles[i]->provides(ID)) {
         return true;
       }
     }
@@ -362,8 +396,8 @@ public:
     // OK
     // LATER: remove dupes
     std::vector<std::string>result;
-    for(unsigned int i=0; i<m_allHandles.size(); i++) {
-      std::vector<std::string>res=m_allHandles[i]->provides();
+    for(unsigned int i=0; i<m_handles.size(); i++) {
+      std::vector<std::string>res=m_handles[i]->provides();
       for(unsigned int j=0; j<res.size(); j++) {
         result.push_back(res[i]);
       }

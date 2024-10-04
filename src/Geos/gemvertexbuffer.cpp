@@ -570,7 +570,7 @@ void gemvertexbuffer :: attribute(t_symbol*s, int argc, t_atom *argv)
     if(argv[2].a_type==A_FLOAT) {
       tab_offset=atom_getfloat(argv+2);
       resize=false;
-    } else {
+    } else { 
       pd_error(0, "illegal arguments to 'attribute': must be <vbo_index> <attribute_name> <table> [<offset>]");
       return;
     }
