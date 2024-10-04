@@ -234,6 +234,12 @@ static void genTexture_Spheremap(std::vector<float>& tex,
  * \param id a symbolic (const char*) ID for the given class
  * \param modelloaderClass a class derived from "modelloader"
  */
-#define REGISTER_MODELLOADERFACTORY(id, TYP) static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::modelloader> fac_modelloader_ ## TYP (id)
 
+#define REGISTER_MODELLOADERFACTORY(id, TYP) \
+static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::modelloader>* fac_modelloader_ ## TYP; \
+extern "C" {\
+GEM_EXPORT void setup_ ## TYP () {\
+fac_modelloader_ ## TYP = new gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::modelloader>(id); \
+}\
+}
 #endif  // for header file

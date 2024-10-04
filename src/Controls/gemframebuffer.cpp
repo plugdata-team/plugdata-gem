@@ -20,6 +20,8 @@
 #include "Gem/State.h"
 #include "Gem/GLStack.h"
 
+GEM_EXTERN extern bool gemWinSetCurrent();
+
 CPPEXTERN_NEW_WITH_GIMME(gemframebuffer);
 
 /////////////////////////////////////////////////////////
@@ -469,7 +471,10 @@ void gemframebuffer :: initFBO()
 /////////////////////////////////////////////////////////
 void gemframebuffer :: destroyFBO()
 {
-  //if(!GLEW_EXT_framebuffer_object)return;
+  
+  if(!GLEW_EXT_framebuffer_object || !m_haveinit)return;
+  
+  gemWinSetCurrent();
 
   // Release all resources.
   if(m_depthBufferIndex) {

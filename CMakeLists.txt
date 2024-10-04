@@ -1284,7 +1284,6 @@ file(GLOB GEM_HEADERS
 
 add_subdirectory(glew/build/cmake)
 
-
 include_directories("./glew/include"
                     "./ftgl/cmake"
                     "./ftgl/src"
@@ -1306,8 +1305,13 @@ endif()
 include(ftgl.cmake)
 include(freetype.cmake)
 
-set(MESSAGE_QUIET OFF)
+set(ASSIMP_BUILD_STATIC_LIB ON)
+set(ASSIMP_BUILD_ASSIMP_TOOLS OFF)
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_OPT_BUILD_PACKAGES OFF)
+add_subdirectory(${GEM_SOURCE_PATH}/plugins/ASSIMP3/assimp)
 
+set(MESSAGE_QUIET OFF)
 add_library(Gem STATIC ${GEM_SOURCES} ${GEM_HEADERS})
 target_compile_definitions(Gem PRIVATE HAVE_FTGL=1 HAVE_FTGL_FTGL_H=1 HAVE_S_STUFF_H=1)
 target_include_directories(Gem PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" )
@@ -1320,4 +1324,41 @@ target_compile_definitions(Gem-multi PRIVATE HAVE_FTGL=1 HAVE_FTGL_FTGL_H=1 HAVE
 target_include_directories(Gem-multi PUBLIC ${GEM_SOURCE_PATH} "../pure-data/src" "./glew/include" "./ftgl/src"  "./ftgl/src/FTFont" "./ftgl/src/FTGL" "./freetype/include")
 if(UNIX)
 target_compile_options(Gem-multi PRIVATE -fvisibility=hidden)
+endif()
+
+add_library(Gem-plugins STATIC
+    ${GEM_SOURCE_PATH}/plugins/ASSIMP3/modelASSIMP3.cpp
+    ${GEM_SOURCE_PATH}/plugins/STB/imageSTB.cpp
+    ${GEM_SOURCE_PATH}/plugins/OBJ/modelOBJ.cpp
+    ${GEM_SOURCE_PATH}/plugins/OBJ/model_loader.cpp
+    ${GEM_SOURCE_PATH}/plugins/PNM/recordPNM.cpp
+)
+
+target_include_directories(Gem-plugins PRIVATE ${GEM_SOURCE_PATH} ${GEM_SOURCE_PATH}/plugins/ASSIMP3/assimp/include)
+target_compile_definitions(Gem-plugins PRIVATE HAVE_CONFIG_H=1)
+
+if(APPLE)
+target_link_libraries(Gem-plugins PUBLIC "-framework AVFoundation -framework CoreMedia")
+target_sources(Gem-plugins PRIVATE
+    ${GEM_SOURCE_PATH}/plugins/filmAVF/filmAVF.mm
+    ${GEM_SOURCE_PATH}/plugins/filmAVF/AVFMoviePlayer.m
+    ${GEM_SOURCE_PATH}/plugins/videoAVF/videoAVF.mm
+    ${GEM_SOURCE_PATH}/plugins/videoAVF/AVFVideoGrabber.mm
+)
+elseif(MSVC)
+target_link_libraries(Gem-plugins Strmiids.lib)
+target_sources(Gem-plugins PRIVATE
+    ${GEM_SOURCE_PATH}/plugins/filmDS/filmDS.cpp
+    ${GEM_SOURCE_PATH}/plugins/VFW/videoVFW.cpp
+    ${GEM_SOURCE_PATH}/plugins/VFW/videoVFW.cpp
+)
+else()
+
+#target_sources(Gem-plugins PRIVATE
+#    ${GEM_SOURCE_PATH}/plugins/V4L2/videoV4L2.cpp
+#    ${GEM_SOURCE_PATH}/plugins/V4L2/recordV4L2.cpp
+#    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/v4l2convert.c
+#    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/log.c
+#    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/libv4l2.c
+#)
 endif()

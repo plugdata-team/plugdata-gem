@@ -112,6 +112,13 @@ public:
  * \param id a symbolic (const char*) ID for the given class
  * \param recordClass a class derived from "record"
  */
-#define REGISTER_RECORDFACTORY(id, TYP) static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::record> fac_record_ ## TYP (id)
+#define REGISTER_RECORDFACTORY(id, TYP)\
+static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::record>* fac_record_ ## TYP; \
+extern "C" {\
+GEM_EXPORT void setup_ ## TYP () {\
+fac_record_ ## TYP = new gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::record>(id); \
+}\
+}
+
 
 #endif  // for header file

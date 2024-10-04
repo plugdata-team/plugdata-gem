@@ -4,3 +4,6 @@
 [submodule "ftgl"]
 	path = ftgl
 	url = https://github.com/ulrichard/ftgl.git
+[submodule ".git-ci/iem-ci"]
+	path = .git-ci/iem-ci
+	url = https://git.iem.at/pd/iem-ci.git
