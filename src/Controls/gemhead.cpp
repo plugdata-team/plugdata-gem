@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 
+GEM_EXTERN extern bool gemWinSetCurrent();
 CPPEXTERN_NEW_WITH_GIMME(gemhead);
 
 
@@ -192,6 +193,8 @@ void gemhead :: bangMess()
   if ( !activateContext() || !m_cache ) {
     return;
   }
+
+  gemWinSetCurrent();
 
   // make a dummy GemState
   GemState tempState;

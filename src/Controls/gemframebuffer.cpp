@@ -471,8 +471,7 @@ void gemframebuffer :: initFBO()
 /////////////////////////////////////////////////////////
 void gemframebuffer :: destroyFBO()
 {
-  
-  if(!GLEW_EXT_framebuffer_object || !m_haveinit)return;
+  if(!m_haveinit) return;
   
   gemWinSetCurrent();
 
