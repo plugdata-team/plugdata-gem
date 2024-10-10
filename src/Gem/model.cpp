@@ -142,8 +142,16 @@ namespace
       } else {
         vTexCoordsUV = vTexCoordsLinear;
       }
-
     }
+    
+    void destroy()
+    {
+      vertices.destroy();
+      normals.destroy();
+      colors.destroy();
+      texcoords.destroy();
+    }
+    
     void update(enum gem::modelGL::texturetype t, float texW, float texH)
     {
       vertices.update(size, vVertices.data());
@@ -288,6 +296,12 @@ namespace gem {
     delete m_pimpl;
   }
 
+  void modelGL::destroy(void) {
+    for (auto& m: m_pimpl->mesh) {
+      m.destroy();
+    }
+  }
+
   bool modelGL::update(void) {
     m_pimpl->update = false;
     if(true) {
@@ -318,6 +332,7 @@ namespace gem {
     }
     render(groups);
   }
+
   void modelGL::render(std::vector<unsigned int>&meshes) {
     if(m_pimpl->update) update();
 
