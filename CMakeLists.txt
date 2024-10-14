@@ -1364,5 +1364,28 @@ target_sources(Gem-plugins PRIVATE
     ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/v4l2convert.c
     ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/log.c
     ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/libv4l2.c
+
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/v4l2convert.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/log.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/libv4l2.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/bayer.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/crop.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/flip.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/helper.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/hm12.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/jidctflt.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/libv4lconvert.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/mr97310a.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/ov511-decomp.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/ov518-decomp.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/pac207.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/rgbyuv.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/sn9c10x.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/sn9c2028-decomp.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/sn9c20x.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/spca501.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/spca561-decompress.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/sq905c.c
+    ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4lconvert/tinyjpeg.c
 )
 endif()
