@@ -1,6 +1,8 @@
 cmake_minimum_required( VERSION 3.10 )
 PROJECT( Assimp )
 
+cmake_policy(SET CMP0077 NEW)
+
 # Define here the needed parameters
 set (ASSIMP_VERSION_MAJOR 3)
 set (ASSIMP_VERSION_MINOR 1)
