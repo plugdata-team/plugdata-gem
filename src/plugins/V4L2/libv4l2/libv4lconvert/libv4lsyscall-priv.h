@@ -36,7 +36,7 @@
 
 #ifdef linux
 #include <sys/time.h>
-#include <syscall.h>
+#include <sys/syscall.h>
 #include <linux/types.h>
 #include <linux/ioctl.h>
 /* On 32 bits archs we always use mmap2, on 64 bits archs there is no mmap2 */
@@ -71,7 +71,8 @@ typedef off_t __off_t;
 #undef SYS_MMAP
 #undef SYS_MUNMAP
 
-#define CONFIG_SYS_WRAPPER 1
+#define SYS_open	2 // Why isn't this defined??
+
 #ifndef CONFIG_SYS_WRAPPER
 
 #define SYS_OPEN(file, oflag, mode) \
