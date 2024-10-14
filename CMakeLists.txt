@@ -1357,7 +1357,7 @@ target_sources(Gem-plugins PRIVATE
     ${GEM_SOURCE_PATH}/plugins/VFW/videoVFW.cpp
 )
 else()
-
+target_include_directories(Gem-plugins PRIVATE ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/include)
 target_sources(Gem-plugins PRIVATE
     ${GEM_SOURCE_PATH}/plugins/V4L2/videoV4L2.cpp
     ${GEM_SOURCE_PATH}/plugins/V4L2/recordV4L2.cpp
