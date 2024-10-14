@@ -1333,12 +1333,16 @@ add_library(Gem-plugins STATIC
     ${GEM_SOURCE_PATH}/plugins/OBJ/model_loader.cpp
     ${GEM_SOURCE_PATH}/plugins/PNM/recordPNM.cpp
 )
-
-target_include_directories(Gem-plugins PRIVATE ${GEM_SOURCE_PATH} ${GEM_SOURCE_PATH}/plugins/ASSIMP3/assimp/include)
+target_include_directories(Gem-plugins PRIVATE ${GEM_SOURCE_PATH} ${GEM_SOURCE_PATH}/plugins/ASSIMP3/assimp/include ${FFMPEG_PATH})
 target_compile_definitions(Gem-plugins PRIVATE HAVE_CONFIG_H=1)
 
+if(FFMPEG_PATH)
+target_include_directories(Gem-plugins PRIVATE ${FFMPEG_PATH})
+target_sources(Gem-plugins PRIVATE ${GEM_SOURCE_PATH}/plugins/FFMPEG/filmFFMPEG.cpp)
+endif()
+
 if(APPLE)
-target_link_libraries(Gem-plugins PUBLIC "-framework AVFoundation -framework CoreMedia")
+target_link_libraries(Gem-plugins PUBLIC "-framework AVFoundation -framework CoreMedia -framework VideoToolbox")
 target_sources(Gem-plugins PRIVATE
     ${GEM_SOURCE_PATH}/plugins/filmAVF/filmAVF.mm
     ${GEM_SOURCE_PATH}/plugins/filmAVF/AVFMoviePlayer.m
