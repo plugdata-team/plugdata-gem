@@ -26,6 +26,8 @@
 #include "libv4lconvert-priv.h"
 #include "libv4lsyscall-priv.h"
 
+#define LIBDIR ""
+#define LIBSUBDIR ""
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
 /* Note for proper functioning of v4lconvert_enum_fmt the first entries in

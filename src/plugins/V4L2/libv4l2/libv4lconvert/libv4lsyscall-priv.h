@@ -71,6 +71,7 @@ typedef off_t __off_t;
 #undef SYS_MMAP
 #undef SYS_MUNMAP
 
+#define CONFIG_SYS_WRAPPER 1
 #ifndef CONFIG_SYS_WRAPPER
 
 #define SYS_OPEN(file, oflag, mode) \
