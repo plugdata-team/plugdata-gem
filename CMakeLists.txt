@@ -1359,8 +1359,8 @@ target_sources(Gem-plugins PRIVATE
 else()
 
 target_sources(Gem-plugins PRIVATE
-    ${GEM_SOURCE_PATH}/plugins/V4L2/videoV4L.cpp
-    ${GEM_SOURCE_PATH}/plugins/V4L2/recordV4L.cpp
+    ${GEM_SOURCE_PATH}/plugins/V4L2/videoV4L2.cpp
+    ${GEM_SOURCE_PATH}/plugins/V4L2/recordV4L2.cpp
     ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/v4l2convert.c
     ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/log.c
     ${GEM_SOURCE_PATH}/plugins/V4L2/libv4l2/libv4l2/libv4l2.c
