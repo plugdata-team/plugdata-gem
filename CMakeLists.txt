@@ -1350,7 +1350,7 @@ target_sources(Gem-plugins PRIVATE
     ${GEM_SOURCE_PATH}/plugins/videoAVF/AVFVideoGrabber.mm
 )
 elseif(MSVC)
-target_link_libraries(Gem-plugins Strmiids.lib)
+target_link_libraries(Gem-plugins PUBLIC Strmiids.lib)
 target_sources(Gem-plugins PRIVATE
     ${GEM_SOURCE_PATH}/plugins/filmDS/filmDS.cpp
     ${GEM_SOURCE_PATH}/plugins/VFW/videoVFW.cpp
