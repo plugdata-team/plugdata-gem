@@ -97,12 +97,29 @@ namespace {
       for(size_t i=0; i<4; i++) {
         int ch = channels[i];
         if(ch<0)continue;
-        t_float v = static_cast<t_float>(src[channels[ch]]) * scale;
+        t_float v = static_cast<t_float>(src[ch]) * scale;
         SETFLOAT(dest, v);
         dest++;
         count++;
       }
       src+=4;
+    }
+    return count;
+  }
+  template<typename T>
+  static inline
+  size_t data3_to_atoms(t_atom*dest, const T*src, size_t n, t_float scale, const int channels[3]) {
+    size_t count = 0;
+    while(n--) {
+      for(size_t i=0; i<3; i++) {
+        int ch = channels[i];
+        //if(ch<0)continue;
+        t_float v = static_cast<t_float>(src[ch]) * scale;
+        SETFLOAT(dest, v);
+        dest++;
+        count++;
+      }
+      src+=3;
     }
     return count;
   }
@@ -130,6 +147,7 @@ namespace {
 
     const int extrachannel = (GEM_RGBA==mode)?1:0;
     const int channelsRGBA[] = {chRed, chGreen, chBlue, extrachannel?chAlpha:-1};
+    const int channelsRGB [] = {chRed, chGreen, chBlue};
     const int channelsUYVY[] = {chU, chY0, chV, extrachannel?chY1:-1};
     if(x0 > width || (y0 > height))
       return 0;
@@ -156,10 +174,9 @@ namespace {
       }
       break;
     case GEM_RGB:
-      /* TODO: honor chRed,chGreen/chBlue */
       for(size_t r=y0; r<rows; r++) {
         const T*data = pixels + (width*r + x0) * 3;
-        size_t n = data_to_atoms(atoms, data, cols * 3, scale);
+        size_t n = data3_to_atoms(atoms, data, cols * 3, scale, channelsRGB);
         count += n;
         atoms += n;
       }

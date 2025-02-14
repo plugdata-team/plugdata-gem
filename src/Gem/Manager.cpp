@@ -542,7 +542,7 @@ void GemMan :: render(void *)
 
   currentState.set(GemState::_TIMING_TICK, tickTime);
 
-    gemMan->m_lastRenderTime = clock_getsystime();
+    gemMan->m_lastRenderTime = clock_getlogicaltime();
 
   //test to see if stereo is supported
   //XXX maybe there is a better place to do this?
@@ -833,7 +833,7 @@ void GemMan :: render(void *)
       post("unable to annihiliate %f ms", spent);
     }
     if(deltime<0.) {
-      verbose(1, "negative delay time: %f", deltime);
+      logpost(0, 3+1, "negative delay time: %f", deltime);
       deltime=1.f;
     }
   }
@@ -873,7 +873,7 @@ void GemMan :: startRendering()
     return;
   }
 
-  m_lastRenderTime = clock_getsystime();
+  m_lastRenderTime = clock_getlogicaltime();
   render(NULL);
 }
 

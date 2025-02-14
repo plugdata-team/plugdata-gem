@@ -394,6 +394,10 @@ GEM_CHECK_LIB([avifile], [aviplay],[avifile.h], [CreateIAviReadFile],,,,[movie l
 GEM_CHECK_LIB([gmerlin_avdec], [gmerlin_avdec],[gmerlin/avdec.h], [gavl_start],,,,[movie loader])
 AS_IF([test "x$have_gmerlin_avdec" = "xyes"], [
   AC_CHECK_HEADERS([gavl/log.h])
+  IEM_CHECK_FUNCS([bgav_seek_to_video_frame bgav_num_video_frames],[],[],
+                  [$GEM_LIB_GMERLIN_AVDEC_CFLAGS],
+                  [$GEM_LIB_GMERLIN_AVDEC_LIBS],
+                 )
 ])
 GEM_CHECK_LIB([mpeg], [mpeg],[mpeg.h], [OpenMPEG],,,,[movie loader])
 GEM_CHECK_LIB([libmpeg3], [mpeg3],[libmpeg3.h], [mpeg3_check_sig],,,,[movie loader])
@@ -418,15 +422,10 @@ AC_SUBST([GEM_LIB_FFMPEG_LIBS])
 AM_CONDITIONAL(HAVE_FFMPEG, [test "x${have_ffmpeg}" = "xyes"])
 
 # special function in libquicktime
-old_cflags=${CFLAGS}
-old_libs=${LIBS}
-CFLAGS="${CFLAGS} $GEM_LIB_LIBQUICKTIME_CFLAGS  $GEM_LIB_LQT_CFLAGS"
-LIBS="${LIBS}  $GEM_LIB_LIBQUICKTIME_LIBS  $GEM_LIB_LQT_LIBS"
-AC_CHECK_FUNCS([lqt_seek_video])
-AC_CHECK_FUNCS([lqt_open_write])
-CFLAGS=${old_cflags}
-LIBS=${old_libs}
-
+IEM_CHECK_FUNCS([lqt_seek_video lqt_open_write],[],[],
+                [$GEM_LIB_LIBQUICKTIME_CFLAGS $GEM_LIB_LQT_CFLAGS],
+                [$GEM_LIB_LIBQUICKTIME_LIBS $GEM_LIB_LQT_LIBS]
+               )
 #video
 GEM_CHECK_LIB([libdc1394-2], [dc1394],[dc1394/dc1394.h],   [dc1394_new],,,, [video input])
 GEM_CHECK_LIB([libdv],       [dv],[libdv/dv.h],       [dv_cleanup],,,, [video input])

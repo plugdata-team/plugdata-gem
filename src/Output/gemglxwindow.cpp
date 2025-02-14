@@ -478,7 +478,7 @@ struct gemglxwindow::PIMPL {
     }
 
     if(vi->depth<24) {
-      ::verbose(0, "Only using %d color bits", vi->depth);
+      ::logpost(0, 3+0, "Only using %d color bits", vi->depth);
     }
     if (vi->c_class != TrueColor && vi->c_class != DirectColor) {
       pd_error(parent, "TrueColor visual required for this program (got %d)",
@@ -513,6 +513,7 @@ struct gemglxwindow::PIMPL {
     swa.border_pixel = 0;
     // event_mask creates signal that window has been created
     swa.event_mask = EVENT_MASK;
+    swa.override_redirect = False;
 
     int flags;
 #ifdef HAVE_LIBXXF86VM
@@ -533,19 +534,17 @@ struct gemglxwindow::PIMPL {
       XFree(modes);
 
       swa.override_redirect = True;
-      flags=CWBorderPixel|CWColormap|CWEventMask|CWOverrideRedirect;
     } else
 #endif
     {
       // !fullscren
       if (border) {
         swa.override_redirect = False;
-        flags=CWBorderPixel|CWColormap|CWEventMask|CWOverrideRedirect;
       } else {
         swa.override_redirect = True;
-        flags=CWBorderPixel|CWColormap|CWEventMask|CWOverrideRedirect;
       }
     }
+    flags=CWBorderPixel|CWColormap|CWEventMask|CWOverrideRedirect;
     fs = fullscreen;
     win = XCreateWindow(dpy, RootWindow(dpy, vi->screen),
                         x, y, w, h,
@@ -714,6 +713,10 @@ void gemglxwindow::dispatch(void)
   XKeyEvent* kb  = (XKeyEvent*)&event;
   unsigned long devID=0;
 
+  if(m_pimpl->fs)
+    XGrabKeyboard(m_pimpl->dpy, m_pimpl->win, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+
+
   while (XCheckWindowEvent(m_pimpl->dpy,m_pimpl->win,
                            StructureNotifyMask |
                            KeyPressMask | KeyReleaseMask |
@@ -853,7 +856,7 @@ bool gemglxwindow :: create(void)
                                     m_transparent, m_fsaa);
       } catch (GemException&ex) {
         error("creation of shared glxcontext failed: %s", ex.what());
-        verbose(0, "continuing at your own risk!");
+        logpost(0, 3+0, "continuing at your own risk!");
       }
       if(!sharedPimpl->gemcontext) {
         try {
@@ -962,21 +965,21 @@ void gemglxwindow :: destroy(void)
       XUnmapWindow      (m_pimpl->dpy, m_pimpl->win);
       err=XDestroyWindow(m_pimpl->dpy, m_pimpl->win);
       if(err) {
-        verbose(1, "XDestroyWindow returned %d", err);
+        logpost(0, 3+1, "XDestroyWindow returned %d", err);
       }
     }
 
     if (m_pimpl->cmap) {
       err=XFreeColormap(m_pimpl->dpy, m_pimpl->cmap);
       if(err) {
-        verbose(1, "XFreeColormap returned %d", err);
+        logpost(0, 3+1, "XFreeColormap returned %d", err);
       }
     }
 
     XFlush( m_pimpl->dpy );
     err=XCloseDisplay(m_pimpl->dpy); /* this crashes if no window is there */
     if(err) {
-      verbose(1, "XCloseDisplay returned %d", err);
+      logpost(0, 3+1, "XCloseDisplay returned %d", err);
     }
   }
   m_pimpl->dpy = NULL;

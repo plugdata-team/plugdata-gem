@@ -66,7 +66,7 @@ filmGMERLIN :: filmGMERLIN(void) :
   m_gconverter(NULL),
   m_fps(0.), m_fps_num(1), m_fps_denum(1),
   m_next_timestamp(0),
-#ifdef USE_FRAMETABLE
+#if USE_FRAMETABLE
   m_frametable(NULL),
 #endif
   m_doConvert(false)
@@ -93,7 +93,7 @@ void filmGMERLIN :: close(void)
     bgav_close(m_file);
   }
   m_file=NULL;
-#ifdef USE_FRAMETABLE
+#if USE_FRAMETABLE
   if(m_frametable) {
     gavl_frame_table_destroy(m_frametable);
   }
@@ -112,13 +112,13 @@ void filmGMERLIN::log(gavl_log_level_t level, const char *log_domain,
 {
   switch(level) {
   case GAVL_LOG_DEBUG:
-    verbose(1, "[GEM:filmGMERLIN:%s] %s", log_domain, message);
+    logpost(0, 3+1, "[GEM:filmGMERLIN:%s] %s", log_domain, message);
     break;
   case GAVL_LOG_INFO:
-    verbose(0, "[GEM:filmGMERLIN:%s] %s", log_domain, message);
+    logpost(0, 3+0, "[GEM:filmGMERLIN:%s] %s", log_domain, message);
     break;
   case GAVL_LOG_WARNING:
-    verbose(0, "[GEM:filmGMERLIN:%s] %s", log_domain, message);
+    logpost(0, 3+0, "[GEM:filmGMERLIN:%s] %s", log_domain, message);
     break;
   case GAVL_LOG_ERROR:
     pd_error(0, "[GEM:filmGMERLIN:%s!] %s", log_domain, message);
@@ -199,23 +199,23 @@ bool filmGMERLIN :: open(const std::string&sfilename,
 
   if(!strncmp(filename, "vcd://", 6)) {
     if(!bgav_open_vcd(m_file, filename + 5)) {
-      verbose(0, "[GEM:filmGMERLIN] Could not open VCD Device %s",
+      logpost(0, 3+0, "[GEM:filmGMERLIN] Could not open VCD Device %s",
               filename + 5);
       return false;
     }
   } else if(!strncmp(filename, "dvd://", 6)) {
     if(!bgav_open_dvd(m_file, filename + 5)) {
-      verbose(0, "[GEM:filmGMERLIN] Could not open DVD Device %s", filename + 5);
+      logpost(0, 3+0, "[GEM:filmGMERLIN] Could not open DVD Device %s", filename + 5);
       return false;
     }
   } else if(!strncmp(filename, "dvb://", 6)) {
     if(!bgav_open_dvb(m_file, filename + 6)) {
-      verbose(0, "[GEM:filmGMERLIN] Could not open DVB Device %s", filename + 6);
+      logpost(0, 3+0, "[GEM:filmGMERLIN] Could not open DVB Device %s", filename + 6);
       return false;
     }
   } else {
     if(!bgav_open(m_file, filename)) {
-      verbose(0, "[GEM:filmGMERLIN] Could not open file %s", filename);
+      logpost(0, 3+0, "[GEM:filmGMERLIN] Could not open file %s", filename);
       close();
 
       return false;
@@ -223,9 +223,9 @@ bool filmGMERLIN :: open(const std::string&sfilename,
   }
   if(bgav_is_redirector(m_file)) {
     int num_urls=bgav_redirector_get_num_urls(m_file);
-    verbose(1, "[GEM:filmGMERLIN] Found redirector:");
+    logpost(0, 3+1, "[GEM:filmGMERLIN] Found redirector:");
     for(int i = 0; i < num_urls; i++) {
-      verbose(1, "[GEM:filmGMERLIN] #%d: '%s' -> %s", i,
+      logpost(0, 3+1, "[GEM:filmGMERLIN] #%d: '%s' -> %s", i,
               bgav_redirector_get_name(m_file, i), bgav_redirector_get_url(m_file, i));
     }
     for(int i = 0; i < num_urls; i++) {
@@ -249,7 +249,7 @@ bool filmGMERLIN :: open(const std::string&sfilename,
   if(numvstreams) {
     bgav_select_track(m_file, m_track);
   } else {
-    verbose(1,
+    logpost(0, 3+1,
             "[GEM:filmGMERLIN] track %d does not contain a video-stream: skipping",
             m_track);
   }
@@ -312,7 +312,8 @@ bool filmGMERLIN :: open(const std::string&sfilename,
   m_fps_denum=gformat->frame_duration;
 
   m_numFrames=-1;
-#ifdef USE_FRAMETABLE
+
+#if USE_FRAMETABLE
   m_frametable=bgav_get_frame_table(m_file, m_track);
   if(m_frametable) {
     m_numFrames=gavl_frame_table_num_frames (m_frametable);
@@ -377,11 +378,11 @@ film::errCode filmGMERLIN :: changeImage(int imgNum, int trackNum)
                m_numTracks);
     } else {
       int numvstreams=bgav_num_video_streams (m_file, m_track);
-      verbose(1, "[GEM:filmGMERLIN] track %d contains %d video streams", m_track,
+      logpost(0, 3+1, "[GEM:filmGMERLIN] track %d contains %d video streams", m_track,
               numvstreams);
       if(numvstreams) {
         bgav_select_track(m_file, m_track);
-#ifdef USE_FRAMETABLE
+#if USE_FRAMETABLE
         if(m_frametable) {
           gavl_frame_table_destroy(m_frametable);
           m_frametable=bgav_get_frame_table(m_file, m_track);
@@ -400,7 +401,11 @@ film::errCode filmGMERLIN :: changeImage(int imgNum, int trackNum)
 
   if(bgav_can_seek(m_file)) {
     if(0) {
-#ifdef USE_FRAMETABLE
+#if HAVE_BGAV_SEEK_TO_VIDEO_FRAME
+    } else if (1) {
+      bgav_seek_to_video_frame(m_file, m_track, imgNum);
+      return film::SUCCESS;
+#elif USE_FRAMETABLE
     } else if(m_frametable) {
       //  no assumptions about fixed framerate
       int64_t seekpos = gavl_frame_table_frame_to_time(m_frametable, imgNum,

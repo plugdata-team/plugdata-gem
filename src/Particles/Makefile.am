@@ -51,12 +51,14 @@ libParticles_la_SOURCES=  \
     part_gravity.h \
     part_head.cpp \
     part_head.h \
-    part_info.cpp \
-    part_info.h \
+    part_information.cpp \
+    part_information.h \
     part_killold.cpp \
     part_killold.h \
     part_killslow.cpp \
     part_killslow.h \
+    part_move.cpp \
+    part_move.h \
     part_orbitpoint.cpp \
     part_orbitpoint.h \
     part_render.cpp \
