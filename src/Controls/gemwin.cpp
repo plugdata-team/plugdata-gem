@@ -33,6 +33,7 @@
 #include "Gem/Manager.h"
 #include "Gem/Event.h"
 #include <functional>
+#include <vector>
 
 CPPEXTERN_NEW_WITH_ONE_ARG(gemwin, t_floatarg, A_DEFFLOAT);
 
