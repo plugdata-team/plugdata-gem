@@ -113,9 +113,21 @@ private:
   void          fsaaMess(int value);
   t_outlet      *m_FrameRate;
 
-
+public:
+  
+  void   mouseMotion(int x, int y);
+  void   mouseButton(int which, int state, int x, int y);
+  void   mouseWheel(int axis, int value);
+  
 private:
-
+  
+  void info(std::vector<t_atom>);
+  void info(t_symbol*s, int, t_atom*);
+  void info(const std::string&);
+  void info(const std::string&, t_float);
+  void info(const std::string&, int i);
+  void info(const std::string&, const std::string&);
+  
   //////////
   // Static member functions
   static void   titleMessCallback(void *data, t_symbol* s);

@@ -31,6 +31,7 @@
 
 #include "Utils/GemMath.h"
 #include "Gem/Manager.h"
+#include "Gem/Event.h"
 #include <functional>
 
 CPPEXTERN_NEW_WITH_ONE_ARG(gemwin, t_floatarg, A_DEFFLOAT);
@@ -45,6 +46,24 @@ void GemCallOnMessageThread(std::function<void()> callback);
 // Constructor
 //
 /////////////////////////////////////////////////////////
+///
+
+static void mouseMotionCallback(int x, int y, void *data)
+{
+  (reinterpret_cast<gemwin*>(data))->mouseMotion(x, y);
+}
+
+static void mouseButtonCallback(int which, int state, int x, int y,
+                                     void *data)
+{
+  (reinterpret_cast<gemwin*>(data))->mouseButton(which, state, x, y);
+}
+
+static void mouseWheelCallback(int axis, int value, void *data)
+{
+  (reinterpret_cast<gemwin*>(data))->mouseWheel(axis, value);
+}
+
 gemwin :: gemwin(t_floatarg framespersecond)
   : m_FrameRate(NULL)
 {
@@ -59,6 +78,10 @@ gemwin :: gemwin(t_floatarg framespersecond)
       GemMan::get()->frameRate(framespersecond);
     }
   }
+  
+  //setMotionCallback(&mouseMotionCallback, this);
+  //setButtonCallback(&mouseButtonCallback, this);
+  //setWheelCallback(&mouseWheelCallback, this);
 
   m_FrameRate       = outlet_new(this->x_obj, 0);
 }
@@ -72,6 +95,66 @@ gemwin :: ~gemwin()
   if(!GemMan::get()->stillHaveGemWin(false)) {
     GemMan::get()->destroyWindow();
   }
+}
+
+void gemwin :: info(t_symbol*s, int argc, t_atom*argv)
+{
+  outlet_anything(m_FrameRate, s, argc, argv);
+}
+void gemwin :: info(const std::string& s)
+{
+  info(gensym(s.c_str()), 0, 0);
+}
+void gemwin :: info(const std::string& s, int i)
+{
+  info(s, (t_float)i);
+}
+
+void gemwin :: info(const std::string& s, t_float value)
+{
+  t_atom atom;
+  SETFLOAT(&atom, value);
+  info(gensym(s.c_str()), 1, &atom);
+}
+void gemwin :: info(const std::string& s, const std::string& value)
+{
+  t_atom atom;
+  SETSYMBOL(&atom, gensym(value.c_str()));
+  info(gensym(s.c_str()), 1, &atom);
+}
+
+void gemwin :: mouseMotion(int x, int y)
+{
+  t_atom ap[4];
+  SETFLOAT (ap+0, 0);
+  SETSYMBOL(ap+1, gensym("motion"));
+  SETFLOAT (ap+2, x);
+  SETFLOAT (ap+3, y);
+  info(gensym("mouse"), 4, ap);
+}
+
+/////////////////////////////////////////////////////////
+// mouseButton
+//
+/////////////////////////////////////////////////////////
+void gemwin :: mouseButton(int which, int state, int x, int y)
+{
+  t_atom ap[4];
+  SETFLOAT (ap+0, 0);
+  SETSYMBOL(ap+1, gensym("button"));
+  SETFLOAT (ap+2, which);
+  SETFLOAT (ap+3, state);
+
+  info(gensym("mouse"), 4, ap);
+}
+
+/////////////////////////////////////////////////////////
+// mouseButton
+//
+/////////////////////////////////////////////////////////
+void gemwin :: mouseWheel(int axis, int value)
+{
+  
 }
 
 /////////////////////////////////////////////////////////
@@ -122,6 +205,7 @@ void gemwin :: renderMess()
 void gemwin :: titleMess(t_symbol* s)
 {
   GemMan::get()->m_title = s->s_name;
+  titleGemWindow(GemMan::get()->getWindowInfo(), s->s_name);
 }
 /////////////////////////////////////////////////////////
 // createMess

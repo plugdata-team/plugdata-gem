@@ -59,6 +59,10 @@ GEM_EXTERN extern void gemWinResize(WindowInfo& info, int width, int height);
 GEM_EXTERN extern int topmostGemWindow(WindowInfo &info, int state);
 
 //////////
+// Update window title
+GEM_EXTERN extern int titleGemWindow(WindowInfo &info, const char* title);
+
+//////////
 // swap the buffers (gets called in double-buffered mode)
 GEM_EXTERN extern void gemWinSwapBuffers(WindowInfo &nfo);
 /////////

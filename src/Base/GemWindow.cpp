@@ -312,9 +312,6 @@ void GemWindow :: bang(void)
   outlet_bang(m_pimpl->infoOut);
 }
 
-
-
-
 /* mouse movement */
 void GemWindow::motion(int devId, int x, int y)
 {

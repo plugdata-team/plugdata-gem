@@ -125,7 +125,6 @@ void GemMan :: checkOpenGLExtensions(void)
 void GemMan :: createContext(const char* disp)
 {
   // can we only have one context?
-
   t_atom*a=gem::Settings::get("window.singlecontext"); // find a better name!
   if(a) {
     int i=atom_getint(a);
