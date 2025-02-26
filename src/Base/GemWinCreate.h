@@ -60,7 +60,7 @@ GEM_EXTERN extern int topmostGemWindow(WindowInfo &info, int state);
 
 //////////
 // Update window title
-GEM_EXTERN extern int titleGemWindow(WindowInfo &info, const char* title);
+GEM_EXTERN extern void titleGemWindow(WindowInfo &info, const char* title);
 
 //////////
 // swap the buffers (gets called in double-buffered mode)
