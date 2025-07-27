@@ -37,7 +37,7 @@ very fast.;
 #X floatatom 149 547 5 0 0 0 - - -;
 #X msg 393 48 open ../data/homer.avi;
 #X msg 386 111 open ../data/anim-1.mov;
-#X msg 391 156 open ../data/alea.mpg;
+#X msg 391 156 open ../data/alea.mp4;
 #X text 247 502 you have to texture the movie by hand;
 #X text 256 466 manipulate the movie (expensive!);
 #X text 26 10 load \, play and manipulate digital videos;

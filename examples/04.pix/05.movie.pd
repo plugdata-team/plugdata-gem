@@ -28,7 +28,7 @@ for this;
 #X text 449 13 Win32;
 #X text 461 73 linux;
 #X msg 297 56 open ../data/anim-1.mov;
-#X msg 307 87 open ../data/alea.mpg;
+#X msg 307 87 open ../data/alea.mp4;
 #X text 8 264 notice: you don't need pix_texture;
 #X text 406 131 play the movie !;
 #X obj 224 335 i;

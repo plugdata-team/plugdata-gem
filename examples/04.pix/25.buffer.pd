@@ -20,7 +20,7 @@
 #X obj 398 257 bng 15 250 50 0 empty empty empty 0 -6 0 8 -262144 -1
 -1;
 #X msg 477 240 ../data/anim-1.mov;
-#X msg 477 260 ../data/alea.mpg;
+#X msg 477 260 ../data/alea.mp4;
 #X msg 478 216 ../data/homer.avi;
 #X obj 477 282 symbol;
 #X floatatom 155 321 5 0 0 0 - - -;
