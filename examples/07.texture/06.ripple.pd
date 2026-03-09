@@ -30,7 +30,7 @@
 #X obj 174 278 translateXYZ 0 0 0;
 #X obj 174 212 pix_texture;
 #X obj 241 172 t f;
-#X msg 384 124 open ../data/alea.mpg;
+#X msg 384 124 open ../data/alea.mp4;
 #X obj 174 366 rotateXYZ 0 0 0;
 #X obj 174 517 ripple;
 #X msg 384 104 open ../data/homer.avi;
