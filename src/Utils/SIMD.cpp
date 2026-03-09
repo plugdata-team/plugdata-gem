@@ -3,6 +3,9 @@
 #include "Gem/RTE.h"
 #include <string>
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
 
 int GemSIMD::cpuid = GEM_SIMD_NONE;
 int GemSIMD::realcpuid = GEM_SIMD_NONE;
@@ -110,36 +113,18 @@ int GemSIMD :: simd_runtime_check(void)
   unsigned int eax=0, edx=0;
 
 #if defined(_WIN32) && defined(_MSC_VER)
-  unsigned int    feature;
-#define _MMX_FEATURE_BIT        0x00800000
-  /* on w32 we assume that there is only x86 */
-  /* _MSC_VER and __GNUC__ are different in how you inline assembler */
-  __asm {
-    push ebx
-    push ecx
-    push edx
-    xor     eax,eax
-    cpuid
+  int cpuinfo[4]; // [eax, ebx, ecx, edx]
+    __cpuid(cpuinfo, 1);
+    edx = (unsigned int)cpuinfo[3];
 
-    mov   eax, 1
-    cpuid
-
-    mov      feature,edx
-
-    pop     ebx
-    pop             ecx
-    pop     edx
-  }
-
-  if(feature & 1<<26) {
-    realcpuid=GEM_SIMD_SSE2;
-    return realcpuid;
-  }
-  if(feature & 1<<23) {
-    realcpuid=GEM_SIMD_MMX;
-    return realcpuid;
-  }
-
+    if(edx & 1<<26) {
+      realcpuid=GEM_SIMD_SSE2;
+      return realcpuid;
+    }
+    if(edx & 1<<23) {
+      realcpuid=GEM_SIMD_MMX;
+      return realcpuid;
+    }
 #elif defined (__GNUC__)
 
 # if defined (__POWERPC__)

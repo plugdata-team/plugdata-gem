@@ -23,6 +23,7 @@
 
 #include <set>
 #include <sstream>
+#include <mutex>
 
 namespace
 {
@@ -117,13 +118,16 @@ public:
   }
 
   std::vector<std::vector<t_atom> >qQueue;
+  std::mutex qLock;
   t_clock*qClock;
 
   void queue(std::vector<t_atom>alist)
   {
+    qLock.lock();
     if(alist.size()>0) {
       qQueue.push_back(alist);
     }
+    qLock.unlock();
 
     requeue();
   }
@@ -166,11 +170,13 @@ public:
   }
   void dequeue(void)
   {
+    qLock.lock();
     unsigned int i=0;
     for(i=0; i<qQueue.size(); i++) {
       sendInfo(qQueue[i]);
     }
     qQueue.clear();
+    qLock.unlock();
   }
 
   /* qClock callback for dequeueing */

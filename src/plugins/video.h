@@ -220,6 +220,13 @@ public:
  * \param id a symbolic (const char*) ID for the given class
  * \param videoClass a class derived from "video"
  */
-#define REGISTER_VIDEOFACTORY(id, TYP) static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::video> fac_video_ ## TYP (id)
+#define REGISTER_VIDEOFACTORY(id, TYP)\
+static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::video>* fac_video_ ## TYP; \
+extern "C" {\
+GEM_EXPORT void setup_ ## TYP () {\
+fac_video_ ## TYP = new gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::video>(id); \
+}\
+}
+
 
 #endif  // for header file

@@ -14,6 +14,11 @@ LOG
 #define _INCLUDE__GEM_BASE_CPPEXTERN_H_
 
 #include "Gem/ExportDef.h"
+#if defined(_MSC_VER)
+#  include <stddef.h>
+   typedef ptrdiff_t ssize_t;
+#  define __builtin_bswap32 _byteswap_ulong
+#endif
 
 #include "Gem/RTE.h"
 #include "Gem/Version.h"
@@ -203,8 +208,7 @@ static void obj_setupCallback(t_class *classPtr);
 /////////////////////////////////////////////////
 #define CPPEXTERN_NEW_NAMED(NEW_CLASS, CLASSNAME)                       \
   REAL_NEW__CLASS(NEW_CLASS);                                           \
-  const int typespecs[] = {};                                           \
-  REAL_NEW__CREATE0(NEW_CLASS, typespecs);                              \
+  REAL_NEW__CREATE0_EMPTY(NEW_CLASS);                                   \
   REAL_NEW__CREATE1(NEW_CLASS);                                         \
   REAL_NEW__SETOBJ(new NEW_CLASS());                                    \
   REAL_NEW__CREATE2(NEW_CLASS);                                         \
@@ -217,8 +221,7 @@ static void obj_setupCallback(t_class *classPtr);
 /////////////////////////////////////////////////
 #define CPPEXTERN_NEW_NAMED_WITH_GIMME(NEW_CLASS, CLASSNAME)            \
   REAL_NEW__CLASS(NEW_CLASS);                                           \
-  const int typespecs[] = {};                                           \
-  REAL_NEW__CREATE0(NEW_CLASS, typespecs);                               \
+  REAL_NEW__CREATE0_EMPTY(NEW_CLASS);                                   \
   REAL_NEW__CREATE1(NEW_CLASS);                                         \
   REAL_NEW__SETOBJ(new NEW_CLASS(argc,argv));                           \
   REAL_NEW__CREATE2(NEW_CLASS);                                         \
@@ -319,6 +322,11 @@ static void obj_setupCallback(t_class *classPtr);
 #define REAL_NEW__CLASS(NEW_CLASS)                                      \
   STATIC_CLASS t_class * NEW_CLASS ## _class;                           \
   static void* create_ ## NEW_CLASS (t_symbol*s, int argc, t_atom*argv) { \
+
+#define REAL_NEW__CREATE0_EMPTY(NEW_CLASS)                              \
+  try {                                                                 \
+    gem::CPPExtern_proxy proxy(NEW_CLASS ## _class, #NEW_CLASS, s, argc, argv, 0, nullptr, GEM_ARGMESSAGES)
+
 
 #define REAL_NEW__CREATE0(NEW_CLASS, types)                             \
   const unsigned int num##types = sizeof(types)/sizeof(*types);         \

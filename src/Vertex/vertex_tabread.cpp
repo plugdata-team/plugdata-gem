@@ -64,16 +64,16 @@ static t_float* checkarray(t_symbol* s, int &length)
   if (!(a = reinterpret_cast<t_garray*>(pd_findbyclass(s,
                                         garray_class))))    {
     if (*s->s_name) {
-      error("vertex_tabread: %s: no such array", s->s_name);
+       pd_error(NULL, "vertex_tabread: %s: no such array", s->s_name);
     }
     return 0;
   } else if (!garray_getfloatwords(a, &length, &fp))   {
-    error("%s: bad template for vertex_tabread", s->s_name);
+     pd_error(NULL, "%s: bad template for vertex_tabread", s->s_name);
     return 0;
   }
 
   if (length==0) {
-    error("vertex_tabread: table %s is zero-lengthed", s->s_name);
+     pd_error(NULL, "vertex_tabread: table %s is zero-lengthed", s->s_name);
     return 0;
   }
   if(!fp) {

@@ -13,7 +13,6 @@ LOG
 #ifndef _INCLUDE__GEM_BASE_GEMWINDOW_H_
 #define _INCLUDE__GEM_BASE_GEMWINDOW_H_
 
-#include "Gem/GemGL.h"
 #include "Base/CPPExtern.h"
 
 #include <vector>

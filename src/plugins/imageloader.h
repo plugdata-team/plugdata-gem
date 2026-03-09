@@ -80,6 +80,15 @@ public:
  * \param id a symbolic (const char*) ID for the given class
  * \param imageloaderClass a class derived from "imageloader"
  */
-#define REGISTER_IMAGELOADERFACTORY(id, TYP) static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::imageloader> fac_imageloader_ ## TYP (id)
+#define REGISTER_IMAGELOADERFACTORY(id, TYP)\
+static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::imageloader>* fac_imageloader_ ## TYP; \
+extern "C" {\
+GEM_EXPORT void setup_ ## TYP () {\
+fac_imageloader_ ## TYP = new gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::imageloader>(id); \
+}\
+}
+
+
+
 
 #endif  // for header file

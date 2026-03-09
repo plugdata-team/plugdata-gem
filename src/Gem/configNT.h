@@ -7,3 +7,7 @@
  *
  * this file is empty as all the settings are done via property pages
  */
+#define HAVE_LIBFTGL 1
+
+#define SIZEOF_VOID_P 4
+#define SIZEOF_UNSIGNED_INT 4

@@ -50,4 +50,18 @@
 # define HAVE_PTHREADS
 #endif
 
+
+#ifdef ENABLE_WARNING
+#if defined(_MSC_VER)
+    #define COMPILER_WARNING(msg) __pragma(message(msg))
+#elif defined(__clang__) || defined(__GNUC__)
+    #define DO_PRAGMA(x)          _Pragma(#x)
+    #define COMPILER_WARNING(msg) DO_PRAGMA(GCC warning msg)
+#else
+    #define COMPILER_WARNING(msg)
+#endif
+#else
+    #define COMPILER_WARNING(msg)
+#endif
+
 #endif /* HAVE_BASE_GEMCONFIG_H_ */

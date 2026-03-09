@@ -129,7 +129,7 @@ bool GLStack::push(enum GemStackId id)
     } else
       glPushMatrix();
     data->stackDepth[id]++;
-    if(gem::utils::gl::glReportError(NULL, "push "))post("stack=%d", id);
+    //if(gem::utils::gl::glReportError(NULL, "push "))post("stack=%d", id);
     return true;
   }
 
@@ -170,7 +170,7 @@ bool GLStack::pop(enum GemStackId id)
       glActiveTexture(curUnit);
     } else
       glPopMatrix();
-    if(gem::utils::gl::glReportError(NULL, "pop "))post("stack=%d", id);
+    //if(gem::utils::gl::glReportError(NULL, "pop "))post("stack=%d", id);
     return true;
   }
   return false;

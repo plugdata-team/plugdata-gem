@@ -101,7 +101,7 @@ void gemwin :: bangMess()
       GemMan::render(NULL);
     }
   } else {
-    error("no window");
+   error("no window");
   }
 }
 
@@ -126,7 +126,7 @@ void gemwin :: renderMess()
   if (GemMan::getRenderState()) {
     GemMan::render(NULL);
   } else {
-    error("not in render mode");
+   error("not in render mode");
   }
 }
 /////////////////////////////////////////////////////////
@@ -155,13 +155,13 @@ void gemwin :: createMess(t_symbol* s)
   if ( !GemMan::windowExists() )  {
     GemMan::createContext(disp);
     if ( !GemMan::createWindow(disp) )  {
-      error("no window made");
+     error("no window made");
       return;
     }
     GemMan::swapBuffers();
     GemMan::swapBuffers();
   } else {
-    error("window already made");
+   error("window already made");
   }
 }
 
@@ -186,11 +186,11 @@ void gemwin :: bufferMess(int buf)
 void gemwin :: stereoMess(int mode)
 {
   if (mode<0) {
-    error("stereo-mode must not be %d", mode);
+   error("stereo-mode must not be %d", mode);
     return;
   }
   if (mode>1) {
-    error("only stereo-modes 1/0 are allowed!!!");
+   error("only stereo-modes 1/0 are allowed!!!");
     return;
   }
 

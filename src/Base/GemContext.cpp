@@ -15,6 +15,7 @@
 #include "GemContext.h"
 #include "Gem/Manager.h"
 #include "Gem/Exception.h"
+#include "Gem/GemConfig.h"
 
 #include "Gem/RTE.h"
 
@@ -22,7 +23,7 @@
 #include <set>
 
 #ifdef GEM_MULTICONTEXT
-# warning multicontext rendering currently under development
+COMPILER_WARNING("multicontext rendering currently under development")
 #endif /* GEM_MULTICONTEXT */
 
 using namespace gem;

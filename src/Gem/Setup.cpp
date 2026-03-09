@@ -102,6 +102,10 @@ namespace
 static bool checkVersion(const char*dirname, const char*filename,
                          int flags)
 {
+#ifdef PLUGDATA
+  return true;
+#endif
+
   t_binbuf*bb=binbuf_new();
   if(binbuf_read(bb, const_cast<char*>(filename), const_cast<char*>(dirname),
                  flags)) {

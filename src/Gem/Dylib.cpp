@@ -15,10 +15,6 @@
 // a wrapper for calling Pd's sys_register_loader()
 //
 /////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-# pragma warning( disable: 4091)
-# define snprintf _snprintf
-#endif /* _MSC_VER */
 
 #include "Dylib.h"
 #include "Files.h"

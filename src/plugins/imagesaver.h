@@ -134,6 +134,12 @@ public:
 //! \param id a symbolic (const char*) ID for the given class
 //! \param imagesaverClass a class derived from "imagesaver"
 //!
-#define REGISTER_IMAGESAVERFACTORY(id, TYP) static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::imagesaver> fac_imagesaver_ ## TYP (id)
+#define REGISTER_IMAGESAVERFACTORY(id, TYP)\
+static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::imagesaver>* fac_imagesaver_ ## TYP; \
+extern "C" {\
+GEM_EXPORT void setup_ ## TYP () {\
+fac_imagesaver_ ## TYP = new gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::imagesaver>(id); \
+}\
+}
 
 #endif  // for header file

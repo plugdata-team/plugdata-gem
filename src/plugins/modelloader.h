@@ -14,6 +14,7 @@ WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 #ifndef _INCLUDE__GEM_PLUGINS_MODELLOADER_H_
 #define _INCLUDE__GEM_PLUGINS_MODELLOADER_H_
 
+#include "Gem/GemConfig.h"
 #include "Gem/ExportDef.h"
 #include "Gem/VertexBuffer.h"
 
@@ -170,7 +171,7 @@ public:
 
 namespace modelutils
 {
-#warning remove obsolete genTexture_Linear
+COMPILER_WARNING("remove obsolete genTexture_Linear")
 static void genTexture_Linear(std::vector<float>& tex,
                               const std::vector<float>& pos,
                               const float scale[2])
@@ -182,7 +183,7 @@ static void genTexture_Linear(std::vector<float>& tex,
     tex.push_back(scale[1] * (pos[3*i+2] + 1.0) / 2.0);
   }
 }
-#warning remove obsolete genTexture_Spheremap
+COMPILER_WARNING("remove obsolete genTexture_Spheremap")
 static void genTexture_Spheremap(std::vector<float>& tex,
                                  const std::vector<float>& norm,
                                  const float scale[2])
@@ -219,7 +220,7 @@ static void genTexture_Spheremap(std::vector<float>& tex,
   }
 }
   /* perform some openGL calls so that the given material takes effect */
-#warning remove obsolete render_material
+//#warning remove obsolete render_material
   void render_material(const gem::plugins::modelloader::material&material);
 }; // namespace ..::modelutils
 
@@ -234,6 +235,12 @@ static void genTexture_Spheremap(std::vector<float>& tex,
  * \param id a symbolic (const char*) ID for the given class
  * \param modelloaderClass a class derived from "modelloader"
  */
-#define REGISTER_MODELLOADERFACTORY(id, TYP) static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::modelloader> fac_modelloader_ ## TYP (id)
 
+#define REGISTER_MODELLOADERFACTORY(id, TYP) \
+static gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::modelloader>* fac_modelloader_ ## TYP; \
+extern "C" {\
+GEM_EXPORT void setup_ ## TYP () {\
+fac_modelloader_ ## TYP = new gem::PluginFactoryRegistrar::registrar<TYP, gem::plugins::modelloader>(id); \
+}\
+}
 #endif  // for header file

@@ -76,7 +76,7 @@ const char* gem::utils::gl::glErrorString(GLenum err) {
 #ifdef GEM_HAVE_GLU
   return (const char*)gluErrorString(err);
 #else
-  return _gemglErrorString(err));
+  return _gemglErrorString(err);
 #endif
 }
 
@@ -106,24 +106,24 @@ GLenum gem::utils::gl::glReportError (bool verbose)
 
 GLenum gem::utils::gl::glReportError (struct CPPExtern*parent, const char*prefix)
 {
-  GLenum errNum, finalErrNum=0;
+  GLenum errNum, finalErrNum = 0;
   if (!parent)
-    return glReportError(true);
+      return glReportError(true);
 
-  while ((errNum = glGetError()) != GL_NO_ERROR) {
-    finalErrNum = errNum;
-    const char*errStr = glErrorString(errNum);
-    if(errStr)
-      parent->error("%s%s [%d]", prefix?prefix:"", errStr, errNum);
-    else
-      parent->error("%sopenGL error 0x%X", prefix?prefix:"", errNum);
+  int maxErrors = 100; // guard against no-context infinite loop
+  while (maxErrors-- > 0 && (errNum = glGetError()) != GL_NO_ERROR) {
+      finalErrNum = errNum;
+      char const* errStr = glErrorString(errNum);
+      if (errStr)
+          parent->error("%s%s [%d]", prefix ? prefix : "", errStr, errNum);
+      else
+          parent->error("%sopenGL error 0x%X", prefix ? prefix : "", errNum);
   }
-
   return finalErrNum;
 }
 
 
-#warning TODO: use gem::ContextData
+COMPILER_WARNING("TODO: use gem::ContextData")
 using namespace gem::utils::gl;
 struct gem::utils::gl::GLuintMap::PIMPL {
   std::map<float, gem::ContextData<GLuint> >idmap;

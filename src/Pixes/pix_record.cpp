@@ -339,9 +339,7 @@ void pix_record :: codecMess(t_atom *argv)
     return;
   }
 
-#ifdef __GNUC__
-#warning codecMess is a mess
-#endif
+COMPILER_WARNING("codecMess is a mess")
   /*
    * allow setting of codec without handle
    */
