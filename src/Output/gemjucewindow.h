@@ -38,6 +38,7 @@ class GEM_EXPORT gemjucewindow : public GemWindow
         t_pdinstance* m_pdInstance = nullptr;
         juce::Point<int> m_lastMousePos;
         juce::Array<juce::KeyPress> m_heldKeys;
+        bool m_shiftDown = false, m_ctrlDown = false, m_altDown = false, m_cmdDown = false;
         float m_lastScale = 1.0f;
         std::atomic<int> m_lastW, m_lastH;;
         gemjucewindow* m_owner;
@@ -249,25 +250,126 @@ class GEM_EXPORT gemjucewindow : public GemWindow
             sys_unlock();
         }
 
+        void convertKeyCode(int& keynum, std::string& keysym) const
+        {
+            if (keynum == juce::KeyPress::backspaceKey)
+                keysym = "BackSpace", keynum = 259;
+            else if (keynum == juce::KeyPress::tabKey)
+                keynum = 258, keysym = "Tab";
+            else if (keynum == juce::KeyPress::returnKey)
+                keynum = 257, keysym = "Return";
+            else if (keynum == juce::KeyPress::escapeKey)
+                keynum = 256, keysym = "Escape";
+            else if (keynum == juce::KeyPress::spaceKey)
+                keynum = 32, keysym = "Space";
+            else if (keynum == juce::KeyPress::deleteKey)
+                keynum = 261, keysym = "Delete";
+            else if (keynum == juce::KeyPress::upKey)
+                keynum = 265, keysym = "Up";
+            else if (keynum == juce::KeyPress::downKey)
+                keynum = 264, keysym = "Down";
+            else if (keynum == juce::KeyPress::leftKey)
+                keynum = 262, keysym = "Left";
+            else if (keynum == juce::KeyPress::rightKey)
+                keynum = 263, keysym = "Right";
+            else if (keynum == juce::KeyPress::homeKey)
+                keynum = 268, keysym = "Home";
+            else if (keynum == juce::KeyPress::endKey)
+                keynum = 269, keysym = "End";
+            else if (keynum == juce::KeyPress::pageUpKey)
+                keynum = 266, keysym = "Prior";
+            else if (keynum == juce::KeyPress::pageDownKey)
+                keynum = 267, keysym = "Next";
+            else if (keynum == juce::KeyPress::F1Key)
+                keynum = 290, keysym = "F1";
+            else if (keynum == juce::KeyPress::F2Key)
+                keynum = 291, keysym = "F2";
+            else if (keynum == juce::KeyPress::F3Key)
+                keynum = 292, keysym = "F3";
+            else if (keynum == juce::KeyPress::F4Key)
+                keynum = 293, keysym = "F4";
+            else if (keynum == juce::KeyPress::F5Key)
+                keynum = 294, keysym = "F5";
+            else if (keynum == juce::KeyPress::F6Key)
+                keynum = 295, keysym = "F6";
+            else if (keynum == juce::KeyPress::F7Key)
+                keynum = 296, keysym = "F7";
+            else if (keynum == juce::KeyPress::F8Key)
+                keynum = 297, keysym = "F8";
+            else if (keynum == juce::KeyPress::F9Key)
+                keynum = 298, keysym = "F9";
+            else if (keynum == juce::KeyPress::F10Key)
+                keynum = 299, keysym = "F10";
+            else if (keynum == juce::KeyPress::F11Key)
+                keynum = 300, keysym = "F11";
+            else if (keynum == juce::KeyPress::F12Key)
+                keynum = 301, keysym = "F12";
+            else if (keynum == juce::KeyPress::numberPad0)
+                keynum = 48, keysym = "0";
+            else if (keynum == juce::KeyPress::numberPad1)
+                keynum = 49, keysym = "1";
+            else if (keynum == juce::KeyPress::numberPad2)
+                keynum = 50, keysym = "2";
+            else if (keynum == juce::KeyPress::numberPad3)
+                keynum = 51, keysym = "3";
+            else if (keynum == juce::KeyPress::numberPad4)
+                keynum = 52, keysym = "4";
+            else if (keynum == juce::KeyPress::numberPad5)
+                keynum = 53, keysym = "5";
+            else if (keynum == juce::KeyPress::numberPad6)
+                keynum = 54, keysym = "6";
+            else if (keynum == juce::KeyPress::numberPad7)
+                keynum = 55, keysym = "7";
+            else if (keynum == juce::KeyPress::numberPad8)
+                keynum = 56, keysym = "8";
+            else if (keynum == juce::KeyPress::numberPad9)
+                keynum = 57, keysym = "9";
+        }
+
         bool keyPressed(const juce::KeyPress& key) override
         {
+            std::string keyDescription = key.getTextDescription().fromLastOccurrenceOf(" ", false, false).toStdString();
+            int keyNum = key.getKeyCode();
+            convertKeyCode(keyNum, keyDescription);
+
             setThis();
             sys_lock();
-            m_owner->keyCallback(key.getKeyCode(), 0, 1, 0);
+            m_owner->keyCallback(keyNum, 1, keyDescription);
             sys_unlock();
             m_heldKeys.add(key);
             return true;
         }
 
         // Poll for key-up events (~30 Hz) since JUCE has no key-release event
-        void timerCallback() override
-        {
+        void timerCallback() override {
+            auto mods = juce::ModifierKeys::getCurrentModifiers();
+
+            auto checkModifier = [&](bool& currentState, bool newState, int glfwCode, std::string name) {
+                if (newState != currentState) {
+                    currentState = newState;
+                    setThis();
+                    sys_lock();
+                    m_owner->keyCallback(glfwCode, currentState, name);
+                    sys_unlock();
+                }
+            };
+
+            auto hasFocus = hasKeyboardFocus(true);
+            checkModifier(m_shiftDown, hasFocus && mods.isShiftDown(), 340, "Shift");
+            checkModifier(m_ctrlDown,  hasFocus && mods.isCtrlDown(),  341, "Control");
+            checkModifier(m_altDown,   hasFocus && mods.isAltDown(),   342, "Alt");
+            checkModifier(m_cmdDown,   hasFocus && mods.isCommandDown(), 343, "Super");
+
             for (int i = m_heldKeys.size() - 1; i >= 0; --i) {
                 auto key = m_heldKeys[i];
                 if (!juce::KeyPress::isKeyCurrentlyDown(key.getKeyCode())) {
+                    auto keyDescription = key.getTextDescription().fromLastOccurrenceOf(" ", false, false).toStdString();
+                    auto keyNum = key.getKeyCode();
+                    convertKeyCode(keyNum, keyDescription);
+
                     setThis();
                     sys_lock();
-                    m_owner->keyCallback(key.getKeyCode(), 0, 0, 0);
+                    m_owner->keyCallback(key.getKeyCode(), 0, key.getTextDescription().toStdString());
                     sys_unlock();
                     m_heldKeys.remove(i);
                 }
@@ -358,9 +460,9 @@ public:
         m_height = height;
         if (m_window) {
             juce::MessageManager::callAsync(
-                [safe = juce::Component::SafePointer<Window>(m_window),
+                [safeWindow = juce::Component::SafePointer<Window>(m_window),
                  w = (int)width, h = (int)height] {
-                    if (auto* win = safe.getComponent()) win->setSize(w, h);
+                    if (safeWindow) safeWindow->setSize(w, h);
                 });
         }
     }
@@ -368,7 +470,11 @@ public:
     void fullscreenMess(int on) override
     {
         m_fullscreen = on;
-        if (m_window) m_window->setFullscreen(on != 0);
+
+        juce::MessageManager::callAsync(
+            [on, safeWindow = juce::Component::SafePointer<Window>(m_window)] {
+              if (safeWindow) safeWindow->setFullscreen(on != 0);
+            });
     }
 
     void offsetMess(int x, int y) override
@@ -377,8 +483,8 @@ public:
         m_yoffset = y;
         if (m_window) {
             juce::MessageManager::callAsync(
-                [safe = juce::Component::SafePointer<Window>(m_window), x, y] {
-                    if (auto* win = safe.getComponent()) win->setTopLeftPosition(x, y);
+                [safeWindow = juce::Component::SafePointer<Window>(m_window), x, y] {
+                    if (safeWindow) safeWindow->setTopLeftPosition(x, y);
                 });
         }
     }
@@ -458,8 +564,6 @@ public:
                                         : juce::MouseCursor::NoCursor);
     }
 
-    // ── Callbacks (called by Window) ─────────────────────────────────────
-
     void windowsizeCallback(int w, int h)     { dimension(w, h); }
     void framebuffersizeCallback(int w, int h) { framebuffersize(w, h); }
 
@@ -471,23 +575,9 @@ public:
 
     void windowrefreshCallback(void) { info("window", "exposed"); }
 
-    void keyCallback(int key, int /*scancode*/, int action, int /*mods*/)
+    void keyCallback(int key, int action, std::string const& name)
     {
-        juce::KeyPress kp(key);
-        std::string name = kp.getTextDescription().toStdString();
-        if (name.empty()) name = "<unknown>";
         gemjucewindow::key(0, name, key, action);
-    }
-
-    void charCallback(unsigned int character)
-    {
-        t_atom ap[4];
-        std::string sid = (character == 32) ? "Space" : std::string(1, (char)character);
-        SETFLOAT (ap+0, 0);
-        SETSYMBOL(ap+1, gensym("keyname"));
-        SETSYMBOL(ap+2, gensym(sid.c_str()));
-        SETFLOAT (ap+3, 1);
-        info(gensym("keyboard"), 4, ap);
     }
 
     void mousebuttonCallback(int button, int action, int /*mods*/)
