@@ -1,5 +1,5 @@
 /*
- // Copyright (c) 2021-2025 Timothy Schoen
+ // Copyright (c) 2026 Timothy Schoen
  // For information on usage and redistribution, and for a DISCLAIMER OF ALL
  // WARRANTIES, see the file, "LICENSE.txt," in this distribution.
  */
@@ -9,19 +9,136 @@
 #include <juce_opengl/juce_opengl.h>
 #include "../Base/GemWindow.h"
 
+#include <vector>
+#include <cstring>
 
 #define WHEELUP    3
 #define WHEELDOWN  4
 #define WHEELLEFT  5
 #define WHEELRIGHT 6
 
+
+struct GemCanvas
+{
+    // ── Singleton target ─────────────────────────────────────────────────
+    //    Only one gemcanvas can be active at a time (matches Gem's
+    //    single-window constraint).
+
+    static inline std::mutex s_mutex;
+    static inline GemCanvas* s_active = nullptr;
+
+    static GemCanvas* getActive()
+    {
+        std::lock_guard<std::mutex> lock(s_mutex);
+        return s_active;
+    }
+
+    // ── Pixel buffer (written by gemjucewindow, read by GUI wrapper) ─────
+
+    juce::CriticalSection  pixelLock;
+    std::vector<uint8_t>   pixelFront;     // read by GUI thread
+    int                    pixelW = 0;
+    int                    pixelH = 0;
+    std::atomic<bool>      frameDirty{false};
+
+    // Desired FBO dimensions — the GUI wrapper writes these when resized,
+    // and gemjucewindow reads them to know what size FBO to create.
+    std::atomic<int>       requestedWidth{500};
+    std::atomic<int>       requestedHeight{500};
+
+    // ── Lifecycle ────────────────────────────────────────────────────────
+
+    void activate()
+    {
+        std::lock_guard<std::mutex> lock(s_mutex);
+        s_active = this;
+    }
+
+    void deactivate()
+    {
+        std::lock_guard<std::mutex> lock(s_mutex);
+        if (s_active == this)
+            s_active = nullptr;
+    }
+
+    // ── Pixel push (called by gemjucewindow on its render thread) ────────
+
+    void pushPixels(std::vector<uint8_t>& data, int w, int h)
+    {
+        juce::ScopedLock sl(pixelLock);
+        std::swap(pixelFront, data);   // pointer swap, near-instant
+        pixelW = w;
+        pixelH = h;
+        frameDirty = true;
+    }
+
+    // ── Pixel pull (called by GUI wrapper on the message/paint thread) ───
+
+    bool pullPixels(std::vector<uint8_t>& dest, int& w, int& h)
+    {
+        juce::ScopedLock sl(pixelLock);
+        if (pixelFront.empty()) return false;
+        dest = pixelFront;
+        w = pixelW;
+        h = pixelH;
+        frameDirty = false;
+        return true;
+    }
+};
+
 // ─────────────────────────────────────────────────────────────────────────────
-// gemjucewindow — GemWindow backed by a JUCE OpenGL component
+// t_gemcanvas — the actual Pd object (thin wrapper around GemCanvas)
+// ─────────────────────────────────────────────────────────────────────────────
+
+typedef struct _gemcanvas {
+    t_object x_obj;
+    GemCanvas canvas;
+} t_gemcanvas;
+
+static t_class* gemcanvas_class = nullptr;
+
+static void* gemcanvas_new(void)
+{
+    auto* x = reinterpret_cast<t_gemcanvas*>(pd_new(gemcanvas_class));
+    new (&x->canvas) GemCanvas();    // placement-new the C++ part
+    x->canvas.activate();
+    return x;
+}
+
+static void gemcanvas_free(t_gemcanvas* x)
+{
+    x->canvas.deactivate();
+    x->canvas.~GemCanvas();          // explicit destructor for placement-new
+}
+
+#ifndef GEM_NO_SETUP
+static void gemcanvas_setup(void)
+{
+    gemcanvas_class = class_new(
+        gensym("gemcanvas"),
+        reinterpret_cast<t_newmethod>(gemcanvas_new),
+        reinterpret_cast<t_method>(gemcanvas_free),
+        sizeof(t_gemcanvas),
+        CLASS_DEFAULT,
+        A_NULL);
+}
+#endif
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// gemjucewindow — GemWindow backed by a JUCE OpenGL component.
+//
+// When a [gemcanvas] object exists in the patch, this window automatically
+// renders into an offscreen FBO and pushes the pixels to the canvas for
+// display on the plugdata NanoVG surface.  When the [gemcanvas] is deleted
+// the window reverts to normal desktop rendering.
 // ─────────────────────────────────────────────────────────────────────────────
 
 class GEM_EXPORT gemjucewindow : public GemWindow
 {
     CPPEXTERN_HEADER(gemjucewindow, GemWindow);
+
+    // ── Inner desktop window ─────────────────────────────────────────────
 
     class Window final : public juce::Component
                        , public juce::Timer
@@ -32,6 +149,7 @@ class GEM_EXPORT gemjucewindow : public GemWindow
             void resizeStart() override { if (onBegin) onBegin(); }
             void resizeEnd()   override { if (onEnd)   onEnd();   }
         };
+
         ResizeListener m_resizeListener;
         juce::OpenGLContext m_glContext;
         juce::Thread::ThreadID m_activeThread = nullptr;
@@ -39,7 +157,7 @@ class GEM_EXPORT gemjucewindow : public GemWindow
         juce::Point<int> m_lastMousePos;
         juce::Array<juce::KeyPress> m_heldKeys;
         float m_lastScale = 1.0f;
-        std::atomic<int> m_lastW, m_lastH;;
+        std::atomic<int> m_lastW, m_lastH;
         gemjucewindow* m_owner;
 
     public:
@@ -197,10 +315,7 @@ class GEM_EXPORT gemjucewindow : public GemWindow
         void mouseDown(const juce::MouseEvent& e) override
         {
             setThis();
-            int btn = e.mods.isRightButtonDown()  ? 2
-                    : e.mods.isMiddleButtonDown() ? 1
-                                                  : 0;
-            setThis();
+            int btn = e.mods.isRightButtonDown() ? 2 : e.mods.isMiddleButtonDown() ? 1 : 0;
             sys_lock();
             m_owner->mousebuttonCallback(btn, 1, 0);
             sys_unlock();
@@ -209,10 +324,7 @@ class GEM_EXPORT gemjucewindow : public GemWindow
         void mouseUp(const juce::MouseEvent& e) override
         {
             setThis();
-            int btn = e.mods.isRightButtonDown()  ? 2
-                    : e.mods.isMiddleButtonDown() ? 1
-                                                  : 0;
-            setThis();
+            int btn = e.mods.isRightButtonDown() ? 2 : e.mods.isMiddleButtonDown() ? 1 : 0;
             sys_lock();
             m_owner->mousebuttonCallback(btn, 0, 0);
             sys_unlock();
@@ -277,20 +389,151 @@ class GEM_EXPORT gemjucewindow : public GemWindow
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window)
     };
 
+    // ── FBO state ────────────────────────────────────────────────────────
+
+    GLuint m_fbo        = 0;
+    GLuint m_fboTexture = 0;
+    GLuint m_fboDepthRB = 0;
+    int    m_fboWidth   = 0;
+    int    m_fboHeight  = 0;
+
+    std::vector<uint8_t> m_readbackBuf;
+
+    // ── Embed tracking ───────────────────────────────────────────────────
+
+    GemCanvas* m_activeCanvas = nullptr;
+    bool       m_windowHidden = false;
+
+    // ── Desktop window state ─────────────────────────────────────────────
+
     Window* m_window = nullptr;
     std::atomic<bool> m_resizing = false;
     bool m_callingSync = false;
+
+    // ── FBO helpers ──────────────────────────────────────────────────────
+
+    void createFBO(int w, int h)
+    {
+        destroyFBO();
+        m_fboWidth  = w;
+        m_fboHeight = h;
+
+        glGenFramebuffers(1, &m_fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+        glGenTextures(1, &m_fboTexture);
+        glBindTexture(GL_TEXTURE_2D, m_fboTexture);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0,
+                     GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_TEXTURE_2D, m_fboTexture, 0);
+
+        glGenRenderbuffers(1, &m_fboDepthRB);
+        glBindRenderbuffer(GL_RENDERBUFFER, m_fboDepthRB);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                                  GL_RENDERBUFFER, m_fboDepthRB);
+
+        jassert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void destroyFBO()
+    {
+        if (m_fbo)        { glDeleteFramebuffers(1, &m_fbo);         m_fbo = 0; }
+        if (m_fboTexture) { glDeleteTextures(1, &m_fboTexture);      m_fboTexture = 0; }
+        if (m_fboDepthRB) { glDeleteRenderbuffers(1, &m_fboDepthRB); m_fboDepthRB = 0; }
+        m_fboWidth = m_fboHeight = 0;
+    }
+
+    void readbackAndPush()
+    {
+        if (!m_fbo || !m_activeCanvas) return;
+
+        int const w = m_fboWidth;
+        int const h = m_fboHeight;
+        int const stride = w * 4;
+
+        std::vector<uint8_t> tmp(stride * h);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+        glReadPixels(0, 0, w, h, GL_BGRA, GL_UNSIGNED_BYTE, tmp.data());
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        m_readbackBuf.resize(stride * h);
+        for (int y = 0; y < h; ++y) {
+            std::memcpy(m_readbackBuf.data() + y * stride,
+                        tmp.data() + (h - 1 - y) * stride,
+                        stride);
+        }
+
+        m_activeCanvas->pushPixels(m_readbackBuf, w, h);
+    }
+
+    // ── Embed state machine (called every frame from render()) ───────────
+
+    void checkEmbedState()
+    {
+        GemCanvas* canvas = GemCanvas::getActive();
+
+        if (canvas && !m_activeCanvas) {
+            // A gemcanvas just appeared → start embedding
+            m_activeCanvas = canvas;
+
+            int w = canvas->requestedWidth.load();
+            int h = canvas->requestedHeight.load();
+            if (w < 1) w = m_width  ? (int)m_width  : 500;
+            if (h < 1) h = m_height ? (int)m_height : 500;
+
+            makeCurrent();
+            createFBO(w, h);
+            windowsizeCallback(w, h);
+            framebuffersizeCallback(w, h);
+
+            if (m_window && !m_windowHidden) {
+                m_windowHidden = true;
+                juce::MessageManager::callAsync(
+                    [safe = juce::Component::SafePointer<Window>(m_window)] {
+                        if (auto* win = safe.getComponent()) win->setVisible(false);
+                    });
+            }
+        }
+        else if (!canvas && m_activeCanvas) {
+            // gemcanvas was deleted → revert to desktop
+            m_activeCanvas = nullptr;
+
+            makeCurrent();
+            destroyFBO();
+
+            if (m_window && m_windowHidden) {
+                m_windowHidden = false;
+                juce::MessageManager::callAsync(
+                    [safe = juce::Component::SafePointer<Window>(m_window)] {
+                        if (auto* win = safe.getComponent()) {
+                            win->setVisible(true);
+                            win->resized();
+                        }
+                    });
+            }
+        }
+        else if (canvas && m_activeCanvas) {
+            // Still embedded — check if canvas requests a different size
+            int rw = canvas->requestedWidth.load();
+            int rh = canvas->requestedHeight.load();
+            if (rw > 0 && rh > 0 && (rw != m_fboWidth || rh != m_fboHeight)) {
+                makeCurrent();
+                createFBO(rw, rh);
+                windowsizeCallback(rw, rh);
+                framebuffersizeCallback(rw, rh);
+            }
+        }
+    }
+
 public:
 
-    gemjucewindow(void)
-    {
-        m_width = m_height = 0;
-    }
-
-    virtual ~gemjucewindow(void)
-    {
-        destroyMess();
-    }
+    gemjucewindow(void) { m_width = m_height = 0; }
+    virtual ~gemjucewindow(void) { destroyMess(); }
 
     // ── GemWindow interface ──────────────────────────────────────────────
 
@@ -303,30 +546,36 @@ public:
 
     void swapBuffers(void) override
     {
-        if (m_window) m_window->swapBuffers();
+        if (m_window && !m_activeCanvas)
+            m_window->swapBuffers();
     }
 
-    void dispatch(void) override
-    {
-        // JUCE drives its own event loop; nothing to do here.
-    }
+    void dispatch(void) override {}
 
     void render(void) override
     {
-      if(!m_window || m_resizing) return; // don't render while we resize, since the resize events come in from the message thread
-      makeCurrent();
-      m_window->checkScale();
+        if (!m_window || m_resizing) return;
+        makeCurrent();
+        m_window->checkScale();
 
-      if (!juce::MessageManager::getInstance()->isThisTheMessageThread())
-      {
-          GemWindow::render();
-      }
+        checkEmbedState();
+
+        if (m_activeCanvas && m_fbo) {
+            glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+            glViewport(0, 0, m_fboWidth, m_fboHeight);
+        }
+
+        if (!juce::MessageManager::getInstance()->isThisTheMessageThread()) {
+            GemWindow::render();
+        }
+
+        if (m_activeCanvas && m_fbo) {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            readbackAndPush();
+        }
     }
 
-    void renderMess(void)
-    {
-        if (makeCurrent()) render();
-    }
+    void renderMess(void) { if (makeCurrent()) render(); }
 
     void bufferMess(int buf) override
     {
@@ -356,7 +605,13 @@ public:
         if (height < 1) { error("height must be greater than 0"); return; }
         m_width  = width;
         m_height = height;
-        if (m_window) {
+
+        if (m_activeCanvas) {
+            makeCurrent();
+            createFBO((int)width, (int)height);
+            windowsizeCallback((int)width, (int)height);
+            framebuffersizeCallback((int)width, (int)height);
+        } else if (m_window) {
             juce::MessageManager::callAsync(
                 [safe = juce::Component::SafePointer<Window>(m_window),
                  w = (int)width, h = (int)height] {
@@ -387,24 +642,22 @@ public:
     {
         auto onMessageThread = juce::MessageManager::getInstance()->isThisTheMessageThread();
         juce::ScopedValueSetter<bool> scopedSetter(m_callingSync, !onMessageThread);
-        juce::MessageManager::callSync([callback](){
-          callback();
-        });
+        juce::MessageManager::callSync([callback]() { callback(); });
     }
 
     bool create(void) override
     {
         if (m_window) { error("window already made!"); return false; }
 
-        callOnMessageThread([this](){
-          m_window = new Window(
-              juce::Rectangle<int>(
-                  m_xoffset, m_yoffset,
-                  m_width  ? (int)m_width  : 500,
-                  m_height ? (int)m_height : 500),
-              m_border != 0,
-              libpd_this_instance(),
-              this);
+        callOnMessageThread([this]() {
+            m_window = new Window(
+                juce::Rectangle<int>(
+                    m_xoffset, m_yoffset,
+                    m_width  ? (int)m_width  : 500,
+                    m_height ? (int)m_height : 500),
+                m_border != 0,
+                libpd_this_instance(),
+                this);
         });
 
         if (!m_window) { error("JUCE couldn't create window"); return false; }
@@ -440,12 +693,19 @@ public:
     {
         if (!m_window) return;
 
+        if (m_fbo) {
+            makeCurrent();
+            destroyFBO();
+        }
+        m_activeCanvas = nullptr;
+        m_windowHidden = false;
+
         Window* win = m_window;
         m_window = nullptr;
         callOnMessageThread([win] {
-              win->glContext().detach();
-              win->removeFromDesktop();
-              delete win;
+            win->glContext().detach();
+            win->removeFromDesktop();
+            delete win;
         });
         destroy();
     }
@@ -458,18 +718,12 @@ public:
                                         : juce::MouseCursor::NoCursor);
     }
 
-    // ── Callbacks (called by Window) ─────────────────────────────────────
+    // ── Callbacks ────────────────────────────────────────────────────────
 
-    void windowsizeCallback(int w, int h)     { dimension(w, h); }
-    void framebuffersizeCallback(int w, int h) { framebuffersize(w, h); }
-
-    int windowcloseCallback(void)
-    {
-        info("window", "destroy");
-        return 0;
-    }
-
-    void windowrefreshCallback(void) { info("window", "exposed"); }
+    void windowsizeCallback(int w, int h)       { dimension(w, h); }
+    void framebuffersizeCallback(int w, int h)   { framebuffersize(w, h); }
+    int  windowcloseCallback(void)               { info("window", "destroy"); return 0; }
+    void windowrefreshCallback(void)             { info("window", "exposed"); }
 
     void keyCallback(int key, int /*scancode*/, int action, int /*mods*/)
     {
@@ -515,8 +769,10 @@ public:
     }
 };
 
+#ifndef GEM_NO_SETUP
 void gemjucewindow::obj_setupCallback(t_class* classPtr)
 {
 }
 
 CPPEXTERN_NEW(gemjucewindow);
+#endif
