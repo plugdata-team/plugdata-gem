@@ -77,11 +77,10 @@ videoPIPEWIRE::videoPIPEWIRE(void)
   m_pixBlock.image.reallocate();
   m_pixBlock.image.setBlack();
   videoPIPEWIRE_init();
-  m_stream_events = {
-    PW_VERSION_STREAM_EVENTS,
-    .param_changed = param_changed_cb,
-    .process = process_cb,
-  };
+  m_stream_events = {};
+  m_stream_events.version = PW_VERSION_STREAM_EVENTS;
+  m_stream_events.param_changed = param_changed_cb;
+  m_stream_events.process = process_cb;
 }
 
 videoPIPEWIRE::~videoPIPEWIRE(void)
