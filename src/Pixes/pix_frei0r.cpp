@@ -86,7 +86,6 @@ namespace {
         /* hmm, i guess these are only valid for 64bit archs, but how do we catch them? */
         "/usr/local/lib64/frei0r-1/",
         "/usr/lib64/frei0r-1/",
-#define MULTIARCH_TRIPLET "x86_64-linux-gnu"
 #ifdef MULTIARCH_TRIPLET
         /* Debian's multiarch */
         "/usr/local/lib/" MULTIARCH_TRIPLET "/frei0r-1/",
