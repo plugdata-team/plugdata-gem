@@ -445,8 +445,9 @@ pix_frei0r :: pix_frei0r(t_symbol*s)
   }
   std::string pluginname = s->s_name;
   std::string filename = pluginname;
-  if(s_class2filename.find(s) != s_class2filename.end()) {
-    filename=s_class2filename[s];
+  const std::string extension = GemDylib::getDefaultExtension();
+  if (s_class2filename.find(s) != s_class2filename.end()) {
+    filename = s_class2filename[s];
     //::post("using cached filename %s", filename.c_str());
     try {
       m_plugin = new F0RPlugin(filename);
@@ -456,13 +457,34 @@ pix_frei0r :: pix_frei0r(t_symbol*s)
     }
   }
   if (0 == m_plugin) {
-    gem::RTE::RTE*rte=gem::RTE::RTE::getRuntimeEnvironment();
-    if(rte) {
-      filename=rte->findFile(pluginname, GemDylib::getDefaultExtension(),
-                             getCanvas());
+    gem::RTE::RTE *rte = gem::RTE::RTE::getRuntimeEnvironment();
+    const t_canvas *canvas = getCanvas();
+    if (rte) {
+      filename = rte->findFile(pluginname, extension, canvas);
+    }
+    try {
+      m_plugin = new F0RPlugin(filename);
+    } catch (GemException &ex) {
+      m_plugin = 0;
     }
 
-    m_plugin = new F0RPlugin(filename);
+    if (0 == m_plugin && rte) {
+      for (size_t i = 0; i < s_frei0r_paths.size(); i++) {
+        if (!s_frei0r_paths[i].empty())
+          filename = rte->findFile(s_frei0r_paths[i] + "/" + pluginname,
+                                   extension, canvas);
+        try {
+          m_plugin = new F0RPlugin(filename);
+          break;
+        } catch (GemException &e) {
+          m_plugin = 0;
+        }
+      }
+    }
+  }
+
+  if (0 == m_plugin) {
+    throw(GemException("couldn't find frei0r plugin '" + pluginname + "'"));
   }
 
   unsigned int numparams = m_plugin->m_parameterNames.size();
