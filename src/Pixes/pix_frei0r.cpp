@@ -83,9 +83,11 @@ namespace {
       static const char* const frei0r_pathlist[] = {
         "/usr/local/lib/frei0r-1/",
         "/usr/lib/frei0r-1/",
-        /* hmm, i guess these are only valid for 64bit archs, but how do we catch them? */
+#if defined __SIZEOF_POINTER__ && (__SIZEOF_POINTER__ == 8)
+        /* these are only valid for 64bit archs */
         "/usr/local/lib64/frei0r-1/",
         "/usr/lib64/frei0r-1/",
+#endif
 #ifdef MULTIARCH_TRIPLET
         /* Debian's multiarch */
         "/usr/local/lib/" MULTIARCH_TRIPLET "/frei0r-1/",
