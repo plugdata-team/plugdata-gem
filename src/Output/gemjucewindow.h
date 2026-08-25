@@ -246,6 +246,7 @@ class GEM_EXPORT gemjucewindow : public GemWindow
         {
             setOpaque(true);
 
+            m_glContext.setExternallyDriven(true);
             m_glContext.setSwapInterval(0);
             m_glContext.setMultisamplingEnabled(true);
             juce::OpenGLPixelFormat fmt(8, 8, 16, 8);
@@ -308,6 +309,12 @@ class GEM_EXPORT gemjucewindow : public GemWindow
             m_glContext.makeActive();
         }
 
+        void shutdownContext()
+        {
+            m_glContext.shutdownOnThread();
+            m_activeThread = nullptr;
+        }
+
         void swapBuffers() {
             checkThread();
             m_glContext.swapBuffers();
@@ -349,10 +356,12 @@ class GEM_EXPORT gemjucewindow : public GemWindow
         void checkThread()
         {
             auto id = juce::Thread::getCurrentThreadId();
-            if (id != m_activeThread) {
-                m_glContext.initialiseOnThread();
+            if (id != m_activeThread)
                 m_activeThread = id;
-            }
+
+            // This is idempotent and must also be retried when JUCE has recreated the
+            // native context after a visibility or peer change.
+            m_glContext.initialiseOnThread();
         }
 
         void setThis() const { libpd_set_instance(m_pdInstance); }
@@ -362,6 +371,7 @@ class GEM_EXPORT gemjucewindow : public GemWindow
             m_lastW = getWidth();
             m_lastH = getHeight();
 
+            m_lastScale = static_cast<float> (m_glContext.getRenderingScale());
             double s = m_lastScale;
             int w = getWidth() * s, h = getHeight() * s;
 
@@ -810,7 +820,9 @@ public:
         titleMess(m_title);
         cursorMess(m_cursor);
 
-        int fw = m_window->getWidth(), fh = m_window->getHeight();
+        const auto renderingBounds = m_window->glContext().getRenderingTargetBounds();
+        const int fw = renderingBounds.isEmpty() ? m_window->getWidth()  : renderingBounds.getWidth();
+        const int fh = renderingBounds.isEmpty() ? m_window->getHeight() : renderingBounds.getHeight();
         dimension(fw, fh);
         framebuffersize(fw, fh);
 
@@ -835,6 +847,8 @@ public:
             m_activeCanvas->destroyFBO();
             m_activeCanvas = nullptr;
         }
+
+        m_window->shutdownContext();
         m_windowHidden = false;
 
         Window* win = m_window;
