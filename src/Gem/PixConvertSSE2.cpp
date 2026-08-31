@@ -1,17 +1,13 @@
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file for SSE2-optimized color-conversion routines
 //
-//    Copyright (c) 2006-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
+// SPDX-FileCopyrightText: © 2006, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "Utils/SIMD.h"
 #include "PixConvert.h"
@@ -20,20 +16,19 @@
  * if somebody would want to have a look i'd be grateful
  */
 
-
 #ifdef __SSE2__
 
 #if defined _MSC_VER
 /* data conversion with possible loss of data */
-# pragma warning( disable : 4309 )
-#endif
+#  pragma warning(disable : 4309)
+# endif
 
-#define RGB2YUV_14 0
-#define RGB2YUV_24 0
-#define RGB2YUV_34 0
+# define RGB2YUV_14 0
+# define RGB2YUV_24 0
+# define RGB2YUV_34 0
 
-#define RGB 0,1,2
-#define BGR 2,1,0
+# define RGB 0, 1, 2
+# define BGR 2, 1, 0
 
 
 /* just some debugging stuff ... */

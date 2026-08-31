@@ -1,16 +1,11 @@
-/*-----------------------------------------------------------------
-  LOG
-  GEM - Graphics Environment for Multimedia
-
-  render to offscreen buffer and make texture
-
-  created 11/27/2005
-
-  Copyright (c) 2005-2006 James Tittle II, tigital AT mac DOT com
-  For information on usage and redistribution, and for a DISCLAIMER OF ALL
-  WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
-  -----------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2005, James Tittle II and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_CONTROLS_GEMFRAMEBUFFER_H_
 #define _INCLUDE__GEM_CONTROLS_GEMFRAMEBUFFER_H_
@@ -53,6 +48,8 @@ protected:
   void         postrender(GemState *state);
   void         initFBO(void);
   void         destroyFBO(void);
+  void         initMSAAFBO(void);
+  void         destroyMSAAFBO(void);
 
   //////////
   // Set up the modifying flags
@@ -82,6 +79,7 @@ protected:
   virtual void repeatMess(int mode);
   virtual void clearMess(bool mode);
   virtual void verboseMess(bool mode);
+  virtual void msaaMess(int samples);
 
 
   virtual void fixFormat(GLenum wantedFormat);
@@ -111,6 +109,12 @@ private:
   bool        m_clear;
 
   bool        m_verbose; // print debugging info when changing parametres
+
+  // MSAA support
+  int         m_msaaSamples;
+  GLuint      m_msaaFBO;
+  GLuint      m_msaaColorBuffer;
+  GLuint      m_msaaDepthBuffer;
 
   void        bangMess(void);
 };

@@ -1,3 +1,13 @@
+////////////////////////////////////////////////////////
+//
+// GEM - Graphics Environment for Multimedia
+//
+// Implementation file
+//
+// SPDX-FileCopyrightText: © 2010, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
 #include "PluginFactory.h"
 #include "Gem/Settings.h"
 #include "Gem/Files.h"
@@ -192,12 +202,12 @@ void init(void)
   gem::Settings::get("gem.plugins.startup", s0);
   using namespace gem::plugins;
 
-  PLUGIN_INIT(film);
   PLUGIN_INIT(imageloader);
   PLUGIN_INIT(imagesaver);
-  PLUGIN_INIT(modelloader);
-  PLUGIN_INIT(record);
+  PLUGIN_INIT(film);
   PLUGIN_INIT(video);
+  PLUGIN_INIT(record);
+  PLUGIN_INIT(modelloader);
 }
 };
 };

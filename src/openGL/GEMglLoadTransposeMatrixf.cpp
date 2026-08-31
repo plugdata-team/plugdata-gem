@@ -4,9 +4,8 @@
 //
 // Implementation file
 //
-// Copyright (c) 2004 tigital@mac.com
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2004, James Tittle II and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 ////////////////////////////////////////////////////////
 
@@ -24,7 +23,7 @@ CPPEXTERN_NEW_WITH_ONE_ARG ( GEMglLoadTransposeMatrixf, t_floatarg,
 //
 GEMglLoadTransposeMatrixf :: GEMglLoadTransposeMatrixf  (t_floatarg arg0)
 {
-  m_inlet = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_list,
+  m_inlet = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("list"),
                       gensym("list"));
 }
 /////////////////////////////////////////////////////////

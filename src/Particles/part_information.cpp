@@ -2,15 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
+// Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2003, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "part_information.h"
 
@@ -101,10 +98,10 @@ void part_information :: renderParticles(GemState *state)
     size+=3;
 
     outlet_float(out_age, age[i]);
-    outlet_list (out_size, &s_list, 3, m_alist+10);
-    outlet_list (out_velocity, &s_list, 3, m_alist+7);
-    outlet_list (out_color, &s_list, 4, m_alist+3);
-    outlet_list (out_position, &s_list, 3, m_alist+0);
+    outlet_list (out_size, gensym("list"), 3, m_alist+10);
+    outlet_list (out_velocity, gensym("list"), 3, m_alist+7);
+    outlet_list (out_color, gensym("list"), 4, m_alist+3);
+    outlet_list (out_position, gensym("list"), 3, m_alist+0);
     outlet_float(out_num, i);
     continueRender(state);
   }

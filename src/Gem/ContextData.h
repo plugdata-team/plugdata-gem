@@ -1,12 +1,15 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2009, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 /*-----------------------------------------------------------------
-  LOG
-  GEM - Graphics Environment for Multimedia
 
   data specific to a rendering context
-
-  Copyright (c) 2009-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-  For information on usage and redistribution, and for a DISCLAIMER OF ALL
-  WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 
   -----------------------------------------------------------------*/
 
@@ -41,8 +44,8 @@ namespace gem
 class GEM_EXTERN ContextDataBase
 {
 protected:
-  static const int INVALID_CONTEXT;
-  virtual int getCurContext(void);
+  static const unsigned int INVALID_CONTEXT;
+  virtual unsigned int getCurContext(void) const;
   virtual ~ContextDataBase(void);
 };
 
@@ -78,6 +81,13 @@ public:
   virtual operator ContextDataType()
   {
     return (*getPtrToCur());
+  }
+
+  virtual operator const ContextDataType() const
+  {
+    auto ptr = getPtrToCur();
+    if(ptr)return *ptr;
+    return ContextDataType();
   }
 
   /**
@@ -140,6 +150,23 @@ private:
               +1);     // Make sure we are large enough (+1 since we have index)
 
     return m_ContextDataVector[context_id];
+  }
+
+  /**
+   * If the data element has been set for the current context, return a const pointer to it.
+   * otherwise, if a default value has been set, return a constptr to it.
+   * as a fallback, return a nullptr.
+   */
+  const ContextDataType* getPtrToCur(void) const
+  {
+    int context_id = getCurContext();
+    if(context_id < m_ContextDataVector.size()) {
+      return m_ContextDataVector[context_id];
+    }
+    if (m_haveDefaultValue) {
+      return &m_defaultValue;
+    }
+    return nullptr;
   }
 
   void doSetAll(ContextDataType v)

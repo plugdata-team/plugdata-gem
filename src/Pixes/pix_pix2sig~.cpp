@@ -2,17 +2,13 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2000 Guenter Geiger geiger@epy.co.at
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2000, Günther Geiger
+// SPDX-FileCopyrightText: © 2001, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "pix_pix2sig~.h"
 #include "Gem/State.h"
@@ -34,7 +30,7 @@ pix_pix2sig :: pix_pix2sig(void)
 {
   int i=4;
   while(i--) {
-    o_col[i]=outlet_new(this->x_obj, &s_signal);
+    o_col[i]=outlet_new(this->x_obj, gensym("signal"));
   }
 }
 
@@ -244,6 +240,9 @@ void pix_pix2sig :: perform(t_sample**out, size_t N)
   m_offsetY%=height;
 
   switch(m_fillType) {
+  case INVALID:
+    error("invalid fill type, using default 'clear'");
+    /* fallthrough */
   case CLEAR: /* flat (always from the beginning) */
     m_offsetX = m_offsetY = 0;
     /* fallthrough */

@@ -4,12 +4,10 @@
 //
 // Implementation file
 //
-// Copyright (c) 2002-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//      zmoelnig@iem.at
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2002, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  this file has been generated...
+// this file has been generated...
 ////////////////////////////////////////////////////////
 
 #include "GEMglReportError.h"
@@ -28,7 +26,7 @@ using namespace gem::utils::gl;
 //
 GEMglReportError :: GEMglReportError    (void)
 {
-  m_outlet = outlet_new(this->x_obj, &s_float);
+  m_outlet = outlet_new(this->x_obj, gensym("float"));
 }
 /////////////////////////////////////////////////////////
 // Destructor
@@ -46,7 +44,7 @@ void GEMglReportError :: render(GemState *state)
   GLenum result=0, err;
   while ((err = glReportError(false))) {
     const char*errStr = glErrorString(err);
-    error("GL[0x%X]: %s", err, errStr?errStr:"generic error");
+    error("GL[0x%04X]: %s", err, errStr?errStr:"generic error");
     if (err)
       result = err;
   }

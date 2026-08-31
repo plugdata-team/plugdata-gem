@@ -2,16 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2022 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2022, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -105,11 +101,10 @@ recordPIPEWIRE :: recordPIPEWIRE(void)
   m_image.ysize = 480;
   m_image.setFormat(GEM_RGBA);
   recordPIPEWIRE_init();
-  m_stream_events = {
-    PW_VERSION_STREAM_EVENTS,
-    .param_changed = param_changed_cb,
-    .process = process_cb,
-  };
+  m_stream_events = {};
+  m_stream_events.version = PW_VERSION_STREAM_EVENTS;
+  m_stream_events.param_changed = param_changed_cb;
+  m_stream_events.process = process_cb;
 }
 
 ////////////////////////////////////////////////////////
@@ -164,19 +159,40 @@ bool recordPIPEWIRE :: start(const std::string&filename, gem::Properties&props)
   flags |= PW_STREAM_FLAG_INACTIVE;
   flags |= PW_STREAM_FLAG_MAP_BUFFERS;
 
+  struct pw_properties *pwprops = pw_properties_new(PW_KEY_MEDIA_CLASS, "Video/Source",
+                                  PW_KEY_APP_NAME, "Pd",
+                                  PW_KEY_APP_ID, "at.iem.gem",
+                                  PW_KEY_NODE_NAME, "Gem",
+                                  NULL);
+
+  std::vector<std::string>keys=props.keys();
+  for(int i=0; i<keys.size(); i++) {
+    const std::string key =keys[i];
+    std::string s;
+    double d;
+    if (0) ;
+    else if (("MediaRole" == key) && (props.get(key, s)) && !s.empty()) {
+      pw_properties_set(pwprops, PW_KEY_MEDIA_ROLE, s.c_str());
+    } else if (("AppName" == key) && (props.get(key, s))) {
+      pw_properties_set(pwprops, PW_KEY_APP_NAME, s.empty()?nullptr:s.c_str());
+    } else if (("NodeName" == key) && (props.get(key, s))) {
+      pw_properties_set(pwprops, PW_KEY_NODE_NAME, s.empty()?nullptr:s.c_str());
+#if 0
+    } else if (("PortName" == key) && (props.get(key, s)) && !s.empty()) {
+      pw_properties_set(pwprops, PW_KEY_PORT_NAME, s.c_str());
+#endif
+    } else if (("autoconnect" == key) && (props.get(key, d))) {
+      if((int)d) {
+        flags |= PW_STREAM_FLAG_AUTOCONNECT;
+      }
+    }
+  }
 
   pw_thread_loop_lock(s_loop);
   m_stream = pw_stream_new_simple(
                pw_thread_loop_get_loop(s_loop),
                m_filename.c_str(),
-               pw_properties_new(
-                 PW_KEY_MEDIA_CLASS, "Video/Source",
-                 PW_KEY_MEDIA_TYPE, "Video",
-                 PW_KEY_MEDIA_ROLE, "Camera",
-                 PW_KEY_APP_NAME, "Pd",
-                 PW_KEY_APP_ID, "at.iem.gem",
-                 PW_KEY_NODE_NAME, "Gem",
-                 NULL),
+               pwprops,
                &m_stream_events,
                this);
   if(!m_stream) {
@@ -337,6 +353,11 @@ const std::string recordPIPEWIRE :: getCodecDescription(const std::string&codecn
 bool recordPIPEWIRE :: enumProperties(gem::Properties&props)
 {
   props.clear();
+
+  props.set("MediaRole", std::string("Source"));
+  props.set("AppName", std::string("Pd"));
+  props.set("NodeName", std::string("Gem"));
+  props.set("autoconnect", 0);
   return true;
 }
 
@@ -357,33 +378,54 @@ void recordPIPEWIRE::param_changed_cb(void*data, uint32_t id, const struct spa_p
 void recordPIPEWIRE::on_process(void)
 {
   //pw_thread_loop_signal (s_loop, false);
-  ::post("%s:%d@%s<", __FILE__, __LINE__, __FUNCTION__);
+  //  ::post("%s:%d@%s<", __FILE__, __LINE__, __FUNCTION__);
 
   struct pw_buffer *b = pw_stream_dequeue_buffer(m_stream);
   if (!b) {
     pw_log_warn("out of buffers: %m");
     return;
   }
-
   struct spa_buffer *buf = b->buffer;
+  if(!buf->n_datas) {
+    pw_log_warn("no buffers");
+    return;
+  }
   if (!buf->datas[0].data) {
     pw_log_warn("NULL buffers: %m");
     return;
   }
 
-  ::post("%s:%d@%s", __FILE__, __LINE__, __FUNCTION__);
+  //  ::post("%s:%d@%s", __FILE__, __LINE__, __FUNCTION__);
+  uint32_t size = m_image.xsize * m_image.ysize * m_image.csize;
+
+#if 0
+  for(unsigned int i=0; i<buf->n_datas; i++) {
+    struct spa_data *data = buf->datas+i;
+    struct spa_chunk *chunk = buf->datas[i].chunk;
+    ::post("buffer[%u/%u] = type=%u flags=%u, fd=%ld, mapoffset=%u, maxsize=%u, data=%p, chunk=%p", i, buf->n_datas, data->type, data->flags, data->fd, data->mapoffset, data->maxsize, data->data, data->chunk);
+    ::post("\toffset=%u, size=%u, stride=%d, flags=%d", chunk->offset, chunk->size, chunk->stride, chunk->flags);
+  }
+#endif
+
+  if(buf->datas[0].maxsize < size) {
+    pw_log_warn("buffer too small (need %u, but got only %u)", size, buf->datas[0].maxsize);
+    return;
+  }
+
+
   m_mutex.lock();
   buf->datas[0].chunk->offset = 0;
-  buf->datas[0].chunk->size = m_image.xsize * m_image.ysize * m_image.csize;
-  buf->datas[0].chunk->offset = 0;
+  buf->datas[0].chunk->size = size;
   memcpy(buf->datas[0].data, m_image.data, buf->datas[0].chunk->size);
+  //::post("%s:%d@%s", __FILE__, __LINE__, __FUNCTION__);
 
   m_mutex.unlock();
+  //  ::post("%s:%d@%s", __FILE__, __LINE__, __FUNCTION__);
 
   //::post("%s", __FUNCTION__);
 
   pw_stream_queue_buffer(m_stream, b);
-  ::post("%s:%d@%s", __FILE__, __LINE__, __FUNCTION__);
+  //  ::post("%s:%d@%s", __FILE__, __LINE__, __FUNCTION__);
 }
 
 void recordPIPEWIRE::on_param_changed(uint32_t id, const struct spa_pod *param)

@@ -1,14 +1,11 @@
-/*-----------------------------------------------------------------
-  LOG
-  GEM - Graphics Environment for Multimedia
-
-  Interface for the window manager
-
-  Copyright (c) 2009-2013 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-  For information on usage and redistribution, and for a DISCLAIMER OF ALL
-  WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
-  -----------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2013, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_OUTPUT_GEMGLFW3WINDOW_H_
 #define _INCLUDE__GEM_OUTPUT_GEMGLFW3WINDOW_H_
@@ -20,7 +17,7 @@
   CLASS
   gemglfw3window
 
-  The window manager
+  The window manager (GLFW3)
 
   DESCRIPTION
 
@@ -50,7 +47,6 @@
 
   -----------------------------------------------------------------*/
 
-
 class GEM_EXPORT gemglfw3window : public GemWindow
 {
   CPPEXTERN_HEADER(gemglfw3window, GemWindow);
@@ -59,7 +55,7 @@ public:
 
   //////////
   // Constructor
-  gemglfw3window(void);
+  gemglfw3window(t_symbol*s);
 
 private:
 

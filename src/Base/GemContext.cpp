@@ -2,16 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2009-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
+// SPDX-FileCopyrightText: © 2009, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 #include "GemContext.h"
 #include "Gem/Manager.h"
 #include "Gem/Exception.h"
@@ -108,7 +104,7 @@ struct Context::PIMPL
   GemGlewXContext*xcontext;
 #endif /* GemGlewXContext */
 
-  unsigned int contextid;
+  const unsigned int contextid;
   GLint oldTexture;
 
   // LATER: reusing IDs prevents a memleak in gem::ContextData
@@ -118,6 +114,7 @@ struct Context::PIMPL
   {
     unsigned int id=0;
 #ifdef GEM_MULTICONTEXT
+    id = 1; /* 0 is the invalid context */
     while(s_takenIDs.find(id) != s_takenIDs.end()) {
       id++;
     }
@@ -250,7 +247,7 @@ bool Context::push(void)
   return true;
 }
 
-bool Context::isActive(void)
+bool Context::isActive(void) const
 {
   return (m_pimpl->s_contextid == m_pimpl->contextid);
 }

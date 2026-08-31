@@ -1,14 +1,11 @@
-/*-----------------------------------------------------------------
-LOG
-GEM - Graphics Environment for Multimedia
-
-Marks the pixels equal to given values/range
-
-Copyright (c) 2011 Ricardo Fabbri. labmacambira.sf.net rfabbri@gmail.com
-For information on usage and redistribution, and for a DISCLAIMER OF ALL
-WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
------------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2011, Ricardo Fabbri and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_PIXES_PIX_EQUAL_H_
 #define _INCLUDE__GEM_PIXES_PIX_EQUAL_H_
@@ -20,12 +17,12 @@ WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 CLASS
     pix_equal
 
-    mark pixels nearly equal to a given color, within given bounds
-
 KEYWORDS
     pix, color
 
 DESCRIPTION
+
+    mark pixels nearly equal to a given color, within given bounds
 
     Inlet for a list - "vec_low"
     Inlet for a float  - "vec_up"

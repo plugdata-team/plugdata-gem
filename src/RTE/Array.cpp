@@ -2,15 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2010, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
 //
 // a wrapper for accessing the RTE's arrays
 // currently only numeric arrays
@@ -124,7 +121,7 @@ bool gem::RTE::Array :: name(const std::string&s)
 {
   return m_pimpl->setName(s);
 }
-const std::string gem::RTE::Array :: name(void)
+const std::string&gem::RTE::Array :: name(void) const
 {
   return m_pimpl->name;
 }
@@ -164,13 +161,18 @@ bool gem::RTE::Array :: resize(const size_t newsize)
 
   return false;
 }
-size_t gem::RTE::Array :: size(void)
+size_t gem::RTE::Array :: size(void) const
 {
   m_pimpl->check();
   return m_pimpl->length;
 }
 
 t_float&gem::RTE::Array :: operator[](const unsigned int&index)
+{
+  return m_pimpl->get(index);
+}
+
+const t_float&gem::RTE::Array :: operator[](const unsigned int&index) const
 {
   return m_pimpl->get(index);
 }
@@ -187,5 +189,4 @@ void gem::RTE::Array :: set(const t_float f)
     wp->w_float=f;
     wp++;
   }
-
 }

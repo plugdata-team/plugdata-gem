@@ -1,10 +1,19 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2002, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 #ifndef GEM_VERSION_H
 #define GEM_VERSION_H
 
 #include "Gem/ExportDef.h"
 
 #define GEM_VERSION_MAJOR 0
-#define GEM_VERSION_MINOR 94
+#define GEM_VERSION_MINOR 95
 
 namespace gem
 {

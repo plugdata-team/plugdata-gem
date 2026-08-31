@@ -1,16 +1,15 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 199x, Miller Puckette and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 /*-----------------------------------------------------------------
 
-    GEM - Graphics Environment for Multimedia
-
-    Load an video into a pix block
-
-    Copyright (c) 1997-1999 Mark Danks. mark@danks.org
-    Copyright (c) Günther Geiger. geiger@epy.co.at
-    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
-    Linux version by Miller Puckette. msp@ucsd.edu
+  video capture backend for GEM using V4L1
 
 -----------------------------------------------------------------*/
 
@@ -40,9 +39,9 @@
 #include <sys/time.h>
 #include <linux/types.h>
 #include <sys/mman.h>
-//#if (defined HAVE_PTHREADS) || (defined HAVE_PTHREAD)
+// #if (defined HAVE_PTHREADS) || (defined HAVE_PTHREAD)
 #include <pthread.h>
-//#endif
+// #endif
 #define V4L_DEVICENO 0
 #define V4L_NBUF 2
 #define V4L_COMPOSITEIN 1

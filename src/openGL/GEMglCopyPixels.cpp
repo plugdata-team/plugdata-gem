@@ -4,12 +4,10 @@
 //
 // Implementation file
 //
-// Copyright (c) 2002-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//      zmoelnig@iem.at
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2002, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  this file has been generated...
+// this file has been generated...
 ////////////////////////////////////////////////////////
 
 #include "GEMglCopyPixels.h"
@@ -43,15 +41,15 @@ GEMglCopyPixels :: GEMglCopyPixels      (int argc, t_atom* argv)
     type=atom_getint(argv+4);
   }
 
-  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("x"));
-  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("y"));
-  m_inlet[2] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[2] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("width"));
-  m_inlet[3] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[3] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("height"));
-  m_inlet[4] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[4] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("type"));
 }
 /////////////////////////////////////////////////////////

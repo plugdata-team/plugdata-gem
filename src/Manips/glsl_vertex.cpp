@@ -2,16 +2,10 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// Created by tigital on 10/04/2005.
-// Copyright 2005 James Tittle
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2005, James Tittle II and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 /////////////////////////////////////////////////////////
 
@@ -47,7 +41,7 @@ glsl_vertex :: glsl_vertex() :
   m_idmapped(0.)
 {
   // create an outlet to send shader object ID
-  m_outShaderID = outlet_new(this->x_obj, &s_float);
+  m_outShaderID = outlet_new(this->x_obj, gensym("float"));
 }
 glsl_vertex :: glsl_vertex(t_symbol* filename) :
   m_shaderTarget(0),
@@ -59,7 +53,7 @@ glsl_vertex :: glsl_vertex(t_symbol* filename) :
   openMess(filename);
 
   // create an outlet to send shader object ID
-  m_outShaderID = outlet_new(this->x_obj, &s_float);
+  m_outShaderID = outlet_new(this->x_obj, gensym("float"));
 }
 
 ////////////////////////////////////////////////////////
@@ -183,7 +177,7 @@ void glsl_vertex :: openMess(t_symbol* filename)
   if(NULL==filename || NULL==filename->s_name) {
     return;
   }
-  if(&s_==filename) {
+  if(gensym("")==filename) {
     return;
   }
 

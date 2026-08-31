@@ -1,23 +1,18 @@
-/*-----------------------------------------------------------------
-  LOG
-  GEM - Graphics Environment for Multimedia
-
-  read in a model file
-
-  Copyright (c) 1997-1999 Mark Danks. mark@danks.org
-  Copyright (c) Günther Geiger. geiger@epy.co.at
-  Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-  For information on usage and redistribution, and for a DISCLAIMER OF ALL
-  WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
-  -----------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_GEOS_MULTIMODEL_H_
 #define _INCLUDE__GEM_GEOS_MULTIMODEL_H_
 
 #include "Base/GemBase.h"
+#include "Gem/GemGL.h"
 #include "Gem/Properties.h"
-#include "Gem/VertexBuffer.h"
 #include "Gem/model.h"
 #include "RTE/Outlet.h"
 
@@ -34,7 +29,7 @@
 
   Inlet for a list - "multimodel"
 
-  "open" - the RGB model to set the object to
+  "open" - the 3D model to load
 
   -----------------------------------------------------------------*/
 namespace gem
@@ -110,12 +105,6 @@ protected:
   //////////
   virtual void  render(GemState *state);
   virtual void  startRendering();
-
-  void copyArray(const std::vector<std::vector<float> >&tab,
-                 gem::VertexBuffer&vb);
-  void copyAllArrays();
-  void getVBOarray();
-  void createVBO(void);
 
   gem::plugins::modelloader*m_loader;
   std::vector<gem::modelGL>m_loaded;

@@ -2,19 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
+// Implementation file
 //
-// surface3d : create a plan that can be distored.
-// used cubic interpolation
-// made by Cyrille Henry 2011
+// SPDX-FileCopyrightText: © 2011, Cyrille Henry and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    Copyright (c) 1997-1998 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 struct t_float3 {
   float x,y,z;
@@ -218,17 +211,17 @@ void surface3d :: interpolate(float X, float Y)
   interpol = bicubic3(X, Y);
 
   if(compute_normal) {
-    t_float Xpdx = X+0.01;
-    t_float Xmdx = X+0.01;
+	t_float EpsylonX = 1./nb_pts_control_X;
+	t_float EpsylonY = 1./nb_pts_control_Y;
 
-    dx  = bicubic3((X-0.01), Y );
-    dx2 = bicubic3((X+0.01), Y );
+    dx  = bicubic3((X-EpsylonX < 0.)?0.:X-EpsylonX, Y );
+    dx2 = bicubic3((X+EpsylonX > 1.)?1.:X+EpsylonX, Y );
     dx.x -= dx2.x;
     dx.y -= dx2.y;
     dx.z -= dx2.z;
 
-    dy  = bicubic3( X,(Y-0.01));
-    dy2 = bicubic3( X,(Y+0.01));
+    dy  = bicubic3( X,(Y-EpsylonY < 0.)?0.:Y-EpsylonY);
+    dy2 = bicubic3( X,(Y+EpsylonY > 1.)?1.:Y+EpsylonY);
     dy.x -= dy2.x;
     dy.y -= dy2.y;
     dy.z -= dy2.z;

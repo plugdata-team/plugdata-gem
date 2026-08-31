@@ -1,16 +1,11 @@
-///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2013 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2013, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 /////////////////////////////////////////////////////////
 #include "Gem/GemConfig.h"
@@ -23,6 +18,7 @@
 #include "RTE/MessageCallbacks.h"
 #include "Gem/Exception.h"
 #include <map>
+#include <cctype>
 
 #define DEBUG ::startpost("%s:%d [%s]:: ", __FILE__, __LINE__, __FUNCTION__), ::post
 
@@ -38,7 +34,7 @@ static void error_callback(int err, const char* description)
   pd_error(0, "[glfw3window]: %s", description);
 }
 
-CPPEXTERN_NEW(gemglfw3window);
+CPPEXTERN_NEW_WITH_ONE_ARG(gemglfw3window, t_symbol*, A_DEFSYMBOL);
 
 /* starting with GLFW-3.2, we can use glfwGetKeyName() */
 #define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
@@ -573,7 +569,16 @@ static std::string get_keyname(int key, int scancode)
 }
 #endif
 
-
+#if KERNEL_VERSION(GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION) >= KERNEL_VERSION(3,4,0)
+/* GLFW_PLATFORM is functional */
+#else
+# define GLFW_ANY_PLATFORM           0x00060000
+# define GLFW_PLATFORM_WIN32         0x00060001
+# define GLFW_PLATFORM_COCOA         0x00060002
+# define GLFW_PLATFORM_WAYLAND       0x00060003
+# define GLFW_PLATFORM_X11           0x00060004
+# define GLFW_PLATFORM_NULL          0x00060005
+#endif
 /////////////////////////////////////////////////////////
 //
 // gemglfw3window
@@ -582,13 +587,44 @@ static std::string get_keyname(int key, int scancode)
 // Constructor
 //
 /////////////////////////////////////////////////////////
-gemglfw3window :: gemglfw3window(void) :
+gemglfw3window :: gemglfw3window(t_symbol*s) :
   m_profile_major(0), m_profile_minor(0),
   m_window(0),
   m_gles(false)
 {
+  int platform = GLFW_ANY_PLATFORM;
+  std::string plat = std::string(s->s_name);
+  const int length = plat.length();
+  for(int i=0; i < length; ++i)  {
+    plat[i] = std::tolower(plat[i]);
+  }
+  if(plat.empty()) {
+  } else if("any" == plat) {
+    platform = GLFW_ANY_PLATFORM;
+  } else if("win32" == plat) {
+    platform = GLFW_PLATFORM_WIN32;
+  } else if("cocoa" == plat) {
+    platform = GLFW_PLATFORM_COCOA;
+  } else if("wayland" == plat) {
+    platform = GLFW_PLATFORM_WAYLAND;
+  } else if("x11" == plat) {
+    platform = GLFW_PLATFORM_X11;
+  } else if("null" == plat) {
+    platform = GLFW_PLATFORM_NULL;
+  } else {
+    error("unknown platform '%s'", plat.c_str());
+  }
+
   m_width = m_height = 0;
   if(s_instances==0) {
+#if KERNEL_VERSION(GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION) >= KERNEL_VERSION(3,4,0)
+    if (GLFW_ANY_PLATFORM == platform || glfwPlatformSupported(platform)) {
+      glfwInitHint(GLFW_PLATFORM, platform);
+    } else {
+      error("unsupported platform: '%s' [%d]", plat.c_str(), platform);
+    }
+#endif
+
     glfwSetErrorCallback(error_callback);
     if(!glfwInit()) {
       throw(GemException("could not initialize GLFW infrastructure"));
@@ -708,10 +744,10 @@ void gemglfw3window :: fullscreenMess(int on)
     if(on) {
       if (on<0 || on>count) {
         monitor = glfwGetPrimaryMonitor();
-        logpost(0, 3+0, "switching to fullscreen on primary monitor: %s", glfwGetMonitorName(monitor));
+        logpost(0, PD_DEBUG + 0, "switching to fullscreen on primary monitor: %s", glfwGetMonitorName(monitor));
       } else {
         monitor = monitors[on-1];
-        logpost(0, 3+0, "switching to fullscreen on monitor #%d: %s", on, glfwGetMonitorName(monitor));
+        logpost(0, PD_DEBUG + 0, "switching to fullscreen on monitor #%d: %s", on, glfwGetMonitorName(monitor));
       }
     }
     if(monitor) {
@@ -1019,7 +1055,7 @@ void gemglfw3window :: obj_setupCallback(t_class *classPtr)
 {
   CPPEXTERN_MSG2(classPtr, "glprofile", glprofileMess, int, int);
   CPPEXTERN_MSG1(classPtr, "gles", glesMess, bool);
-  ::logpost(0, 3+0, "[gemglfw3window]\n\tGLFW compile version: %d.%d.%d\n\tGLFW runtime version: %s"
+  ::logpost(0, PD_DEBUG + 0, "[gemglfw3window]\n\tGLFW compile version: %d.%d.%d\n\tGLFW runtime version: %s"
             , GLFW_VERSION_MAJOR, GLFW_VERSION_MINOR, GLFW_VERSION_REVISION
             , glfwGetVersionString()
     );

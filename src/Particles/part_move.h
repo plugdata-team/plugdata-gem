@@ -1,14 +1,11 @@
-/*-----------------------------------------------------------------
-LOG
-    GEM - Graphics Environment for Multimedia
-
-        Advance particles
-
-    Copyright (c) 2025 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
------------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2025, Mark Danks and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_PARTICLES_PART_MOVE_H_
 #define _INCLUDE__GEM_PARTICLES_PART_MOVE_H_
@@ -19,11 +16,11 @@ LOG
 -------------------------------------------------------------------
 CLASS
 
-        part_move
-
-        Draw a part_move group
+  part_move
 
 DESCRIPTION
+
+  Advance particles
 
 -----------------------------------------------------------------*/
 class GEM_EXTERN part_move : public partlib_base

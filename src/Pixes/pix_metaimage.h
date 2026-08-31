@@ -1,12 +1,16 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2002, Pete Warden
+ * SPDX-FileCopyrightText: © 2003, James Tittle II and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 /*-----------------------------------------------------------------
-LOG
-    GEM - Graphics Environment for Multimedia
 
-    Copyright (c) 2003-2004 James Tittle
-    non-yuv portions ported from pete's_plugins (www.petewarden.com)
-
-    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+  non-yuv portions ported from pete's_plugins (www.petewarden.com)
 
 -----------------------------------------------------------------*/
 
@@ -20,14 +24,10 @@ LOG
 CLASS
     pix_metaimage
 
-
-
 KEYWORDS
     pix
 
 DESCRIPTION
-
-
 
 -----------------------------------------------------------------*/
 class GEM_EXTERN pix_metaimage : public GemPixObj

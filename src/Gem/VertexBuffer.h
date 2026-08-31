@@ -1,21 +1,17 @@
-/*-----------------------------------------------------------------
-  LOG
-  GEM - Graphics Environment for Multimedia
-
-  VertexBuffer class
-
-  Copyright (c) 1997-2000 Mark Danks. mark@danks.org
-  Copyright (c) Günther Geiger. geiger@epy.co.at
-  Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-  For information on usage and redistribution, and for a DISCLAIMER OF ALL
-  WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
-  -----------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2014, Antoine Villeret and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_GEM_VERTEXBUFFER_H_
 #define _INCLUDE__GEM_GEM_VERTEXBUFFER_H_
 
 #include "Gem/GemGL.h"
+#include "Gem/ContextData.h"
 #include <string>
 
 namespace gem
@@ -40,7 +36,7 @@ public:
   unsigned int size;
   unsigned int dimen;
 
-  GLuint vbo;
+  gem::ContextData<GLuint> vbo;
   float*array;
   bool dirty;
   bool enabled;
@@ -59,7 +55,7 @@ public:
 class VBO
 {
 private:
-  GLuint m_vbo;
+  gem::ContextData<GLuint> m_vbo;
   size_t m_size;
   unsigned char m_dimen;
   GLenum m_type;

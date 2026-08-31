@@ -1,14 +1,15 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 /*-----------------------------------------------------------------
-  LOG
-  GEM - Graphics Environment for Multimedia
 
   The state to pass among GEM objects
-
-  Copyright (c) 1997-2000 Mark Danks. mark@danks.org
-  Copyright (c) Günther Geiger. geiger@epy.co.at
-  Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-  For information on usage and redistribution, and for a DISCLAIMER OF ALL
-  WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 
   -----------------------------------------------------------------*/
 
@@ -37,7 +38,7 @@ class GEM_EXTERN TexCoord
 {
 public:
   TexCoord() : s(0.f), t(0.f) { }
-  TexCoord(float _s, float t_) : s(_s), t(t_) { }
+  TexCoord(float _s, float _t) : s(_s), t(_t) { }
   float         s;
   float         t;
 };
@@ -74,7 +75,7 @@ public:
     _GL_TEX_UNITS,       /* "tex.units" <int> # of texUnits */
     _GL_TEX_ORIENTATION, /* "tex.orientation" <bool> false=bottomleft; true=topleft */
     _GL_TEX_BASECOORD,   /* "tex.basecoords" <TexCoord> width/height of texture  */
-
+    _GL_TEX_UNIT_SIZES,  /* "tex.unitsizes" <float[MAX_MULTITEX_ID][2]> sizeX,sizeY per texunit */
 
 
 
@@ -215,7 +216,7 @@ public:
       }
       return true;
     } catch (gem::bad_any_cast&x) {
-      ::logpost(0, 3+3, "%s:%d [%s] %d :: %s", __FILE__, __LINE__, __FUNCTION__, key,
+      ::logpost(0, PD_DEBUG + 3, "%s:%d [%s] %d :: %s", __FILE__, __LINE__, __FUNCTION__, key,
                 x.what());
       // type problem
     }

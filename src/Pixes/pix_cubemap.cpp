@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002-2006 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2009, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "pix_cubemap.h"
 
@@ -86,7 +80,7 @@ pix_cubemap :: pix_cubemap()
                          gensym("gem_state"), gensym("gem_imageZ-"));
 
   // create an outlet to send texture ID
-  m_outTexID = outlet_new(this->x_obj, &s_float);
+  m_outTexID = outlet_new(this->x_obj, gensym("float"));
 }
 
 ////////////////////////////////////////////////////////
@@ -171,7 +165,7 @@ void pix_cubemap :: sendExtTexture(GLuint texobj, GLfloat xRatio,
     SETFLOAT(ap+2, (t_float)yRatio);
     SETFLOAT(ap+3, (t_float)texType);
     SETFLOAT(ap+4, (t_float)upsidedown);
-    outlet_list(m_outTexID, &s_list, 5, ap);
+    outlet_list(m_outTexID, gensym("list"), 5, ap);
   }
 }
 

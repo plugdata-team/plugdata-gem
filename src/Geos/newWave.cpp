@@ -1,16 +1,13 @@
-/*
- *  GEM - Graphics Environment for Multimedia
- *
- *  newWave.h
- *  gem_darwin
- *
- *  Created by Jamie Tittle on Thu Oct 10 2002.
- *  modified by cyrille Henry
- *  Copyright (c) 2002 tigital. All rights reserved.
- *    For information on usage and redistribution, and for a DISCLAIMER OF ALL
- *    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
- *
- */
+////////////////////////////////////////////////////////
+//
+// GEM - Graphics Environment for Multimedia
+//
+// Implementation file
+//
+// SPDX-FileCopyrightText: © 2002, James Tittle II and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
 
 #include "newWave.h"
 #include "Gem/State.h"
@@ -83,9 +80,9 @@ newWave :: newWave( int argc,
   gridY = MAX( 3,     gridY);
 
   // the height inlet
-  m_inletH = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inletH = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                        gensym("height"));
-  m_inletM = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inletM = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                        gensym("mode"));
 
   m_drawTypes.clear();

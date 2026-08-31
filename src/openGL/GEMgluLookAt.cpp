@@ -4,10 +4,11 @@
 //
 // Implementation file
 //
-// Copyright (c) 2008 zmoelnig@iem.at
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  OF ALL WARRANTIES, see the file "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2008, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
+// this file has been generated...
+////////////////////////////////////////////////////////
 
 #include "Gem/GemConfig.h"
 #include "GEMgluLookAt.h"
@@ -56,23 +57,23 @@ GEMgluLookAt :: GEMgluLookAt  (int argc, t_atom*argv) :
   m_upZ=static_cast<GLdouble>(atom_getfloat(argv+8));
 
 
-  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("eyeX"));
-  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("eyeY"));
-  m_inlet[2] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[2] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("eyeZ"));
-  m_inlet[3] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[3] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("centerX"));
-  m_inlet[4] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[4] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("centerY"));
-  m_inlet[5] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[5] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("centerZ"));
-  m_inlet[6] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[6] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("upX"));
-  m_inlet[7] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[7] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("upY"));
-  m_inlet[8] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[8] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("upZ"));
 }
 

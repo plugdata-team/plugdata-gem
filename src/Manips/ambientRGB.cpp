@@ -2,17 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2000, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "ambientRGB.h"
 #include "Gem/GemGL.h"
@@ -50,10 +45,10 @@ ambientRGB :: ambientRGB(int argc, t_atom *argv)
   }
 
   // create the new inlets
-  inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float, gensym("rVal"));
-  inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float, gensym("gVal"));
-  inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float, gensym("bVal"));
-  inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float, gensym("aVal"));
+  inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"), gensym("rVal"));
+  inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"), gensym("gVal"));
+  inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"), gensym("bVal"));
+  inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"), gensym("aVal"));
 }
 
 /////////////////////////////////////////////////////////

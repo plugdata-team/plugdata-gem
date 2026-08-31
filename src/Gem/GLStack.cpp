@@ -2,29 +2,22 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 tigital
+// SPDX-FileCopyrightText: © 2010, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 #ifdef _MSC_VER
-# pragma NOTE("memory(484): warning C4150: Löschen eines Zeigers auf den nicht definierten Typ 'gem::GLStack::Data'. Destruktor wurde nicht aufgerufen.")
+# pragma NOTE(                                                                 \
+     "memory(484): warning C4150: Löschen eines Zeigers auf den nicht definierten Typ 'gem::GLStack::Data'. Destruktor wurde nicht aufgerufen.")
 #endif
 
 #include "Gem/GLStack.h"
-#include "Gem/RTE.h"
-
-/* need GLUtil for glReportError */
-#include "Gem/GemGL.h"
+#include "Base/GemBase.h"
 #include "Utils/GLUtil.h"
+#include "Base/CPPExtern.h"
+#include "Gem/RTE.h"
 #include <map>
 
 #define GLDEBUG if(glReportError())::startpost("glError @ %s:%d[%s] ", __FILE__, __LINE__, __FUNCTION__), ::post
@@ -129,7 +122,10 @@ bool GLStack::push(enum GemStackId id)
     } else
       glPushMatrix();
     data->stackDepth[id]++;
-    //if(gem::utils::gl::glReportError(NULL, "push "))post("stack=%d", id);
+    if(gem::utils::gl::isDebugGLEnabled()) {
+      struct CPPExtern* currentObj = gem::utils::gl::getCurrentObject();
+      if(gem::utils::gl::glReportError(currentObj, "push "))pd_error(0, "[GLStack]: stack=%d", id);
+    }
     return true;
   }
 
@@ -170,7 +166,10 @@ bool GLStack::pop(enum GemStackId id)
       glActiveTexture(curUnit);
     } else
       glPopMatrix();
-    //if(gem::utils::gl::glReportError(NULL, "pop "))post("stack=%d", id);
+    if(gem::utils::gl::isDebugGLEnabled()) {
+      struct CPPExtern* currentObj = gem::utils::gl::getCurrentObject();
+      if(gem::utils::gl::glReportError(currentObj, "pop "))pd_error(0, "[GLStack]: stack=%d", id);
+    }
     return true;
   }
   return false;

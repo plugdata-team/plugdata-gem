@@ -2,17 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2014 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "spline_path.h"
 
@@ -31,9 +26,9 @@ spline_path :: ~spline_path()
 //
 /////////////////////////////////////////////////////////
 void spline_path :: lookupFunc(t_float x, t_float *ret, int numDimen,
-                               int npnts, t_float *pnts)
+                               const gem::RTE::Array&array)
 {
-  splineFunc(x, ret, numDimen, npnts, pnts);
+  splineFunc(x, ret, numDimen, array);
 }
 
 void spline_path :: obj_setupCallback(t_class *)

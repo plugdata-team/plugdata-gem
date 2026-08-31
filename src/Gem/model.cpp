@@ -2,16 +2,13 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2023 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2023, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////
+#include "Gem/VertexBuffer.h"
 #include "model.h"
 #include <algorithm>
 #include "m_pd.h"
@@ -143,7 +140,7 @@ namespace
         vTexCoordsUV = vTexCoordsLinear;
       }
     }
-    
+
     void destroy()
     {
       vertices.destroy();
@@ -151,7 +148,7 @@ namespace
       colors.destroy();
       texcoords.destroy();
     }
-    
+
     void update(enum gem::modelGL::texturetype t, float texW, float texH)
     {
       vertices.update(size, vVertices.data());

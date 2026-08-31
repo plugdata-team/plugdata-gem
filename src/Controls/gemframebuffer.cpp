@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// tigital AT mac DOT com
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2005-2006 James Tittle II, tigital At mac DoT com
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2005, James Tittle II and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "gemframebuffer.h"
 #include <string.h>
@@ -51,6 +45,7 @@ gemframebuffer :: gemframebuffer(int argc, t_atom*argv)
   , m_outTexInfo(NULL)
   , m_quality(GL_NEAREST), m_repeat(GL_CLAMP_TO_EDGE), m_clear(true)
   , m_verbose(false)
+  , m_msaaSamples(0), m_msaaFBO(0), m_msaaColorBuffer(0), m_msaaDepthBuffer(0)
 {
   // create an outlet to send out texture info:
   //  - ID
@@ -210,12 +205,18 @@ void gemframebuffer :: render(GemState *state)
   glGetFloatv( GL_COLOR_CLEAR_VALUE, m_color );
 
   glBindTexture( m_texTarget, 0 );
+
+  // Bind the appropriate framebuffer (MSAA or normal)
+  if(m_msaaSamples > 0 && m_msaaFBO) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_msaaFBO);
+  } else {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_frameBufferIndex);
-  // Bind the texture to the frame buffer.
+  // Bind the texture to the frame buffer (only for normal FBO)
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
                             m_texTarget, m_offScreenID, 0);
   glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                GL_RENDERBUFFER_EXT, m_depthBufferIndex);
+}
 
   // debug yellow color
   // glClearColor( 1,1,0,0);
@@ -276,7 +277,23 @@ void gemframebuffer :: postrender(GemState *state)
   // viewport-sized quad vertices are at [-1,-1], [1,-1], [1,1], and
   // [-1,1]: the corners of the viewport.
 
-  glBindFramebufferEXT( GL_FRAMEBUFFER_EXT, 0 );
+  // If MSAA is enabled, blit from MSAA FBO to normal FBO
+  if(m_msaaSamples > 0 && m_msaaFBO) {
+    if(!GLEW_EXT_framebuffer_blit) {
+      error("MSAA blit not supported: GL_EXT_framebuffer_blit not available");
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    } else {
+      glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, m_msaaFBO);
+      glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, m_frameBufferIndex);
+      glBlitFramebufferEXT(0, 0, m_width, m_height,
+                           0, 0, m_width, m_height,
+                           GL_COLOR_BUFFER_BIT, GL_NEAREST);
+      glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    }
+  } else {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  }
+
   glBindTexture( m_texTarget, m_offScreenID );
 
   if(stacks) {
@@ -419,7 +436,8 @@ void gemframebuffer :: initFBO()
   glTexParameteri(m_texTarget, GL_TEXTURE_MAG_FILTER, m_quality);
 
   GLuint wrapmode = m_repeat;
-  if (wrapmode == GL_CLAMP_TO_EDGE) (GLEW_EXT_texture_edge_clamp)?GL_CLAMP_TO_EDGE:GL_CLAMP;
+  if (wrapmode == GL_CLAMP_TO_EDGE)
+    wrapmode = (GLEW_EXT_texture_edge_clamp)?GL_CLAMP_TO_EDGE:GL_CLAMP;
 
   glTexParameterf(m_texTarget, GL_TEXTURE_WRAP_S, wrapmode);
   glTexParameterf(m_texTarget, GL_TEXTURE_WRAP_T, wrapmode);
@@ -428,6 +446,13 @@ void gemframebuffer :: initFBO()
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_depthBufferIndex);
   glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT24,
                            m_width, m_height);
+
+  // Bind the normal FBO and attach texture and depth buffer
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_frameBufferIndex);
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                            m_texTarget, m_offScreenID, 0);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                               GL_RENDERBUFFER_EXT, m_depthBufferIndex);
 
   // Make sure we have not errors.
   GLenum status = glCheckFramebufferStatusEXT( GL_FRAMEBUFFER_EXT) ;
@@ -466,6 +491,11 @@ void gemframebuffer :: initFBO()
   // Return out of the frame buffer.
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
+  // Initialize MSAA FBO if needed
+  if(m_msaaSamples > 0) {
+    initMSAAFBO();
+  }
+
   m_haveinit = true;
   m_wantinit = false;
 
@@ -482,6 +512,9 @@ void gemframebuffer :: destroyFBO()
   if(!m_haveinit) return;
   //if(!GLEW_EXT_framebuffer_object)return;
 
+  // Destroy MSAA FBO first
+  destroyMSAAFBO();
+
   // Release all resources.
   if(m_depthBufferIndex) {
     glDeleteRenderbuffersEXT(1, &m_depthBufferIndex);
@@ -494,6 +527,66 @@ void gemframebuffer :: destroyFBO()
   }
 
   m_haveinit = false;
+}
+
+////////////////////////////////////////////////////////
+// initMSAAFBO
+//
+/////////////////////////////////////////////////////////
+void gemframebuffer :: initMSAAFBO()
+{
+  // Generate MSAA framebuffer and renderbuffers
+  glGenFramebuffersEXT(1, &m_msaaFBO);
+  glGenRenderbuffersEXT(1, &m_msaaColorBuffer);
+  glGenRenderbuffersEXT(1, &m_msaaDepthBuffer);
+
+  // Bind MSAA FBO
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, m_msaaFBO);
+
+  // Create MSAA color renderbuffer
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_msaaColorBuffer);
+  glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, m_msaaSamples,
+                                       m_internalformat, m_width, m_height);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                               GL_RENDERBUFFER_EXT, m_msaaColorBuffer);
+
+  // Create MSAA depth renderbuffer
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, m_msaaDepthBuffer);
+  glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, m_msaaSamples,
+                                       GL_DEPTH_COMPONENT24, m_width, m_height);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                               GL_RENDERBUFFER_EXT, m_msaaDepthBuffer);
+
+  // Check MSAA FBO status
+  GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  if(status != GL_FRAMEBUFFER_COMPLETE_EXT) {
+    error("MSAA FBO incomplete: %d", status);
+    destroyMSAAFBO();
+    m_msaaSamples = 0;
+  }
+
+  // Unbind
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+
+////////////////////////////////////////////////////////
+// destroyMSAAFBO
+//
+/////////////////////////////////////////////////////////
+void gemframebuffer :: destroyMSAAFBO()
+{
+  if(m_msaaColorBuffer) {
+    glDeleteRenderbuffersEXT(1, &m_msaaColorBuffer);
+    m_msaaColorBuffer = 0;
+  }
+  if(m_msaaDepthBuffer) {
+    glDeleteRenderbuffersEXT(1, &m_msaaDepthBuffer);
+    m_msaaDepthBuffer = 0;
+  }
+  if(m_msaaFBO) {
+    glDeleteFramebuffersEXT(1, &m_msaaFBO);
+    m_msaaFBO = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////
@@ -705,6 +798,35 @@ void gemframebuffer :: verboseMess(bool verbose)
     printInfo();
 }
 
+void gemframebuffer :: msaaMess(int samples)
+{
+  if(samples < 0) {
+    error("msaa samples must be >= 0");
+    return;
+  }
+
+  if(samples == 0) {
+    // Disable MSAA
+    if(m_msaaSamples > 0) {
+      destroyMSAAFBO();
+      m_msaaSamples = 0;
+      setModified();
+    }
+    return;
+  }
+
+  // Enable MSAA
+  if(!GLEW_EXT_framebuffer_multisample) {
+    error("MSAA not supported: GL_EXT_framebuffer_multisample not available");
+    return;
+  }
+
+  if(samples != m_msaaSamples) {
+    m_msaaSamples = samples;
+    setModified();
+  }
+}
+
 ////////////////////////////////////////////////////////
 // static member function
 //
@@ -723,6 +845,7 @@ void gemframebuffer :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG1(classPtr, "repeat", repeatMess, int);
   CPPEXTERN_MSG1(classPtr, "clear", clearMess, bool);
   CPPEXTERN_MSG1(classPtr, "verbose", verboseMess, bool);
+  CPPEXTERN_MSG1(classPtr, "MSAA", msaaMess, int);
 
   /* legacy */
   CPPEXTERN_MSG2(classPtr, "dim",    dimMess, int, int);

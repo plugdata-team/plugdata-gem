@@ -2,18 +2,16 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2001, FUKUCHI Kentaro
+// SPDX-FileCopyrightText: © 2005, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-// this is based on EffecTV by Fukuchi Kentarou
-// * Copyright (C) 2001 FUKUCHI Kentarou
+////////////////////////////////////////////////////////
+//
+// this is based on EffecTV by Fukuchi Kentaro
+// * Copyright (C) 2001 FUKUCHI Kentaro
 //
 /////////////////////////////////////////////////////////
 
@@ -910,7 +908,7 @@ pix_freeframe :: pix_freeframe(t_symbol*s)
   throw(GemException("Gem has been compiled without FreeFrame-support!"));
 #else
   int can_rgba=0;
-  if(!s || s==&s_) {
+  if(!s || s==gensym("")) {
     m_canopen=true;
     return;
   }
@@ -931,13 +929,13 @@ pix_freeframe :: pix_freeframe(t_symbol*s)
     parmType=m_plugin->getParameterType(i);
     switch(parmType) {
     case FF_TYPE_EVENT:
-      s_inletType=&s_bang;
+      s_inletType=gensym("bang");
       break;
     case FF_TYPE_TEXT:
-      s_inletType=&s_symbol;
+      s_inletType=gensym("symbol");
       break;
     default:
-      s_inletType=&s_float;
+      s_inletType=gensym("float");
     }
     m_inlet.push_back(inlet_new(this->x_obj, &this->x_obj->ob_pd, s_inletType,
                                 gensym(tempVt)));
@@ -1068,11 +1066,11 @@ static const int offset_pix_=strlen("pix_");
 static void*freeframe_loader_new(t_symbol*s, int argc, t_atom*argv)
 {
   if(!s) {
-    ::logpost(0, 3+2, "freeframe_loader: no name given");
+    ::logpost(0, PD_DEBUG + 2, "freeframe_loader: no name given");
     return 0;
   }
 
-  ::logpost(0, 3+2, "freeframe_loader: %s",s->s_name);
+  ::logpost(0, PD_DEBUG + 2, "freeframe_loader: %s",s->s_name);
   try {
     \
     const char*realname=s->s_name+offset_pix_; /* strip of the leading 'pix_' */
@@ -1082,7 +1080,7 @@ static void*freeframe_loader_new(t_symbol*s, int argc, t_atom*argv)
     proxy.setObject(new pix_freeframe(gensym(realname)));
     return proxy.initialize();
   } catch (GemException&e) {
-    ::logpost(0, 3+2, "freeframe_loader: failed! (%s)", e.what());
+    ::logpost(0, PD_DEBUG + 2, "freeframe_loader: failed! (%s)", e.what());
     return 0;
   }
   return 0;

@@ -4,12 +4,10 @@
 //
 // Implementation file
 //
-// Copyright (c) 2002-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//      zmoelnig@iem.at
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2002, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  this file has been generated...
+// this file has been generated...
 ////////////////////////////////////////////////////////
 
 #include "GEMglAlphaFunc.h"
@@ -29,9 +27,9 @@ GEMglAlphaFunc :: GEMglAlphaFunc        (t_floatarg arg0,
   func(static_cast<GLenum>(arg0)),
   ref(static_cast<GLclampf>(arg1))
 {
-  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("func"));
-  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("ref"));
 }
 /////////////////////////////////////////////////////////

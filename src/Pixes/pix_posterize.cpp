@@ -1,12 +1,13 @@
-/*
- *  pix_posterize.cpp
- *  gem_darwin
- *  tigital@mac.com
- *
- *  Created by Jamie Tittle on Fri Oct 18 2002.
- *  Copyright (c) 2002 tigital. All rights reserved.
- *
- */
+////////////////////////////////////////////////////////
+//
+// GEM - Graphics Environment for Multimedia
+//
+// Implementation file
+//
+// SPDX-FileCopyrightText: © 2002, James Tittle II and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
 #include "pix_posterize.h"
 
 CPPEXTERN_NEW_WITH_ONE_ARG(pix_posterize, t_floatarg, A_DEFFLOAT);
@@ -23,9 +24,9 @@ pix_posterize :: pix_posterize(t_floatarg f) :
   inletF(0), inletL(0),
   factor(static_cast<int>(f*255.)), limit(0)
 {
-  inletF = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  inletF = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                      gensym("factor"));
-  inletL = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  inletL = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                      gensym("limit"));
 }
 

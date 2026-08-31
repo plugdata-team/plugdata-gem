@@ -1,24 +1,11 @@
-/*-----------------------------------------------------------------
-
- GEM - Graphics Environment for Multimedia
-
- interprete a (long) list of floats as a pixBlock
-
- Copyright (c) 1997-1999 Mark Danks. mark@danks.org
- Copyright (c) Günther Geiger. geiger@epy.co.at
- Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
- For information on usage and redistribution, and for a DISCLAIMER OF ALL
- WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
------------------------------------------------------------------*/
-
-/*-----------------------------------------------------------------
-pix_set
-
-  0409:forum::für::umläute:2000
-  IOhannes m zmoelnig
-  mailto:zmoelnig@iem.at
------------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2000, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_PIXES_PIX_SET_H_
 #define _INCLUDE__GEM_PIXES_PIX_SET_H_
@@ -79,6 +66,10 @@ protected:
   void            cleanPixBlock(void);
 
   //////////
+  // set colorspace to RGBA, RGB or Grey
+  void            csMess(std::string type);
+
+  //////////
   // Set to RGBA-mode
   void            RGBAMess(void);
   //////////
@@ -106,6 +97,9 @@ protected:
   //////////
   // set input data mode
   void bytemodeMess(bool);
+  //////////
+  // Set data type (BYTE, FLOAT, DOUBLE)
+  void            typeMess(std::string type);
 
 
   //-----------------------------------
@@ -118,6 +112,9 @@ protected:
   /////////
   // input data scaling
   float m_inputScale;
+  //////////
+  // data type
+  int             m_reqType;
 
   //////////
   // The pixBlock with the current image

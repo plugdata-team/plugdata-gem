@@ -4,12 +4,10 @@
 //
 // Implementation file
 //
-// Copyright (c) 2002-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//      zmoelnig@iem.at
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2002, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  this file has been generated...
+// this file has been generated...
 ////////////////////////////////////////////////////////
 
 #include "GEMglTexSubImage1D.h"
@@ -33,11 +31,11 @@ GEMglTexSubImage1D :: GEMglTexSubImage1D(t_floatarg arg0, t_floatarg arg1,
   xoffset(static_cast<GLint>(arg1)),
   width(static_cast<GLsizei>(arg2))
 {
-  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("level"));
-  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("xoffset"));
-  m_inlet[2] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[2] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("width"));
 }
 /////////////////////////////////////////////////////////
@@ -72,7 +70,7 @@ void GEMglTexSubImage1D :: render(GemState *state)
   }
   pixBlock*img=NULL;
   state->get(GemState::_PIX, img);
-  if(!img || !&img->image) {
+  if(!img) {
     return;
   }
   target=GL_TEXTURE_1D;

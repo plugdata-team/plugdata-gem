@@ -2,27 +2,21 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1998 Mark Danks.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2004, Jakob Leiner and Theresa Rienmüller
+// SPDX-FileCopyrightText: © 2005, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
+//
+// pix_multiblob
+//
+// based on Jakob Leiner & Theresa Rienmüller,
+// and stack-based code from animal.sf.net
+// by Ricardo Fabbri labmacambira.sf.net
 //
 /////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////
-//
-//  pix_multiblob
-// based on (c) 2004, Jakob Leiner & Theresa Rienmüller
-// and stack-based code from animal.sf.net which is
-// (c) Ricardo Fabbri labmacambira.sf.net
-//
-//
-/////////////////////////////////////////////////////////
-
 
 #include <assert.h>
 #include "pix_multiblob.h"
@@ -125,7 +119,7 @@ pix_multiblob :: pix_multiblob(t_floatarg f) :
   m_image.allocate();
 
   // outlets
-  m_infoOut = outlet_new(this->x_obj, &s_list);
+  m_infoOut = outlet_new(this->x_obj, gensym("list"));
 
   m_blobNumber = static_cast<int>(f);
   if(m_blobNumber < 1) {

@@ -1,21 +1,17 @@
-/*-----------------------------------------------------------------
-LOG
-    GEM - Graphics Environment for Multimedia
-
-    Base class for paths
-
-    Copyright (c) 1997-1999 Mark Danks. mark@danks.org
-    Copyright (c) Günther Geiger. geiger@epy.co.at
-    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
------------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_BASE_GEMPATHBASE_H_
 #define _INCLUDE__GEM_BASE_GEMPATHBASE_H_
 
 #include "Base/CPPExtern.h"
+#include "RTE/Array.h"
 
 /*-----------------------------------------------------------------
 -------------------------------------------------------------------
@@ -24,7 +20,7 @@ CLASS
 
 
 DESCRIPTION
-
+    Base class for paths
 
 -----------------------------------------------------------------*/
 class GEM_EXTERN GemPathBase : public CPPExtern
@@ -53,8 +49,7 @@ protected:
 
   ///////////
   // do the actual interpolation
-  virtual void lookupFunc(t_float x, t_float *ret, int numDimen, int npnts,
-                          t_float *pnts) = 0;
+  virtual void lookupFunc(t_float x, t_float *ret, int numDimen, const gem::RTE::Array&array) = 0;
 
   //////////
   // The number of dimensions
@@ -62,7 +57,10 @@ protected:
 
   //////////
   // The array
-  t_garray         *m_array;
+  t_symbol      *m_arrayname;
+  bool           m_warnedNonExistent;
+
+  gem::RTE::Array m_array;
 
   //////////
   // The outlet

@@ -2,17 +2,13 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2000 Guenter Geiger geiger@epy.co.at
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2000, Günther Geiger
+// SPDX-FileCopyrightText: © 2001, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "pix_sig2pix~.h"
 #include "Gem/State.h"
@@ -38,8 +34,8 @@ pix_sig2pix :: pix_sig2pix(t_floatarg width, t_floatarg height)
 {
   dimenMess((int)width, (int)height);   //tigital
   for (int i=0; i<3; i++) {
-    inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_signal,
-              &s_signal);  /* channels inlet */
+    inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("signal"),
+              gensym("signal"));  /* channels inlet */
   }
 }
 

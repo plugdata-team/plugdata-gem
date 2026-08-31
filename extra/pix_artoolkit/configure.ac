@@ -1,5 +1,6 @@
-AC_PREREQ(2.60)
+AC_PREREQ([2.71])
 AC_INIT([pix_artoolkit],[0.1],[zmoelnig@iem.at])
+LT_INIT([win32-dll])
 
 AM_INIT_AUTOMAKE([1.10 foreign])
 AC_CONFIG_MACRO_DIR([../../m4])
@@ -7,7 +8,6 @@ AC_CONFIG_MACRO_DIR([../../m4])
 
 AC_LANG(C++)
 AC_PROG_CXX
-AC_PROG_LIBTOOL
 
 GEM_CHECK_EXTERNAL
 GEM_CHECK_FAT(GEM_ARCH)
@@ -16,6 +16,6 @@ AC_SUBST(GEM_ARCH_LDFLAGS)
 
 GEM_CHECK_LIB([artoolkit],[AR],[AR/ar.h], [arInitCparam],,,,[ARToolKit])
 
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT

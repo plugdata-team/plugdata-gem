@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002-2006 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "pix_texture.h"
 
@@ -65,7 +59,8 @@ pix_texture :: pix_texture()
     m_texunit(0),
     m_numTexUnits(0),
     m_numPbo(0), m_oldNumPbo(0), m_curPbo(0), m_pbo(NULL),
-    m_upsidedown(false)
+    m_upsidedown(false),
+    m_matrixcoord(false)
 {
   m_dataSize[0] = m_dataSize[1] = m_dataSize[2] = -1;
   m_buffer.xsize = m_buffer.ysize = m_buffer.csize = -1;
@@ -89,11 +84,11 @@ pix_texture :: pix_texture()
   gem::Settings::get("texture.pbo", m_numPbo);
 
   // create an inlet to receive external texture IDs
-  m_inTexID  = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inTexID  = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("extTexture"));
 
   // create an outlet to send texture ID
-  m_outTexID = outlet_new(this->x_obj, &s_float);
+  m_outTexID = outlet_new(this->x_obj, gensym("float"));
 }
 
 ////////////////////////////////////////////////////////
@@ -265,7 +260,7 @@ void pix_texture :: sendExtTexture(GLuint texobj, GLfloat xRatio,
     SETFLOAT(ap+2, (t_float)yRatio);
     SETFLOAT(ap+3, (t_float)texType);
     SETFLOAT(ap+4, (t_float)upsidedown);
-    outlet_list(m_outTexID, &s_list, 5, ap);
+    outlet_list(m_outTexID, gensym("list"), 5, ap);
   }
 }
 
@@ -618,6 +613,28 @@ void pix_texture :: render(GemState *state)
 
   setTexCoords(m_coords, m_xRatio, m_yRatio, m_upsidedown);
 
+  // Store per-texunit texture sizes and configure texture matrices
+  // Use TexUnitSizes struct with gem::any (copy-based, no pointer issues)
+  TexUnitSizes currentSizes;
+  state->get(GemState::_GL_TEX_UNIT_SIZES, currentSizes);
+  currentSizes.sizes[m_texunit][0] = m_xRatio;
+  currentSizes.sizes[m_texunit][1] = m_yRatio;
+  state->set(GemState::_GL_TEX_UNIT_SIZES, currentSizes);
+
+  if(m_matrixcoord) {
+    int numTexUnits=m_numTexUnits;
+    for(int i=0; i<numTexUnits; i++) {
+      glActiveTexture(GL_TEXTURE0 + i);
+      glMatrixMode(GL_TEXTURE);
+      glLoadIdentity();
+      if(i != m_texunit) {
+        glScalef(currentSizes.sizes[i][0] / m_xRatio, currentSizes.sizes[i][1] / m_yRatio, 1.0f);
+      }
+    }
+    glMatrixMode(GL_MODELVIEW);
+    glActiveTexture(GL_TEXTURE0 + m_texunit);
+  }
+
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, m_env);
 
   /* cleanup */
@@ -656,6 +673,17 @@ void pix_texture :: postrender(GemState *state)
   popTexCoords(state);
 
   if (m_didTexture) {
+    // Restore texture matrices to identity
+    if(m_matrixcoord) {
+      int numTexUnits=m_numTexUnits;
+      for(int i=0; i<numTexUnits; i++) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glMatrixMode(GL_TEXTURE);
+        glLoadIdentity();
+      }
+      glMatrixMode(GL_MODELVIEW);
+    }
+
     if(GLEW_VERSION_1_3) {
       glActiveTexture(GL_TEXTURE0_ARB + m_texunit);  //needed?
     }
@@ -890,6 +918,10 @@ void pix_texture :: texunitMess(int unit)
 {
   m_texunit=unit;
 }
+void pix_texture :: matrixCoordMess(float state)
+{
+  m_matrixcoord = (state != 0);
+}
 
 ////////////////////////////////////////////////////////
 // static member functions
@@ -910,6 +942,7 @@ void pix_texture :: obj_setupCallback(t_class *classPtr)
   CPPEXTERN_MSG1(classPtr, "pbo", pboMess, int);
 
   CPPEXTERN_MSG1(classPtr, "texunit", texunitMess, int);
+  CPPEXTERN_MSG1(classPtr, "matrixcoord", matrixCoordMess, float);
 
   CPPEXTERN_MSG (classPtr, "extTexture", extTextureMess);
 

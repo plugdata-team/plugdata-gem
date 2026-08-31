@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "State.h"
 #include "Gem/GemGL.h"
@@ -384,6 +378,7 @@ const GemState::key_t GemState::getKey(const std::string&s)
     GemStateData::keys["gl.tex.units"]=_GL_TEX_UNITS;
     GemStateData::keys["gl.tex.orientation"]=_GL_TEX_ORIENTATION;
     GemStateData::keys["gl.tex.basecoord"]=_GL_TEX_BASECOORD;
+    GemStateData::keys["gl.tex.unitsizes"]=_GL_TEX_UNIT_SIZES;
   }
 
   key_t result=_ILLEGAL;

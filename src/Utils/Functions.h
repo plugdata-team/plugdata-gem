@@ -1,18 +1,11 @@
-/*-----------------------------------------------------------------
-LOG
-    GEM - Graphics Environment for Multimedia
-
-    GemFuncUtil.h
-       - contains functions for graphics
-       - part of GEM
-
-    Copyright (c) 1997-2000 Mark Danks. mark@danks.org
-    Copyright (c) Günther Geiger. geiger@epy.co.at
-    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
------------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_UTILS_FUNCTIONS_H_
 #define _INCLUDE__GEM_UTILS_FUNCTIONS_H_
@@ -24,6 +17,7 @@ LOG
  */
 #include "Utils/SIMD.h"
 #include "Utils/GemMath.h"
+#include "RTE/Array.h"
 
 // for rand()
 #include <stdlib.h>
@@ -353,9 +347,9 @@ GEM_EXTERN extern float gainFunc(float x, float a);
 //
 ///////////////////////////////////////////////////////////////////////////////
 GEM_EXTERN extern void linearFunc(float val, float *ret, int numDimen,
-                                  int npnts, float *pnts);
+                                  const gem::RTE::Array&array);
 GEM_EXTERN extern void linearFunc(double val, double *ret, int numDimen,
-                                  int npnts, double *pnts);
+                                  const gem::RTE::Array&array);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Spline function
@@ -372,9 +366,9 @@ GEM_EXTERN extern void linearFunc(double val, double *ret, int numDimen,
 //          David S. Ebert, Ed.
 ///////////////////////////////////////////////////////////////////////////////
 GEM_EXTERN extern void splineFunc(float val, float *ret, int numDimen,
-                                  int nknots, float *knot);
+                                  const gem::RTE::Array&array);
 GEM_EXTERN extern void splineFunc(double val, double *ret, int numDimen,
-                                  int nknots, double *knot);
+                                  const gem::RTE::Array&array);
 
 
 ///////////////////////////////////////////////////////////////////////////////

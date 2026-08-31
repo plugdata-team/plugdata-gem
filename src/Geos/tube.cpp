@@ -2,26 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
-//    A tube.
-//
-// object by cyrille.henry@la-kitchen.fr
-// This primitive create a kind of cilender with paramettre :
-//              Diameter of the 1st circle (1st base of the object)
-//              Diameter of the 2nd circle
-//              X, Y, Z displacement between the 2 circle
-//              X, Y rotation of the 1st circle
-//              X, Y rotation of the 2nd circle
-//
 // Implementation file
 //
-//    Copyright (c) 2003 Cyrille Henry. La Kitchen, Paris
-//    Copyright (c) 2003-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2003, Cyrille Henry and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "tube.h"
 
@@ -80,14 +66,14 @@ tube :: tube(t_floatarg size, t_floatarg size2, t_floatarg height,
   slicesMess(static_cast<int>(order_in));
 
   // the 8 inlets
-  m_inlet2     = inlet_new(x_obj, &x_obj->ob_pd, &s_float, gensym("size2"));
-  m_inlethigh  = inlet_new(x_obj, &x_obj->ob_pd, &s_float, gensym("high"));
-  m_inletTX    = inlet_new(x_obj, &x_obj->ob_pd, &s_float, gensym("TX"));
-  m_inletTY    = inlet_new(x_obj, &x_obj->ob_pd, &s_float, gensym("TY"));
-  m_inletrotX1 = inlet_new(x_obj, &x_obj->ob_pd, &s_float, gensym("rotX1"));
-  m_inletrotY1 = inlet_new(x_obj, &x_obj->ob_pd, &s_float, gensym("rotY1"));
-  m_inletrotX2 = inlet_new(x_obj, &x_obj->ob_pd, &s_float, gensym("rotX2"));
-  m_inletrotY2 = inlet_new(x_obj, &x_obj->ob_pd, &s_float, gensym("rotY2"));
+  m_inlet2     = inlet_new(x_obj, &x_obj->ob_pd, gensym("float"), gensym("size2"));
+  m_inlethigh  = inlet_new(x_obj, &x_obj->ob_pd, gensym("float"), gensym("high"));
+  m_inletTX    = inlet_new(x_obj, &x_obj->ob_pd, gensym("float"), gensym("TX"));
+  m_inletTY    = inlet_new(x_obj, &x_obj->ob_pd, gensym("float"), gensym("TY"));
+  m_inletrotX1 = inlet_new(x_obj, &x_obj->ob_pd, gensym("float"), gensym("rotX1"));
+  m_inletrotY1 = inlet_new(x_obj, &x_obj->ob_pd, gensym("float"), gensym("rotY1"));
+  m_inletrotX2 = inlet_new(x_obj, &x_obj->ob_pd, gensym("float"), gensym("rotX2"));
+  m_inletrotY2 = inlet_new(x_obj, &x_obj->ob_pd, gensym("float"), gensym("rotY2"));
 
   m_drawType = GL_TRIANGLE_STRIP;
 

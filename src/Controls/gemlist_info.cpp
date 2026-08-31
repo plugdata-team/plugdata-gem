@@ -4,11 +4,8 @@
 //
 // Implementation file
 //
-// Copyright (c) 2002-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//      zmoelnig@iem.at
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
-//
+// SPDX-FileCopyrightText: © 2004, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 ////////////////////////////////////////////////////////
 
@@ -156,10 +153,10 @@ void gemlist_info :: render(GemState *state)
   SETFLOAT(alist+10, shearZX);
   SETFLOAT(alist+11, shearZY);
 
-  outlet_list (m_outletPosition, &s_list, 3, alist+6);
-  outlet_list (m_outletScale, &s_list, 3, alist+0);
-  outlet_list (m_outletShear, &s_list, 3, alist+9);
-  outlet_list (m_outletRotation, &s_list, 3, alist+3);
+  outlet_list (m_outletPosition, gensym("list"), 3, alist+6);
+  outlet_list (m_outletScale, gensym("list"), 3, alist+0);
+  outlet_list (m_outletShear, gensym("list"), 3, alist+9);
+  outlet_list (m_outletRotation, gensym("list"), 3, alist+3);
 }
 
 /////////////////////////////////////////////////////////

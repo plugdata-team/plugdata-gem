@@ -4,10 +4,8 @@
 //
 // Implementation file
 //
-// Copyright (c) 2006 james tittle, tigital@mac.com
-//
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2006, James Tittle II and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 ////////////////////////////////////////////////////////
 
@@ -28,11 +26,11 @@ GEMglTexGenfv :: GEMglTexGenfv  (t_floatarg arg0, t_floatarg arg1,
   coord(static_cast<GLenum>(arg0)),
   pname(static_cast<GLenum>(arg1))
 {
-  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[0] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("coord"));
-  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[1] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("pname"));
-  m_inlet[2] = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet[2] = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("params"));
 }
 /////////////////////////////////////////////////////////

@@ -2,17 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2014, Antoine Villeret and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "VertexBuffer.h"
 
@@ -101,8 +96,10 @@ bool gem::VertexBuffer:: create (void)
   if(!(glGenBuffers && glBufferData && glBindBuffer)) {
     return false;
   }
-  if(!vbo) {
-    glGenBuffers(1, &vbo);
+  GLuint _v = vbo;
+  if(!_v) {
+    glGenBuffers(1, &_v);
+    vbo = _v;
   }
   if(vbo) {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -132,8 +129,10 @@ bool gem::VertexBuffer:: render (void)
 void gem::VertexBuffer:: destroy (void)
 {
   if ( vbo ) {
+    GLuint _v = vbo;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &_v);
+    vbo = _v;
   }
   vbo=0;
 }
@@ -198,11 +197,15 @@ bool gem::VBO::update(size_t argc, const float* argv)
   if(!(glGenBuffers && glBindBuffer && glBufferData)) {
     return false;
   }
-  if(!m_vbo) {
-    glGenBuffers(1, &m_vbo);
+  GLuint vbo = m_vbo;
+
+  if(!vbo) {
+    glGenBuffers(1, &vbo);
     m_size = 0;
   }
-  if(!m_vbo) {
+  m_vbo = vbo;
+
+  if(!vbo) {
     return false;
   }
 
@@ -218,9 +221,10 @@ bool gem::VBO::update(size_t argc, const float* argv)
 }
 void gem::VBO::destroy(void)
 {
-  if(m_vbo) {
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glDeleteBuffers(1, &m_vbo);
+  GLuint vbo = m_vbo;
+  if(vbo) {
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glDeleteBuffers(1, &vbo);
   }
   m_vbo = 0;
   m_size = 0;

@@ -1,12 +1,15 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 /*-----------------------------------------------------------------
-LOG
-    GEM - Graphics Environment for Multimedia
 
     The base class for all externs written in C++
-
-    Copyright (c) 1997-1999 Mark Danks. mark@danks.org
-    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 
 -----------------------------------------------------------------*/
 
@@ -341,21 +344,21 @@ static void obj_setupCallback(t_class *classPtr);
   } catch (...) {gem::catchGemException(CPPExtern::s_holdname, CPPExtern::s_holder); return NULL;} \
   }
 
-#define REAL_NEW__SETUP(NEW_CLASS, CLASSNAME)                           \
-  extern "C" {                                                          \
-  GEM_EXPORT void NEW_CLASS ## _setup(void)                             \
-  {                                                                     \
-  static int recalled=0; if(recalled)return; recalled=1;                \
-  NEW_CLASS ## _class = class_new(                                      \
-    gensym(CLASSNAME),                                                 \
-    (t_newmethod)create_ ## NEW_CLASS,                                  \
-    (t_method)&NEW_CLASS::obj_freeCallback,                             \
-    sizeof(Obj_header), GEM_CLASSFLAGS,                                 \
-    A_GIMME, A_NULL);                                                   \
-  SET_HELPSYMBOL(NEW_CLASS, CLASSNAME);                                 \
-  NEW_CLASS::real_obj_setupCallback(NEW_CLASS ## _class);               \
-  }                                                                     \
-   }                                                                    \
+#define REAL_NEW__SETUP(NEW_CLASS, CLASSNAME)                                  \
+  extern "C" {                                                                 \
+  GEM_EXPORT void NEW_CLASS##_setup(void) {                                    \
+    static int recalled = 0;                                                   \
+    if (recalled)                                                              \
+      return;                                                                  \
+    recalled = 1;                                                              \
+    NEW_CLASS##_class =                                                        \
+        class_new(gensym(CLASSNAME), (t_newmethod)create_##NEW_CLASS,          \
+                  (t_method) & NEW_CLASS::obj_freeCallback,                    \
+                  sizeof(Obj_header), GEM_CLASSFLAGS, A_GIMME, A_NULL);        \
+    SET_HELPSYMBOL(NEW_CLASS, CLASSNAME);                                      \
+    NEW_CLASS::real_obj_setupCallback(NEW_CLASS##_class);                      \
+  }                                                                            \
+  }                                                                            \
   AUTO_REGISTER_CLASS(NEW_CLASS)
 
 #define REAL_NEW__MAKEVAR(num, type)                                    \

@@ -4,9 +4,8 @@
 //
 // Implementation file
 //
-// Copyright (c) 2004 tigital@mac.com
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2004, James Tittle II and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 ////////////////////////////////////////////////////////
 
@@ -23,7 +22,7 @@ CPPEXTERN_NEW_WITH_ONE_ARG ( GEMglMultMatrixd, t_floatarg, A_DEFFLOAT );
 //
 GEMglMultMatrixd :: GEMglMultMatrixd    (t_floatarg arg0)
 {
-  m_inlet = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                       gensym("list"));
 }
 /////////////////////////////////////////////////////////

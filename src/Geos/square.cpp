@@ -2,15 +2,10 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 /////////////////////////////////////////////////////////
 
@@ -53,10 +48,10 @@ void square :: renderShape(GemState *state)
 
   glBegin(m_drawType);
 
-  SetVertex(state, -m_size, -m_size, 0.,   0., 0.,  0);
-  SetVertex(state,  m_size, -m_size, 0.,   1., 0.,  1);
-  SetVertex(state,  m_size,  m_size, 0.,   1., 1.,  2);
-  SetVertex(state, -m_size,  m_size, 0.,   0., 1.,  3);
+  SetVertex(state, -m_size, -m_size, 0.,  0., 0.,  0);
+  SetVertex(state,  m_size, -m_size, 0.,  1., 0.,  1);
+  SetVertex(state,  m_size,  m_size, 0.,  1., 1.,  2);
+  SetVertex(state, -m_size,  m_size, 0.,  0., 1.,  3);
 
   glEnd();
 }

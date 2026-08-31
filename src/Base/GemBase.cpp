@@ -2,19 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////
 
 /*
  * m_state: context dependent initialization state
@@ -227,7 +220,8 @@ void GemBase :: setModified(void)
     m_cache->dirty = true;
   }
   m_modified=true;
-  switch(m_pimpl->state) {
+  const enum RenderState state = m_pimpl->state;
+  switch(state) {
   case DISABLED:
   case INIT:
     break;
@@ -343,6 +337,7 @@ void GemBase :: obj_setupCallback(t_class *classPtr)
       GemBase*obj=GetMyClass(data);
       if(obj) {
         obj->m_pimpl->debugGL = b;
+        gem::utils::gl::setDebugGLEnabled(b);
       }
     }
     explicit _CallbackClass_debugGL (struct _class*c)

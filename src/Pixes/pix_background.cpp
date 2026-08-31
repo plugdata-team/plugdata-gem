@@ -1,11 +1,13 @@
-/*
- *  pix_background.cpp
- *  gem_darwin
- *
- *  Created by chris clepper on Mon Oct 07 2002.
- *  Copyright (c) 2002 __MyCompanyName__. All rights reserved.
- *
- */
+////////////////////////////////////////////////////////
+//
+// GEM - Graphics Environment for Multimedia
+//
+// Implementation file
+//
+// SPDX-FileCopyrightText: © 2002, Chris Clepper and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
 
 #include "pix_background.h"
 #include "Utils/Functions.h"
@@ -24,7 +26,7 @@ CPPEXTERN_NEW_WITH_GIMME(pix_background);
 pix_background :: pix_background(int argc, t_atom*argv) :
   m_Yrange(0), m_Urange(0), m_Vrange(0), m_Arange(0), m_reset(1)
 {
-  inletRange = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  inletRange = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                          gensym("range_n"));
 
   m_savedImage.xsize=320;

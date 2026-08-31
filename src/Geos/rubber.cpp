@@ -1,15 +1,13 @@
-/*
- *  GEM - Graphics Environment for Multimedia
- *
- *  rubber.cpp
- *  gem_darwin
- *
- *  Created by Jamie Tittle on Sun Jan 19 2003.
- *  Copyright (c) 2003-2006 tigital. All rights reserved.
- *    For information on usage and redistribution, and for a DISCLAIMER OF ALL
- *    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
- *
- */
+////////////////////////////////////////////////////////
+//
+// GEM - Graphics Environment for Multimedia
+//
+// Implementation file
+//
+// SPDX-FileCopyrightText: © 2003, James Tittle II and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
 
 #include "rubber.h"
 #include "Gem/State.h"
@@ -47,11 +45,11 @@ rubber :: rubber( t_floatarg gridX, t_floatarg gridY )
   m_grid_sizeY = (gridYi>0)?gridYi:GRID_SIZE_Y;
 
   // the height inlet
-  m_inletH = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inletH = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                        gensym("Ht"));
-  inletcX = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  inletcX = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                       gensym("cX"));
-  inletcY = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  inletcY = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                       gensym("cY"));
 
   m_drawType = GL_POLYGON;

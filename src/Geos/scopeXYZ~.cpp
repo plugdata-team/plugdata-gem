@@ -2,15 +2,10 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2005, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 /////////////////////////////////////////////////////////
 #include "scopeXYZ~.h"
@@ -40,7 +35,7 @@ scopeXYZ :: scopeXYZ(t_floatarg len)
   /* channels inlet */
   int i;
   for (i=0; i<3; i++) {
-    inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_signal, &s_signal);
+    inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("signal"), gensym("signal"));
   }
 
 }

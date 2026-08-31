@@ -1,12 +1,15 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2010, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 /*-----------------------------------------------------------------
-  LOG
-  GEM - Graphics Environment for Multimedia
 
   access arrays of the RTE
-
-  Copyright (c) 2010-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-  For information on usage and redistribution, and for a DISCLAIMER OF ALL
-  WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 
   -----------------------------------------------------------------*/
 #ifndef _INCLUDE__GEM_RTE_ARRAY_H_
@@ -15,6 +18,7 @@
 
 #include "Gem/ExportDef.h"
 #include <string>
+#include "Gem/RTE.h"
 
 namespace gem
 {
@@ -38,12 +42,13 @@ public:
 
   /* reference another array */
   virtual bool name(const std::string&s);
-  virtual const std::string name(void);
+  virtual const std::string&name(void) const;
 
   virtual bool resize(const size_t newsize);
-  virtual size_t size(void);
+  virtual size_t size(void) const;
 
   virtual t_float&operator[](const unsigned int&index);
+  virtual const t_float&operator[](const unsigned int&index) const;
 
   virtual void set(const t_float f);
 

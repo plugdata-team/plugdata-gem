@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "GemShape.h"
 #include "Gem/State.h"
@@ -66,10 +60,10 @@ static void initialize_drawtypes(std::map<std::string, GLenum>&drawtypes)
 
   drawtypes["strip"]=GL_TRIANGLE_STRIP;
   drawtypes["fill"]=GL_POLYGON;
-  
+
   drawtypes["patch"]=GL_PATCHES;
   drawtypes["patches"]=GL_PATCHES;
-  
+
 }
 
 }
@@ -87,7 +81,7 @@ GemShape :: GemShape(t_floatarg size)
   }
 
   // the size inlet
-  m_inlet = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_inlet = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                       gensym("ft1"));
 
   initialize_drawtypes(m_drawTypes);

@@ -1,11 +1,13 @@
-/*
- *  pix_blur.cpp
- *  gem_darwin
- *
- *  Created by chris clepper on Mon Oct 07 2002.
- *  Copyright (c) 2002 __MyCompanyName__. All rights reserved.
- *
- */
+////////////////////////////////////////////////////////
+//
+// GEM - Graphics Environment for Multimedia
+//
+// Implementation file
+//
+// SPDX-FileCopyrightText: © 2002, Chris Clepper and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
 
 #include "pix_blur.h"
 #include "Utils/Functions.h"
@@ -29,7 +31,7 @@ pix_blur :: pix_blur(void) :
 {
   long size,src,i;
 
-  inletBlur = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  inletBlur = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                         gensym("blur"));
 
   size = 320 * 240 * 4;

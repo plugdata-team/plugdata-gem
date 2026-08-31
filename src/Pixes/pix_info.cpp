@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1998 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2001, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "pix_info.h"
 #include "Gem/State.h"
@@ -78,30 +72,24 @@ void pix_info :: showInfoRaw(pixBlock*img) {
     outlet_float(m_x,        (t_float)-1);
     return;
   }
-  SETFLOAT(  &abuf[0], (t_float)img->newimage);
-  SETFLOAT(  &abuf[1], (t_float)img->newfilm);
-  if (!&img->image) { // we have a pixblock, but no image!
-    outlet_list(m_pixblock, gensym("list"), 2, abuf);
-
-    outlet_float(m_misc,   (t_float)-1);
-    outlet_float(m_format, (t_float)-1);
-    outlet_float(m_c,      (t_float)-1);
-    outlet_float(m_y,      (t_float)-1);
-    outlet_float(m_x,      (t_float)-1);
-    return;
-  }
   if(img->image.data) {
     t_gpointer*gp=(t_gpointer*)img->image.data;
     SETPOINTER(&abuf[2], gp);
     outlet_anything(m_data, gensym("data"), 1, abuf+2);
   }
+
+  SETFLOAT(  &abuf[0], (t_float)img->newimage);
+  SETFLOAT(  &abuf[1], (t_float)img->newfilm);
   outlet_list(m_pixblock, gensym("list"), 2, abuf);
+
   SETFLOAT  (&abuf[0], (t_float)img->image.type);
   SETFLOAT  (&abuf[1], (t_float)img->image.upsidedown);
   SETFLOAT  (&abuf[2], (t_float)img->image.not_owned);
   outlet_list(m_misc, gensym("list"), 3, abuf);
+
   // send out the colorspace (as integer!)
   outlet_float(m_format, (t_float)img->image.format);
+
   // send out the width/height/csize information
   outlet_float(m_c, (t_float)img->image.csize);
   outlet_float(m_y, (t_float)img->image.ysize);

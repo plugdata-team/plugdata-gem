@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 #include "Gem/GemConfig.h"
 
 #include "pix_film.h"
@@ -708,7 +702,7 @@ void pix_film :: obj_setupCallback(t_class *classPtr)
   if(pd_objectmaker
       && reinterpret_cast<t_gotfn>(create_pix_film)==zgetfn(&pd_objectmaker,
           gensym("pix_filmQT"))) {
-    ::logpost(0, 2+3, "not registering [pix_filmQT] again...");
+    ::logpost(0, PD_DEBUG + 2, "not registering [pix_filmQT] again...");
   } else {
     class_addcreator(reinterpret_cast<t_newmethod>(create_pix_film),
                      gensym("pix_filmQT"), A_GIMME, A_NULL);

@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2014 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
+// SPDX-FileCopyrightText: © 2002, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "Gem/GemConfig.h"
 #include "GLUtil.h"
@@ -23,6 +17,40 @@
 #include "Base/CPPExtern.h"
 
 #include <math.h>
+
+// Global variable to store the current active object (e.g., gemhead) during rendering
+static struct CPPExtern* s_currentObject = NULL;
+
+// Global variable to store whether debugGL is enabled
+static bool s_debugGLEnabled = false;
+
+namespace gem {
+namespace utils {
+namespace gl {
+
+void setCurrentObject(struct CPPExtern* obj)
+{
+  s_currentObject = obj;
+}
+
+struct CPPExtern* getCurrentObject(void)
+{
+  return s_currentObject;
+}
+
+void setDebugGLEnabled(bool enabled)
+{
+  s_debugGLEnabled = enabled;
+}
+
+bool isDebugGLEnabled(void)
+{
+  return s_debugGLEnabled;
+}
+
+} // namespace gl
+} // namespace utils
+} // namespace gem
 
 // I hate Microsoft...I shouldn't have to do this!
 #ifdef _WIN32
@@ -94,7 +122,7 @@ GLenum gem::utils::gl::glReportError (bool verbose)
   GLenum err = glGetError();
   if (verbose && GL_NO_ERROR != err) {
     const char *errStr = gem::utils::gl::glErrorString(err);
-    post("GL[0x%X]: %s", err, errStr);
+    post("GL[0x%04X]: %s", err, errStr);
   }
   // ensure we are returning an OSStatus noErr if no error condition
   if (err == GL_NO_ERROR) {
@@ -104,20 +132,24 @@ GLenum gem::utils::gl::glReportError (bool verbose)
   }
 }
 
-GLenum gem::utils::gl::glReportError (struct CPPExtern*parent, const char*prefix)
+GLenum gem::utils::gl::glReportError (struct CPPExtern*parent, const char*_prefix)
 {
-  GLenum errNum, finalErrNum = 0;
-  if (!parent)
-      return glReportError(true);
-
-  int maxErrors = 100; // guard against no-context infinite loop
-  while (maxErrors-- > 0 && (errNum = glGetError()) != GL_NO_ERROR) {
-      finalErrNum = errNum;
-      char const* errStr = glErrorString(errNum);
-      if (errStr)
-          parent->error("%s%s [%d]", prefix ? prefix : "", errStr, errNum);
+  GLenum errNum, finalErrNum=0;
+  const char*prefix = _prefix?prefix:"";
+  while ((errNum = glGetError()) != GL_NO_ERROR) {
+    finalErrNum = errNum;
+    const char*errStr = glErrorString(errNum);
+    if(parent) {
+      if(errStr)
+        parent->error("%s%s [0x%04X]", prefix, errStr, errNum);
       else
-          parent->error("%sopenGL error 0x%X", prefix ? prefix : "", errNum);
+        parent->error("%sopenGL error 0x%04X", prefix, errNum);
+      } else {
+      if(errStr)
+        pd_error(0, "[Gem]: %s%s [0x%04X]", prefix, errStr, errNum);
+      else
+        pd_error(0, "[Gem]: %sopenGL error 0x%04X", prefix, errNum);
+    }
   }
   return finalErrNum;
 }
@@ -184,11 +216,11 @@ float GLuintMap::set(GLuint i, float f)
   m_pimpl->idmap[f]=i;
   return f;
 }
-void GLuintMap::del(float f)
-{
-  m_pimpl->del(f);
-}
+void GLuintMap::del(float f) { m_pimpl->del(f); }
 
+// SPDX-SnippetBegin
+// SPDX-License-Identifier: SGI-B-2.0
+// SPDX-SnippetCopyrightText: © 1991-2000, Silicon Graphics, Inc.
 
 /*
  * SGI FREE SOFTWARE LICENSE B (Version 2.0, Sept. 18, 2008)
@@ -309,8 +341,11 @@ void gem::utils::gl::gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNe
   glMultMatrixd(&m[0][0]);
 }
 
+// SPDX-SnippetEnd
 
-#define CASE2NAME(x) case x: return #x
+#define CASE2NAME(x)                                                           \
+  case x:                                                                      \
+    return #x
 
 namespace gem { namespace utils { namespace gl {
 const char*pixtype2name (GLenum type) {

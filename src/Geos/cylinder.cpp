@@ -2,25 +2,18 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "cylinder.h"
 #include "Gem/State.h"
 
 CPPEXTERN_NEW_WITH_TWO_ARGS(cylinder, t_floatarg, A_DEFFLOAT, t_floatarg,
                             A_DEFFLOAT);
-
-#define normal3f glNormal3f
 
 /////////////////////////////////////////////////////////
 //
@@ -64,7 +57,6 @@ void cylinder :: renderShape(GemState *state)
   if(m_drawType==GL_DEFAULT_GEM) {
     m_drawType=GL_FILL;
   }
-
 
   GLenum type = m_drawType;
   switch(m_drawType) {
@@ -118,15 +110,25 @@ void cylinder :: renderShape(GemState *state)
   state->get(GemState::_GL_TEX_NUMCOORDS, texNum);
   state->get(GemState::_GL_LIGHTING, lighting);
 
+  GLfloat s0 = 0., s01 = -1., s03 =  0., s0123 = 0.;
+  GLfloat t1 = 1., t01 =  0., t12 =  1., t0123 = 0.;
 
-  GLfloat xsize = 1.0, xsize0 = 0.0;
-  GLfloat ysize = 1.0, ysize0 = 0.0;
   if(texType && texNum>=3) {
-    xsize0 = texCoords[0].s;
-    xsize  = texCoords[1].s-xsize0;
-    ysize0 = texCoords[1].t;
-    ysize  = texCoords[2].t-ysize0;
+    s0 = texCoords[0].s;
+    s01 = s0 - texCoords[1].s;
+    s03 = s0 - texCoords[3].s;
+    s0123 = s01 + texCoords[2].s - texCoords[3].s;
+
+    t1 = texCoords[1].t;
+    t12 = t1 - texCoords[2].t;
+    t01 = t1 - texCoords[0].t;
+    t0123 = t01 - texCoords[2].t + texCoords[3].t;
   }
+
+#define S(s, t) ((s0123*(s) - s03)*(t) - s01*(s) + s0)
+#define T(s, t) ((t0123*(t) - t01)*(s) - t12*(t) + t1)
+
+
 
   glPushMatrix();
   glTranslatef(0.f, 0.f, -m_size);
@@ -139,7 +141,7 @@ void cylinder :: renderShape(GemState *state)
   dr = (topRadius - baseRadius) / stacks;
   dz = height / stacks;
   nz = (baseRadius - topRadius) /
-       height;       /* Z component of normal vectors */
+    height;       /* Z component of normal vectors */
 
   GLfloat ds = 1.0 / slices;
   GLfloat dt = 1.0 / stacks;
@@ -152,20 +154,21 @@ void cylinder :: renderShape(GemState *state)
     for (i = 0; i <= slices; i++) {
       GLfloat x, y;
       if (i == slices) {
-	x = sin(0.0);
-	y = cos(0.0);
+        x = sin(0.0);
+        y = cos(0.0);
       } else {
-	x = sin(i * da);
-	y = cos(i * da);
+        x = sin(i * da);
+        y = cos(i * da);
       }
-      normal3f(x * nsign, y * nsign, nz * nsign);
+      glNormal3f(x * nsign, y * nsign, nz * nsign);
       if(texType) {
-	glTexCoord2f(s*xsize+xsize0, t*ysize+ysize0);
+        glTexCoord2f(S(s, t), T(s, t));
       }
       glVertex3f(x * r, y * r, z);
-      normal3f(x * nsign, y * nsign, nz * nsign);
+      glNormal3f(x * nsign, y * nsign, nz * nsign);
       if(texType) {
-	glTexCoord2f(s*xsize+xsize0, (t + dt)*ysize+ysize0);
+        GLfloat t_ = t+dt;
+        glTexCoord2f(S(s, t_), T(s, t_));
       }
       glVertex3f(x * (r + dr), y * (r + dr), z + dz);
 

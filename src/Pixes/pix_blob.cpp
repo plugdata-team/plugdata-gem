@@ -2,28 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1998 Mark Danks.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2000, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////
-//
-//  pix_blob
-//
-//  0409:forum::für::umläute:2000
-//  IOhannes m zmoelnig
-//  mailto:zmoelnig@iem.at
-//
-/////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////
 
 #include "pix_blob.h"
 
@@ -54,9 +38,9 @@ pix_blob :: pix_blob(int argc, t_atom *argv)
   inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("list"),
             gensym("gain"));
 
-  m_xOut = outlet_new(this->x_obj, &s_float);
-  m_yOut = outlet_new(this->x_obj, &s_float);
-  m_zOut = outlet_new(this->x_obj, &s_float);
+  m_xOut = outlet_new(this->x_obj, gensym("float"));
+  m_yOut = outlet_new(this->x_obj, gensym("float"));
+  m_zOut = outlet_new(this->x_obj, gensym("float"));
 }
 
 /////////////////////////////////////////////////////////

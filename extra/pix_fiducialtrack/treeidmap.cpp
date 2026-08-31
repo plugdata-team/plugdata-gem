@@ -1,3 +1,15 @@
+////////////////////////////////////////////////////////
+//
+// GEM - Graphics Environment for Multimedia
+//
+// Implementation file
+//
+// SPDX-FileCopyrightText: © 2004, Ross Bencina <rossb@audiomulch.com>
+// SPDX-FileCopyrightText: © 2005, Martin Kaltenbrunner <mkalten@iua.upf.edu>
+// SPDX-FileCopyrightText: © 2006, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: LGPL-2.1-or-later
+//
+////////////////////////////////////////////////////////
 /*
   Fiducial tracking library.
   Copyright (C) 2004 Ross Bencina <rossb@audiomulch.com>

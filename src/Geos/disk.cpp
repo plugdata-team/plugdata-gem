@@ -2,20 +2,13 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2000, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////
-// 2105:forum::für::umläute:2000
 /////////////////////////////////////////////////////////
 // added the gluPartialDisk
 /////////////////////////////////////////////////////////
@@ -189,38 +182,38 @@ void disk :: renderShape(GemState *state)
       GLint s;
       glBegin(GL_QUAD_STRIP);
       for (s = 0; s <= m_numSlices; s++) {
-	GLfloat a=(s == m_numSlices)?0.0:(s * da);
-	sa = sin(a);
-	ca = cos(a);
-	if(texType) {
-	  glTexCoord2f((0.5 + sa * r2 / dtc)*xsize+xsize0,
-		       (0.5 + ca * r2 / dtc)*ysize+ysize0);
-	}
-	glVertex2f(r2 * sa, r2 * ca);
-	if(texType) {
-	  glTexCoord2f((0.5 + sa * r1 / dtc)*xsize+xsize0,
-		       (0.5 + ca * r1 / dtc)*ysize+ysize0);
-	}
-	glVertex2f(r1 * sa, r1 * ca);
+        GLfloat a=(s == m_numSlices)?0.0:(s * da);
+        sa = sin(a);
+        ca = cos(a);
+        if(texType) {
+          glTexCoord2f((0.5 + sa * r2 / dtc)*xsize+xsize0,
+                       (0.5 + ca * r2 / dtc)*ysize+ysize0);
+        }
+        glVertex2f(r2 * sa, r2 * ca);
+        if(texType) {
+          glTexCoord2f((0.5 + sa * r1 / dtc)*xsize+xsize0,
+                       (0.5 + ca * r1 / dtc)*ysize+ysize0);
+        }
+        glVertex2f(r1 * sa, r1 * ca);
       }
       glEnd();
     } else {
       GLint s;
       glBegin(GL_QUAD_STRIP);
       for (s = m_numSlices; s >= 0; s--) {
-	GLfloat a=(s==m_numSlices)?0.0:s * da;
-	sa = sin(a);
-	ca = cos(a);
-	if(texType) {
-	  glTexCoord2f((0.5 - sa * r2 / dtc)*xsize+xsize0,
-		       (0.5 + ca * r2 / dtc)*ysize+ysize0);
-	}
-	glVertex2f(r2 * sa, r2 * ca);
-	if(texType) {
-	  glTexCoord2f((0.5 - sa * r1 / dtc)*xsize+xsize0,
-		       (0.5 + ca * r1 / dtc)*ysize+ysize0);
-	}
-	glVertex2f(r1 * sa, r1 * ca);
+        GLfloat a=(s==m_numSlices)?0.0:s * da;
+        sa = sin(a);
+        ca = cos(a);
+        if(texType) {
+          glTexCoord2f((0.5 - sa * r2 / dtc)*xsize+xsize0,
+                       (0.5 + ca * r2 / dtc)*ysize+ysize0);
+        }
+        glVertex2f(r2 * sa, r2 * ca);
+        if(texType) {
+          glTexCoord2f((0.5 - sa * r1 / dtc)*xsize+xsize0,
+                       (0.5 + ca * r1 / dtc)*ysize+ysize0);
+        }
+        glVertex2f(r1 * sa, r1 * ca);
       }
       glEnd();
     }

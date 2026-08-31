@@ -2,15 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2008-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2008, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "gemreceive.h"
 
@@ -224,7 +221,7 @@ gemreceive :: gemreceive(t_symbol*s,t_floatarg f) :
 {
   debug_post("hi, i am gemreceive %p", this);
 
-  m_fltin = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float,
+  m_fltin = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
                       gensym(""));
   m_outlet = outlet_new(this->x_obj, 0);
 

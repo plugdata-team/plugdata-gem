@@ -2,17 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "multimodel.h"
 #include "plugins/modelloader.h"
@@ -63,7 +58,7 @@ multimodel :: multimodel(t_symbol* filename, t_floatarg baseModel,
   m_drawTypes["lines"]=GL_LINES;
   m_drawTypes["fill"]=GL_TRIANGLES;
 
-  inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_float, gensym("mdl_num"));
+  inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"), gensym("mdl_num"));
 
   // make sure that there are some characters
   if (filename&&filename->s_name&&*filename->s_name) {

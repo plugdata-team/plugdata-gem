@@ -1,14 +1,15 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2005, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 /*-----------------------------------------------------------------
 
-GEM - Graphics Environment for Multimedia
-
-Load an video into a pix block
-
-Copyright (c) 1997-1999 Mark Danks. mark@danks.org
-Copyright (c) Günther Geiger. geiger@epy.co.at
-Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-For information on usage and redistribution, and for a DISCLAIMER OF ALL
-WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+  video capture backend using V4L2
 
 -----------------------------------------------------------------*/
 
@@ -31,25 +32,25 @@ WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 
 # include <stdio.h>
 # include <stdlib.h>
-//# include <stdarg.h>
+// # include <stdarg.h>
 # include <unistd.h>
 # include <string.h>
-//# include <ctype.h>
+// # include <ctype.h>
 # include <fcntl.h>
 # include <errno.h>
 # include <sys/ioctl.h>
-//# include <sys/types.h>
-//# include <sys/time.h>
+// # include <sys/types.h>
+// # include <sys/time.h>
 # include <asm/types.h>
 # include <linux/videodev2.h>
 # include <sys/mman.h>
-#if (defined HAVE_PTHREADS) || (defined HAVE_PTHREAD)
+# if (defined HAVE_PTHREADS) || (defined HAVE_PTHREAD)
 /* the bad thing is, that we currently don't have any alternative to using PTHREADS
  * LATER: make threading optional
  *        (or at least disabled capturing when no pthreads are available)
  */
-# include <pthread.h>
-#endif
+#  include <pthread.h>
+# endif
 # define V4L2_DEVICENO 0
 /* request 4 buffers (but if less are available, it's fine too... */
 # define V4L2_NBUF 4

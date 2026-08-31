@@ -2,15 +2,10 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 /////////////////////////////////////////////////////////
 
@@ -42,7 +37,7 @@ color :: color(int argc, t_atom *argv)
   }
 
   // create the new inlet
-  inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_list, gensym("color"));
+  inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("list"), gensym("color"));
 }
 
 /////////////////////////////////////////////////////////

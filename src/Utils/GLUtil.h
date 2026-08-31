@@ -1,18 +1,11 @@
-/*-----------------------------------------------------------------
-LOG
-    GEM - Graphics Environment for Multimedia
-
-    GemGLUtil.h
-       - contains functions for graphics
-       - part of GEM
-
-    Copyright (c) 1997-2000 Mark Danks. mark@danks.org
-    Copyright (c) Günther Geiger. geiger@epy.co.at
-    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
------------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2002, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 #ifndef _INCLUDE__GEM_UTILS_GLUTIL_H_
 #define _INCLUDE__GEM_UTILS_GLUTIL_H_
@@ -46,6 +39,16 @@ namespace gl
   GEM_EXTERN const char*          glErrorString(void);
   GEM_EXTERN extern GLenum        glReportError (bool verbose=true);
   GEM_EXTERN extern GLenum        glReportError (struct CPPExtern*, const char*prefix=0);
+
+  /* Set/get the current active object (e.g., gemhead) during rendering
+   * This is used for error tracking when no parent is available */
+  GEM_EXTERN void                setCurrentObject(struct CPPExtern* obj);
+  GEM_EXTERN struct CPPExtern*    getCurrentObject(void);
+
+  /* Set/get whether debugGL is enabled
+   * This is used to control when OpenGL errors are reported */
+  GEM_EXTERN void                setDebugGLEnabled(bool enabled);
+  GEM_EXTERN bool                isDebugGLEnabled(void);
 
   GEM_EXTERN extern int           getGLdefine(const char *name);
   GEM_EXTERN extern int           getGLdefine(const struct _symbol *name);

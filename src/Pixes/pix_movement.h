@@ -1,30 +1,20 @@
-/*-----------------------------------------------------------------
-LOG
-GEM - Graphics Environment for Multimedia
-
-set the Alpha-channel of a pixBlock depending on the difference between the current and the last pixBlock
-
-Copyright (c) 1997-1999 Mark Danks. mark@danks.org
-Copyright (c) Günther Geiger. geiger@epy.co.at
-Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-For information on usage and redistribution, and for a DISCLAIMER OF ALL
-WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-
------------------------------------------------------------------*/
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2000, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
 
 /*-----------------------------------------------------------------
 pix_movement
 
-  movement-transform a series of pictures (especially movies, videos,...)
-  you have to use pix_film instead of pix_movie to make this work with prerecorded videos
+  set the Alpha-channel of a pixBlock depending on the difference between the current and the last pixBlock
 
   2803:forum::für::umläute:2000
   0409:forum::für::umläute:2000
   1801:forum::für::umläute:2001  added the second mode
-  IOhannes m zmoelnig
-  mailto:zmoelnig@iem.at
-
-  this code is published under the Gnu GeneralPublicLicense that should be distributed with gem & pd
 
 -----------------------------------------------------------------*/
 

@@ -1,17 +1,13 @@
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file for color-conversion routines
 //
-//    Copyright (c) 2023 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
+// SPDX-FileCopyrightText: © 2023, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 #include "PixConvert.h"
 #include "Utils/Functions.h"
 #include <cstring>
@@ -66,7 +62,7 @@
 #undef CONVERTER_MARK
 #if GEM_DEBUG_PIXCONVERT
 # include "m_pd.h"
-# define CONVERTER_MARK() logpost(0, 3+1, "%s(%ux%u)", __FUNCTION__, (unsigned int)width, (unsigned int)height)
+# define CONVERTER_MARK() logpost(0, PD_DEBUG + 1, "%s(%ux%u)", __FUNCTION__, (unsigned int)width, (unsigned int)height)
 #else
 # define CONVERTER_MARK() 0
 #endif

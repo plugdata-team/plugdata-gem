@@ -1,18 +1,13 @@
 ////////////////////////////////////////////////////////
 //
-// GEMi - Graphics Environment for Multimedia
-//
-// zmoelnig@iem.at
+// GEM - Graphics Environment for Multimedia
 //
 // Implementation file
 //
-//    Copyright (c) 1997-1998 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "pix_zoom.h"
 #include "Gem/GemGL.h"
@@ -30,6 +25,8 @@ CPPEXTERN_NEW_WITH_GIMME(pix_zoom);
 /////////////////////////////////////////////////////////
 pix_zoom :: pix_zoom(int argc, t_atom*argv)
 {
+  post("this object is deprecated; use [pix_coordinate] or shaders instead.");
+
   t_float x = 1., y=1.;
   switch(argc) {
   case 0:

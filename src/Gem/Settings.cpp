@@ -2,13 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2009-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2009, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
+//
+////////////////////////////////////////////////////////
 //
 // load settings from a file (or get them via env-variables)
 //
@@ -143,12 +142,12 @@ struct PIMPL {
       r=binbuf_read(bb, (char*)filename,
                     const_cast<char*>(gem::files::expandEnv(dirname, true).c_str()), 1);
       if(0==r) {
-        logpost(0, 3+1, "found Gem-settings '%s' in '%s'", filename, dirname);
+        logpost(0, PD_DEBUG + 1, "found Gem-settings '%s' in '%s'", filename, dirname);
       }
     } else {
       r=binbuf_read_via_path(bb, (char*)filename, (char*)".", 1);
       if(0==r) {
-        logpost(0, 3+1, "found Gem-settings '%s'", filename);
+        logpost(0, PD_DEBUG + 1, "found Gem-settings '%s'", filename);
       }
     }
 

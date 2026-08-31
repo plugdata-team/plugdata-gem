@@ -2,24 +2,19 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2019, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "modelfiler.h"
 #include "plugins/modelloader.h"
 #include <algorithm> // std::min
 #include "RTE/Array.h"
 
-CPPEXTERN_NEW_WITH_GIMME(modelfiler);
+CPPEXTERN_NEW(modelfiler);
 
 
 namespace
@@ -44,7 +39,7 @@ std::string checkArrays(const std::string*tablenames, size_t count)
 // Constructor
 //
 /////////////////////////////////////////////////////////
-modelfiler :: modelfiler(int argc, t_atom*argv)
+modelfiler :: modelfiler(void)
   : m_loader(gem::plugins::modelloader::getInstance())
   , m_infoOut(gem::RTE::Outlet(this))
 {
@@ -339,10 +334,10 @@ void modelfiler :: backendMess(t_symbol*s, int argc, t_atom*argv)
 }
 
 /////////////////////////////////////////////////////////
-// openMess
+// readMess
 //
 /////////////////////////////////////////////////////////
-void modelfiler :: openMess(const std::string&filename)
+void modelfiler :: readMess(const std::string&filename)
 {
   gem::Properties wantProps = m_readprops;
 
@@ -417,10 +412,15 @@ namespace {
 
 size_t modelfiler :: copyArrays(const std::string&name, const std::string*tablenames, size_t count)
 {
-  if((count > 0) && tablenames[0].empty()) {
+  if(tablenames[0].empty()) return 0;
+  const bool interleaved = tablenames[1].empty();
+  const std::string* tables = interleaved ? &tablenames[0] : tablenames;
+  const size_t ntables = interleaved ? 1 : count;
+
+  if(ntables > 0 && tables[0].empty()) {
     return 0;
   }
-  std::string failed = checkArrays(tablenames, count);
+  std::string failed = checkArrays(tables, ntables);
   if(!failed.empty()) {
     error("no such array '%s' for %s", failed.c_str(), name.c_str());
     return 0;
@@ -441,11 +441,17 @@ size_t modelfiler :: copyArrays(const std::string&name, const std::string*tablen
   }
 
 
+  gem::RTE::Array tab;
   std::vector<gem::RTE::Array> tabs;
-  for(size_t i=0; i<count; i++) {
-    gem::RTE::Array a(tablenames[i]);
-    a.resize(totalsize);
-    tabs.push_back(a);
+  if(interleaved) {
+    tab = gem::RTE::Array(tables[0]);
+    tab.resize(totalsize * count);
+  } else {
+    for(size_t i=0; i<ntables; i++) {
+      gem::RTE::Array a(tables[i]);
+      a.resize(totalsize);
+      tabs.push_back(a);
+    }
   }
 
 
@@ -458,7 +464,11 @@ size_t modelfiler :: copyArrays(const std::string&name, const std::string*tablen
       continue;
     for(size_t i=0; i<meshsize; i++) {
       for(size_t j=0; j<count; j++) {
-        tabs[j][offset+i] = data[i*dimen+j];
+        float val = data[i * count + j];
+        if(interleaved)
+          tab[(offset + i) * count + j] = val;
+        else
+          tabs[j][offset + i] = val;
       }
     }
     offset += meshsize;
@@ -470,58 +480,29 @@ size_t modelfiler :: copyArrays(const std::string&name, const std::string*tablen
 void modelfiler :: tableMess(t_symbol*s, int argc, t_atom*argv)
 {
   const std::string tabletype = s->s_name;
-  std::vector<std::string>extensions;
+  int ncomponents = 0;
   std::string*names = 0;
 
-  if(tabletype == "position" || tabletype == "normal") {
-    extensions.push_back("X");
-    extensions.push_back("Y");
-    extensions.push_back("Z");
-    if("position" == tabletype) {
-      names = m_position;
-    } else {
-      names = m_normal;
-    }
-  } else if (tabletype == "texture") {
-    extensions.push_back("U");
-    extensions.push_back("V");
-    names = m_texture;
-  } else if (tabletype == "color") {
-    extensions.push_back("R");
-    extensions.push_back("G");
-    extensions.push_back("B");
-    extensions.push_back("A");
-    names = m_color;
-  }
+  if     (tabletype == "position") { ncomponents = 3; names = m_position; }
+  else if(tabletype == "normal")   { ncomponents = 3; names = m_normal; }
+  else if(tabletype == "texture")  { ncomponents = 2; names = m_texture; }
+  else if(tabletype == "color")    { ncomponents = 4; names = m_color; }
 
   if (!names) {
     error("invalid tabletype '%s'", s->s_name);
     return;
   }
 
-  if((argc != 1) && (argc != extensions.size()) && (argc != extensions.size() + 1)) {
-    error("'%s' requires %d array names", s->s_name, extensions.size());
+  if (argc > 1 && argc != ncomponents) {
+    error("'%s' requires 0, 1 or %d array names", s->s_name, ncomponents);
     return;
   }
-  if(argc == extensions.size()) {
-    for(int i = 0; i < argc; i++) {
-      names[i] = atom_getsymbol(argv+i)->s_name;
-    }
-    return;
-  }
-  if(argc == extensions.size() + 1) {
-    extensions.clear();
-    for(int i = 1; i < argc; i++) {
-      extensions.push_back(atom_getsymbol(argv+i)->s_name);
-    }
-    argc = 1;
-  }
-  if(argc == 1) {
-    std::string basename = atom_getsymbol(argv+0)->s_name;
-    for (size_t i=0; i < extensions.size(); i++) {
-      names[i] = basename + extensions[i];
-    }
-    return;
+  for (int i = 0; i < ncomponents; i++) {
+    /* clear unused table names */
+    if (argc == 0 || (argc == 1 && i > 0))
+      names[i].clear();
+    else
+      names[i] = atom_getsymbol(argv + (argc == 1 ? 0 : i))->s_name;
   }
 }
 
@@ -533,7 +514,8 @@ void modelfiler :: tableMess(t_symbol*s, int argc, t_atom*argv)
 /////////////////////////////////////////////////////////
 void modelfiler :: obj_setupCallback(t_class *classPtr)
 {
-  CPPEXTERN_MSG1(classPtr, "open", openMess, std::string);
+  CPPEXTERN_MSG1(classPtr, "read", readMess, std::string);
+  CPPEXTERN_MSG1(classPtr, "open", readMess, std::string); /* legacy alias */
   CPPEXTERN_MSG (classPtr, "backend", backendMess);
   CPPEXTERN_MSG (classPtr, "loader", backendMess);
 

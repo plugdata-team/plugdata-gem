@@ -45,14 +45,8 @@ SUBDIRS += VNC
 # specific plugins
 SUBDIRS += filmAVF
 SUBDIRS += filmDS
-if DISABLED
-SUBDIRS += filmDSATL
-else
-DIST_SUBDIRS += filmDSATL
-endif
 SUBDIRS += filmDarwin
 SUBDIRS += videoAVF
-SUBDIRS += videoDS
 SUBDIRS += videoDarwin
 SUBDIRS += videoSGI
 

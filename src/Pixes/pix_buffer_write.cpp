@@ -2,15 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2002-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2005, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "pix_buffer.h"
 #include "pix_buffer_write.h"
@@ -41,7 +38,7 @@ CPPEXTERN_NEW_WITH_ONE_ARG(pix_buffer_write, t_symbol*,A_DEFSYMBOL);
 pix_buffer_write :: pix_buffer_write(t_symbol* s) : m_frame(-2),
   m_lastframe(-1), m_bindname(NULL)
 {
-  if ((s)&&(&s_!=s)) {
+  if ((s)&&(gensym("")!=s)) {
     setMess(s);
   }
   inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("float"),
@@ -63,7 +60,7 @@ pix_buffer_write :: ~pix_buffer_write()
 /////////////////////////////////////////////////////////
 void pix_buffer_write :: setMess(t_symbol*s)
 {
-  if (s!=&s_) {
+  if (s!=gensym("")) {
     m_bindname = s;
   }
 }
@@ -93,7 +90,7 @@ void pix_buffer_write :: render(GemState*state)
   }
   pixBlock*img=NULL;
   state->get(GemState::_PIX, img);
-  if (state && img && &img->image) {
+  if (state && img) {
     if (img->newimage || m_frame!=m_lastframe) {
       if(m_bindname==NULL || m_bindname->s_name==NULL) {
         error("cowardly refusing to write to no pix_buffer");

@@ -2,17 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 #ifdef __APPLE__
 # ifdef __x86_64
 #  define NO_AUTO_REGISTER_CLASS
@@ -148,7 +143,7 @@ void gemwin :: createMess(t_symbol* s)
   /* just in case a "pleaseDestroy" is still pending... */
   GemMan::pleaseDestroy=false;
 
-  if (s != &s_) {
+  if (s != gensym("")) {
     disp = s->s_name;
   }
 

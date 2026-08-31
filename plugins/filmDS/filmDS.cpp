@@ -2,16 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright © 2014-2019 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    based on ofDirectShowPlayer, Copyright © 2014 Theodore Watson
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2006, Chris Clepper and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -453,7 +449,7 @@ public:
 
         LeaveCriticalSection(&critSection);
       } else {
-        pd_error(0, "[GEM:videoDS] SampleCB() - buffer sizes do not match %d != %d",
+        pd_error(0, "[GEM:filmDS] SampleCB() - buffer sizes do not match %d != %d",
                  latestBufferLength, currentBufferLength);
       }
     }
@@ -562,7 +558,7 @@ public:
       break;
     default:
       logpost(0, 3+1,
-              "[GEM:videoDS] Trying to set unsupported format this is an internal bug, using default RGBA");
+              "[GEM:filmDS] Trying to set unsupported format this is an internal bug, using default RGBA");
       mt.subtype = MEDIASUBTYPE_RGB32;
     }
 
@@ -586,7 +582,7 @@ public:
       //Set Params - One Shot should be false unless you want to capture just one buffer
       hr = m_pGrabber->SetOneShot(FALSE);
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] unable to set one shot");
+        logpost(0, 3+1, "[GEM:filmDS] unable to set one shot");
         tearDown();
         return false;
       }
@@ -594,7 +590,7 @@ public:
       //apparently setting to TRUE causes a small memory leak
       hr = m_pGrabber->SetBufferSamples(FALSE);
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] unable to set buffer samples");
+        logpost(0, 3+1, "[GEM:filmDS] unable to set buffer samples");
         tearDown();
         return false;
       }
@@ -604,14 +600,14 @@ public:
       hr = CoCreateInstance(CLSID_NullRenderer, NULL, CLSCTX_INPROC_SERVER,
                             IID_IBaseFilter, (void**)(&m_pNullRenderer));
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] null renderer error");
+        logpost(0, 3+1, "[GEM:filmDS] null renderer error");
         tearDown();
         return false;
       }
 
       hr = m_pGraph->AddFilter(m_pNullRenderer, L"Render");
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] unable to add null renderer");
+        logpost(0, 3+1, "[GEM:filmDS] unable to add null renderer");
         tearDown();
         return false;
       }
@@ -621,7 +617,7 @@ public:
 
       hr = m_pGrabber->GetConnectedMediaType(&mt);
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] unable to call GetConnectedMediaType");
+        logpost(0, 3+1, "[GEM:filmDS] unable to call GetConnectedMediaType");
         tearDown();
         return false;
       }
@@ -642,7 +638,7 @@ public:
 
       hr = m_pGraph->FindFilterByName(L"Video Renderer", &m_pVideoRenderer);
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] failed to find the video renderer");
+        logpost(0, 3+1, "[GEM:filmDS] failed to find the video renderer");
         tearDown();
         return false;
       }
@@ -650,14 +646,14 @@ public:
       //we disconnect the video renderer window by finding the output pin of the sample grabber
       hr = m_pGrabberF->FindPin(L"Out", &pinOut);
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] failed to find the sample grabber output pin");
+        logpost(0, 3+1, "[GEM:filmDS] failed to find the sample grabber output pin");
         tearDown();
         return false;
       }
 
       hr = pinOut->Disconnect();
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] failed to disconnect grabber output pin");
+        logpost(0, 3+1, "[GEM:filmDS] failed to disconnect grabber output pin");
         tearDown();
         return false;
       }
@@ -665,7 +661,7 @@ public:
       //we have to remove it as well otherwise the graph builder will reconnect it
       hr = m_pGraph->RemoveFilter(m_pVideoRenderer);
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] failed to remove the default renderer");
+        logpost(0, 3+1, "[GEM:filmDS] failed to remove the default renderer");
         tearDown();
         return false;
       } else {
@@ -676,14 +672,14 @@ public:
       hr = m_pNullRenderer->FindPin(L"In", &pinIn);
       if (FAILED(hr)) {
         logpost(0, 3+1,
-                "[GEM:videoDS] failed to find the input pin of the null renderer");
+                "[GEM:filmDS] failed to find the input pin of the null renderer");
         tearDown();
         return false;
       }
 
       hr = pinOut->Connect(pinIn, NULL);
       if (FAILED(hr)) {
-        logpost(0, 3+1, "[GEM:videoDS] failed to connect the null renderer");
+        logpost(0, 3+1, "[GEM:filmDS] failed to connect the null renderer");
         tearDown();
         return false;
       }
@@ -704,13 +700,13 @@ public:
       if( FAILED(hr) || width == 0 || height == 0 ) {
         tearDown();
         logpost(0, 3+1,
-                "[GEM:videoDS] Error occurred while playing or pausing or opening the file");
+                "[GEM:filmDS] Error occurred while playing or pausing or opening the file");
         return false;
       }
     } else {
       tearDown();
       logpost(0, 3+1,
-              "[GEM:videoDS] Error occurred while playing or pausing or opening the file");
+              "[GEM:filmDS] Error occurred while playing or pausing or opening the file");
       return false;
     }
 
@@ -723,13 +719,8 @@ public:
   {
     if( bVideoOpened ) {
       long eventCode = 0;
-#ifdef _WIN64
-      long long ptrParam1 = 0;
-      long long ptrParam2 = 0;
-#else
-      long ptrParam1 = 0;
-      long ptrParam2 = 0;
-#endif
+      LONG_PTR ptrParam1 = 0;
+      LONG_PTR ptrParam2 = 0;
 
       while (S_OK == m_pEvent->GetEvent(&eventCode, &ptrParam1, &ptrParam2, 0)) {
         if (eventCode == EC_COMPLETE ) {

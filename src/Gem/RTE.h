@@ -1,12 +1,15 @@
+/* ------------------------------------------------------------------
+ * GEM - Graphics Environment for Multimedia
+ *
+ * SPDX-FileCopyrightText: © 2010, IOhannes m zmölnig and the GEM contributors
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ *
+ * ------------------------------------------------------------------
+ */
+
 /*-----------------------------------------------------------------
-  LOG
-  GEM - Graphics Environment for Multimedia
 
   include Realtime-Environments headers
-
-  Copyright (c) 2010-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-  For information on usage and redistribution, and for a DISCLAIMER OF ALL
-  WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
 
   -----------------------------------------------------------------*/
 
@@ -15,8 +18,8 @@
 
 #if defined _MSC_VER
 /* data conversion with possible loss of data */
-# pragma warning( push )
-# pragma warning( disable : 4091 )
+# pragma warning(push)
+# pragma warning(disable : 4091)
 #endif
 
 #include <m_pd.h>

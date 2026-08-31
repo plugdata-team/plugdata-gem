@@ -2,15 +2,10 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1998 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2006, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 /////////////////////////////////////////////////////////
 
@@ -246,15 +241,23 @@ void sphere3d :: renderShape(GemState *state)
    */
   bool normals = GL_TRUE;
 
-  GLfloat xsize = 1.0, xsize0 = 0.0;
-  GLfloat ysize = 1.0, ysize0 = 0.0;
+  GLfloat s0 = 0., s01 = -1., s03 =  0., s0123 = 0.;
+  GLfloat t1 = 1., t01 =  0., t12 =  1., t0123 = 0.;
 
   if(texType && texNum>=3) {
-    xsize0 = texCoords[0].s;
-    xsize  = texCoords[1].s-xsize0;
-    ysize0 = texCoords[1].t;
-    ysize  = texCoords[2].t-ysize0;
+    s0 = texCoords[0].s;
+    s01 = s0 - texCoords[1].s;
+    s03 = s0 - texCoords[3].s;
+    s0123 = s01 + texCoords[2].s - texCoords[3].s;
+
+    t1 = texCoords[1].t;
+    t12 = t1 - texCoords[2].t;
+    t01 = t1 - texCoords[0].t;
+    t0123 = t01 - texCoords[2].t + texCoords[3].t;
   }
+
+#define S(s, t) ((s0123*(s) - s03)*(t) - s01*(s) + s0)
+#define T(s, t) ((t0123*(t) - t01)*(s) - t12*(t) + t1)
 
   /* texturing: s goes from 0.0/0.25/0.5/0.75/1.0 at +y/+x/-y/-x/+y axis */
   /* t goes from -1.0/+1.0 at z = -radius/+radius (linear along longitudes) */
@@ -301,18 +304,18 @@ void sphere3d :: renderShape(GemState *state)
     src=1;
     for (int j = 0; j < slices; j++) {
       if(normals) {
-	glNormal3f(m_x[0], m_y[0], m_z[0]);
+        glNormal3f(m_x[0], m_y[0], m_z[0]);
       }
       if(texType) {
-	glTexCoord2f(s*xsize+xsize0, t*ysize+ysize0);
+        glTexCoord2f(S(s, t), T(s, t));
       }
       glVertex3f(m_x[0], m_y[0], m_z[0]);
 
       if(normals) {
-	glNormal3f(m_x[src], m_y[src], m_z[src]);
+        glNormal3f(m_x[src], m_y[src], m_z[src]);
       }
       if(texType) {
-	glTexCoord2f(s*xsize+xsize0, (t-dt)*ysize+ysize0);
+        glTexCoord2f(S(s, (t-dt)), T(s, (t-dt)));
       }
       glVertex3f(m_x[src], m_y[src], m_z[src]);
 
@@ -324,7 +327,7 @@ void sphere3d :: renderShape(GemState *state)
       glNormal3f(m_x[0], m_y[0], m_z[0]);
     }
     if(texType) {
-      glTexCoord2f(1.f*xsize+xsize0, t*ysize+ysize0);
+      glTexCoord2f(S(1., t), T(1., t));
     }
     glVertex3f(m_x[0], m_y[0], m_z[0]);
 
@@ -332,7 +335,7 @@ void sphere3d :: renderShape(GemState *state)
       glNormal3f(m_x[src], m_y[src], m_z[src]);
     }
     if(texType) {
-      glTexCoord2f(1.f*xsize+xsize0, (t-dt)*ysize+ysize0);
+      glTexCoord2f(S(1., (t-dt)), T(1., (t-dt)));
     }
     glVertex3f(m_x[src], m_y[src], m_z[src]);
 
@@ -346,42 +349,42 @@ void sphere3d :: renderShape(GemState *state)
       s = 0.0;
       glBegin(GL_QUAD_STRIP);
       for (int j = 0; j < slices; j++) {
-	src2=src+slices;
+        src2=src+slices;
 
-	if(normals) {
-	  glNormal3f(m_x[src], m_y[src], m_z[src]);
-	}
-	if(texType) {
-	  glTexCoord2f(s*xsize+xsize0, t*ysize+ysize0);
-	}
-	glVertex3f(m_x[src], m_y[src], m_z[src]);
-	src++;
+        if(normals) {
+          glNormal3f(m_x[src], m_y[src], m_z[src]);
+        }
+        if(texType) {
+          glTexCoord2f(S(s, t), T(s, t));
+        }
+        glVertex3f(m_x[src], m_y[src], m_z[src]);
+        src++;
 
-	if(normals) {
-	  glNormal3f(m_x[src2], m_y[src2], m_z[src2]);
-	}
-	if(texType) {
-	  glTexCoord2f(s*xsize+xsize0, (t - dt)*ysize+ysize0);
-	}
-	glVertex3f(m_x[src2], m_y[src2], m_z[src2]);
-	src2++;
+        if(normals) {
+          glNormal3f(m_x[src2], m_y[src2], m_z[src2]);
+        }
+        if(texType) {
+          glTexCoord2f(S(s, (t-dt)), T(s, (t-dt)));
+        }
+        glVertex3f(m_x[src2], m_y[src2], m_z[src2]);
+        src2++;
 
-	s += ds;
+        s += ds;
       }
 
       if(normals) {
-	glNormal3f(m_x[src-slices], m_y[src-slices], m_z[src-slices]);
+        glNormal3f(m_x[src-slices], m_y[src-slices], m_z[src-slices]);
       }
       if(texType) {
-	glTexCoord2f(s*xsize+xsize0, t*ysize+ysize0);
+          glTexCoord2f(S(s, t), T(s, t));
       }
       glVertex3f(m_x[src-slices], m_y[src-slices], m_z[src-slices]);
 
       if(normals) {
-	glNormal3f(m_x[src2-slices], m_y[src2-slices], m_z[src2-slices]);
+        glNormal3f(m_x[src2-slices], m_y[src2-slices], m_z[src2-slices]);
       }
       if(texType) {
-	glTexCoord2f(s*xsize+xsize0, (t - dt)*ysize+ysize0);
+        glTexCoord2f(S(s, (t-dt)), T(s, (t-dt)));
       }
       glVertex3f(m_x[src2-slices], m_y[src2-slices], m_z[src2-slices]);
 
@@ -397,19 +400,19 @@ void sphere3d :: renderShape(GemState *state)
     s=0.0;
     for (int j = 0; j < slices; j++) {
       if(normals) {
-	glNormal3f(m_x[src], m_y[src], m_z[src]);
+        glNormal3f(m_x[src], m_y[src], m_z[src]);
       }
       if(texType) {
-	glTexCoord2f(s*xsize+xsize0, t*ysize+ysize0);
+        glTexCoord2f(S(s, t), T(s, t));
       }
       glVertex3f(m_x[src], m_y[src], m_z[src]);
       src++;
 
       if(normals) {
-	glNormal3f(m_x[last], m_y[last], m_z[last]);
+        glNormal3f(m_x[last], m_y[last], m_z[last]);
       }
       if(texType) {
-	glTexCoord2f(s*xsize+xsize0, (t-dt)*ysize+ysize0);
+        glTexCoord2f(S(s, (t-dt)), T(s, (t-dt)));
       }
       glVertex3f(m_x[last], m_y[last], m_z[last]);
 
@@ -420,7 +423,7 @@ void sphere3d :: renderShape(GemState *state)
       glNormal3f(m_x[src], m_y[src], m_z[src]);
     }
     if(texType) {
-      glTexCoord2f(1.f*xsize+xsize0, t*ysize+ysize0);
+      glTexCoord2f(S(1., t), T(1., t));
     }
     glVertex3f(m_x[src], m_y[src], m_z[src]);
 
@@ -428,7 +431,7 @@ void sphere3d :: renderShape(GemState *state)
       glNormal3f(m_x[last], m_y[last], m_z[last]);
     }
     if(texType) {
-      glTexCoord2f(1.f*xsize+xsize0, (t-dt)*ysize+ysize0);
+      glTexCoord2f(S(1., (t-dt)), T(1., (t-dt)));
     }
     glVertex3f(m_x[last], m_y[last], m_z[last]);
 

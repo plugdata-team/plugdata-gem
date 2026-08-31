@@ -1,12 +1,21 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.60)
-AC_INIT([Gem],[0.94],[zmoelnig@iem.at],[Gem],[http://gem.iem.at])
+AC_PREREQ([2.71])
+AC_INIT([Gem],[0.95.0],[zmoelnig@iem.at],[Gem],[http://gem.iem.at])
 
 AM_INIT_AUTOMAKE([1.10 foreign])
 
 PKG_INSTALLDIR(['${exec_prefix}/lib/pkgconfig'])
+
+
+
+package_version_split=$(echo ${PACKAGE_VERSION} | sed -e 's/[[^0-9]]/ /g' -e 's/  */ /g')
+package_version_major=$(echo ${package_version_split} | cut -d' ' -f1)
+package_version_minor=$(echo ${package_version_split} | cut -d' ' -f2)
+
+AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MAJOR], [$package_version_major], [Define to the major version of this package])
+AC_DEFINE_UNQUOTED([PACKAGE_VERSION_MINOR], [$package_version_minor], [Define to the minor version of this package])
 
 
 #
@@ -60,11 +69,9 @@ AS_IF([test "$enable_plugins" != "no" ], [
 
   AC_CONFIG_FILES([plugins/filmAVF/Makefile])
   AC_CONFIG_FILES([plugins/filmDS/Makefile])
-  AC_CONFIG_FILES([plugins/filmDSATL/Makefile])
   AC_CONFIG_FILES([plugins/filmDarwin/Makefile])
 
   AC_CONFIG_FILES([plugins/videoAVF/Makefile])
-  AC_CONFIG_FILES([plugins/videoDS/Makefile])
   AC_CONFIG_FILES([plugins/videoDarwin/Makefile])
   AC_CONFIG_FILES([plugins/videoSGI/Makefile])
 ])
@@ -82,7 +89,7 @@ AC_CONFIG_FILES([extra/pix_hit/Makefile])
 
 # other stuff
 AC_CONFIG_FILES([tools/Makefile])
-AC_CONFIG_FILES([Gem.pc Gem-meta.pd])
+AC_CONFIG_FILES([Gem.pc Gem-meta.pd README.deken.pd])
 AC_CONFIG_FILES([devgem.sh], [chmod +x devgem.sh])
 AC_CONFIG_FILES([switch-gemwin.sh], [chmod +x switch-gemwin.sh])
 
@@ -147,8 +154,7 @@ AC_PROG_CXX
 m4_ifdef([AC_PROG_OBJC], [AC_PROG_OBJC])
 m4_ifdef([AC_PROG_OBJCXX], [AC_PROG_OBJCXX])
 
-AC_LIBTOOL_WIN32_DLL
-AC_PROG_LIBTOOL
+LT_INIT([win32-dll])
 
 AC_PROG_INSTALL
 AC_PROG_LN_S
@@ -188,14 +194,6 @@ AS_CASE([$enable_debug],
 
 
 AC_ARG_WITH([GLU], AS_HELP_STRING([--without-GLU], [force building without GLU (*not* recommended!)]))
-GEM_ARG_ENABLE([mmx],     [MMX-support])
-dnl disabled SSE2 by default, since there are still few chips around that fully support it
-dnl unlike MMX or SSE
-GEM_ARG_DISABLE([sse2],    [SSE2-support])
-GEM_ARG_ENABLE([altivec], [AltiVec-support])
-GEM_ARG_DISABLE([powerpc], [PowerPC specific optimizations])
-
-GEM_ARG_ENABLE([pascalstrings], [containing '\p'])
 
 GEM_ARG_ENABLE([registerstruct], [use \"-freg-struct-return\" (needed for FreeFrame)], [force])
 
@@ -207,11 +205,10 @@ GEM_TARGET(Nongeos)
 GEM_TARGET(Particles)
 GEM_TARGET(Pixes)
 GEM_TARGET(openGL)
-GEM_TARGET_DISABLED(Vertex)
 GEM_ARG_ENABLE([plugins], [configure/build/install optional parts])
 
 AC_ARG_ENABLE([experimental], AS_HELP_STRING([--enable-experimental], [enable experimental objects (if any)]))
-AM_CONDITIONAL(EXPERIMENTAL, [test "x$enable_experimental" = "xyes"])
+AM_CONDITIONAL(EXPERIMENTAL, [test "$enable_experimental" = "yes"])
 
 
 # checks for default headers
@@ -220,20 +217,24 @@ IEM_CHECK_INCLUDES_DEFAULT([windows.h])
 # threading
 GEM_CHECK_THREADS
 
-# Checks for header files.
-AC_HEADER_STDC
-AC_CHECK_HEADERS([stddef.h stdlib.h unistd.h])
-AC_CHECK_HEADERS([fcntl.h float.h memory.h string.h strings.h])
-AC_CHECK_HEADERS([sys/select.h sys/ioctl.h sys/time.h sys/ipc.h sys/shm.h])
+rte_instance_cppflags=""
+GEM_ARG_DISABLE([pd-instance], [(do not) compile with Pd multi-instance support])
+AS_IF([test "x$enable_pd_instance" != "xno"], [
+  rte_instance_cppflags="-DPDINSTANCE=1 -DPDTHREADS=1"
+])
+GEM_RTE_CFLAGS+=" ${rte_instance_cppflags}"
+GEM_EXTERNAL_CPPFLAGS+=" ${rte_instance_cppflags}"
 
-AC_CHECK_HEADERS([wordexp.h])
+# Checks for header files.
+AC_CHECK_HEADERS_ONCE([sys/select.h sys/time.h sys/types.h sys/ipc.h sys/shm.h])
+AC_CHECK_HEADERS_ONCE([unistd.h])
+AC_CHECK_HEADERS_ONCE([wordexp.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
 
 AC_CHECK_SIZEOF([unsigned int])
 AC_CHECK_SIZEOF([void *])
@@ -243,11 +244,13 @@ AC_FUNC_ERROR_AT_LINE
 AC_FUNC_FORK
 AC_FUNC_MALLOC
 AC_FUNC_MMAP
-AC_CHECK_FUNCS([bzero floor gettimeofday memset munmap pow sqrt strchr strdup strrchr strstr strnlen])
+AC_CHECK_FUNCS([bzero gettimeofday memset munmap strchr strdup strrchr strstr strnlen])
 
 # Checks for libraries.
 
 AC_CHECK_LIB([m],[sin])
+AC_CHECK_FUNCS([floor pow sqrt])
+
 AC_CHECK_LIB([z],[zlibVersion])
 AC_CHECK_LIB([dl],[dlopen])
 
@@ -263,7 +266,7 @@ AC_CHECK_LIB([dl],[dlopen])
 
 ## on OSX X shouldn't be used by default as there are other ways
 ## however, if people really want it ("--with-x") they should get it
-AS_IF([test "x$KERN" = "xDarwin" && test "x$with_x" = "x"], [with_x="no"])
+AS_IF([test "$KERN" = "Darwin" && test -z "$with_x"], [with_x="no"])
 
 AC_PATH_X
 AC_PATH_XTRA
@@ -291,23 +294,23 @@ AS_IF([test "x$no_glu" != "xyes"],
 ## use system's libGLEW
 GEM_ARG_ENABLE([multicontext], [experimental support for multiple windows])
 ## glewmx-args default to glew-args
-AS_IF([test "x$with_glewmx" = "x"], [with_glewmx="$with_glew"])
-AS_IF([test "x$with_glewmx-includes" = "x"], [with_glewmx-includes="$with_glew-includes"])
-AS_IF([test "x$with_glewmx-libs" = "x"], [with_glewmx-libs="$with_glew-libs"])
+AS_IF([test -z "$with_glewmx"], [with_glewmx="$with_glew"])
+AS_IF([test -z "$with_glewmx-includes"], [with_glewmx-includes="$with_glew-includes"])
+AS_IF([test -z "$with_glewmx-libs"], [with_glewmx-libs="$with_glew-libs"])
 
 GEM_CHECK_LIB([glew], [GLEW],[GL/glew.h], [glewInit],,,,[OpenGL Extension Wrangler library], [no])
 GEM_CHECK_LIB([glewmx], [GLEWmx],[GL/glew.h], [glewInit],,,,[OpenGL Extension Wrangler library], [no])
 
 
-AS_IF([test "x$enable_multicontext" = "xyes"], [
+AS_IF([test "$enable_multicontext" = "yes"], [
   have_glew="${have_glewmx}"
   GEM_LIB_GLEW_CFLAGS="$GEM_LIB_GLEWMX_CFLAGS"
   GEM_LIB_GLEW_LIBS="$GEM_LIB_GLEWMX_LIBS"
 
-  AM_CONDITIONAL(HAVE_LIB_GLEW, [test "x${have_glew}" = "xyes"])
+  AM_CONDITIONAL(HAVE_LIB_GLEW, [test "${have_glew}" = "yes"])
   AC_DEFINE([GEM_MULTICONTEXT], [1], [whether Gem is built with multi-context support])
 ])
-AM_CONDITIONAL(ENABLE_MULTICONTEXT, [test "x${enable_multicontext}" = "xyes"])
+AM_CONDITIONAL(ENABLE_MULTICONTEXT, [test "${enable_multicontext}" = "yes"])
 
 AS_IF([test "x${have_glew}" != "xyes"], [
 AC_DEFINE([GLEW_BUILD], [1], [Define to 1 if using the built-in glew])
@@ -331,6 +334,22 @@ GEM_CHECK_LIB([glfw3], [glfw3],[GLFW/glfw3.h], [glfwGetPrimaryMonitor],,,,[GLFW3
 stdcxx_LIBS=$LIBS
 AC_CHECK_LIB([stdc++],[main],[predeps_CXX="$predeps_CXX -lstdc++"])
 LIBS=$stdcxx_LIBS
+
+
+# text rendering
+IEM_CHECK_FTGL()
+GEM_CHECK_LIB([fribidi], [fribidi],[fribidi.h], [fribidi_log2vis],,,, [bidirectional text rendering using FriBidi])
+
+AC_ARG_WITH([default-font],
+            AS_HELP_STRING([--with-default-font=vera.ttf],[specify the default font for text-rendering])
+           )
+AS_IF([test "x$with_default_font" != "x" && \
+       test "x$with_default_font" != "xno" &&
+       test "x$with_default_font" != "xyes"], [
+  AC_DEFINE_UNQUOTED([GEM_DEFAULT_FONT], "${with_default_font}", [default font for text rendering])
+  AC_MSG_RESULT([using "${with_default_font}" as default font])
+])
+
 
 dnl some checks for osX
 dnl AC_CHECK_HEADERS([Cocoa/Cocoa.h],[], [ with_Cocoa_framework="no" ])
@@ -357,11 +376,13 @@ GEM_CHECK_FRAMEWORK([QuickTime],
                         [have_quicktime_framework="yes"],
                         [have_quicktime_framework="no"])
 
-AM_CONDITIONAL(VIDEODARWIN, test "x${have_carbon_framework}" = "xyes" && test "x${have_quicktime_framework}" = "xyes")
+AM_CONDITIONAL(VIDEODARWIN, test "${have_carbon_framework}" = "yes" && test "${have_quicktime_framework}" = "yes")
+
+## image reading/writing
 
 #fallback to imagemagick if people are too lazy to type ImageMagick
-AS_IF([test "x$with_ImageMagick" = "x"], [with_ImageMagick="$with_imagemagick"])
-AS_IF([test "x$with_MagickCore" = "x"], [with_MagickCore="$with_ImageMagick"])
+AS_IF([test -z "$with_ImageMagick"], [with_ImageMagick="$with_imagemagick"])
+AS_IF([test -z "$with_MagickCore"], [with_MagickCore="$with_ImageMagick"])
 
 magickpackage=
 
@@ -386,17 +407,14 @@ AS_IF([test "x$magickpackage" != "x"], [
 ])
 
 
-GEM_CHECK_LIB([tiff], [tiff],[tiffio.h], [TIFFOpen],,,,[image loader])
-GEM_CHECK_LIB([jpeg], [jpeg],[jpeglib.h], [jpeg_read_header],,,,[image loader])
-GEM_CHECK_LIB([stb], [stb],[stb/stb_image.h], [stbi_load],,,,[image loader])
-
-IEM_CHECK_FTGL()
-GEM_CHECK_LIB([fribidi], [fribidi],[fribidi.h], [fribidi_log2vis],,,, [bidirectional text rendering using FriBidi])
+GEM_CHECK_LIB([tiff], [tiff],[tiffio.h], [TIFFOpen],,,,[image loading/saving])
+GEM_CHECK_LIB([jpeg], [jpeg],[jpeglib.h], [jpeg_read_header],,,,[image loading/saving])
+GEM_CHECK_LIB([stb], [stb],[stb/stb_image.h], [stbi_load],,,,[image loading/saving])
 
 ## film en/decoders
 GEM_CHECK_LIB([avifile], [aviplay],[avifile.h], [CreateIAviReadFile],,,,[movie loader])
 GEM_CHECK_LIB([gmerlin_avdec], [gmerlin_avdec],[gmerlin/avdec.h], [gavl_start],,,,[movie loader])
-AS_IF([test "x$have_gmerlin_avdec" = "xyes"], [
+AS_IF([test "$have_gmerlin_avdec" = "yes"], [
   AC_CHECK_HEADERS([gavl/log.h])
   IEM_CHECK_FUNCS([bgav_seek_to_video_frame bgav_num_video_frames],[],[],
                   [$GEM_LIB_GMERLIN_AVDEC_CFLAGS],
@@ -408,11 +426,22 @@ GEM_CHECK_LIB([libmpeg3], [mpeg3],[libmpeg3.h], [mpeg3_check_sig],,,,[movie load
 GEM_CHECK_LIB([libquicktime], [quicktime],[quicktime.h], [quicktime_init],,,,[movie loader])
 GEM_CHECK_LIB([lqt], [quicktime],[quicktime.h], [quicktime_init],,,,[movie loader])
 
+
+# enabling recording with quicktime4linux
+gem_tmp_lqt_libs="$LIBS"
+LIBS="$LIBS $GEM_CHECK_LIB_LIBS"
+AC_MSG_CHECKING(for lqt_open_write)
+AC_LINK_IFELSE([AC_LANG_CALL([], [lqt_open_write])],
+        AC_DEFINE([HAVE_LQT_OPEN_WRITE], [], [film recording using quicktime4linux])
+        AC_MSG_RESULT(yes),
+        AC_MSG_RESULT(no))
+LIBS="$gem_tmp_lqt_libs"
+
 ### ffmpeg is a bit complicated, as it depends on multiple libs
 ### for now, we only support pkg-config (or manual configuration)
 GEM_ARG_WITH([ffmpeg], [movie loader])
-AS_IF([ test "x${with_ffmpeg}" = "x" ], [ with_ffmpeg="${with_ALL}" ])
-AS_IF([ test "x${with_ffmpeg}" = "xno" ], [
+AS_IF([ test -z "${with_ffmpeg}" ], [ with_ffmpeg="${with_ALL}" ])
+AS_IF([ test "${with_ffmpeg}" = "no" ], [
   have_ffmpeg="no (forced)"
 ],[
   have_ffmpeg="no (needs check)"
@@ -423,7 +452,7 @@ GEM_LIB_FFMPEG_CFLAGS=${FFMPEG_CFLAGS}
 GEM_LIB_FFMPEG_LIBS=${FFMPEG_LIBS}
 AC_SUBST([GEM_LIB_FFMPEG_CFLAGS])
 AC_SUBST([GEM_LIB_FFMPEG_LIBS])
-AM_CONDITIONAL(HAVE_FFMPEG, [test "x${have_ffmpeg}" = "xyes"])
+AM_CONDITIONAL(HAVE_FFMPEG, [test "${have_ffmpeg}" = "yes"])
 
 # special function in libquicktime
 IEM_CHECK_FUNCS([lqt_seek_video lqt_open_write],[],[],
@@ -441,7 +470,7 @@ GEM_ARG_WITH([unicap], [video input], [force])
 
 GEM_CHECK_LIB([libunicap], [unicap],[unicap.h], [unicap_check_version],,,, [video input])
 
-AS_IF([test "x$have_unicap" = "xyes"], [
+AS_IF([test "$have_unicap" = "yes"], [
  AC_CHECK_HEADER([unicap/unicap.h],
                   [
                     AC_DEFINE([HAVE_UNICAP], [], [video capturing using UNICAP])
@@ -449,7 +478,7 @@ AS_IF([test "x$have_unicap" = "xyes"], [
                   ],[have_unicap="no"])
 ])
 AS_IF([test "x$have_libunicap"], [have_unicap="yes"])
-AM_CONDITIONAL([HAVE_LIB_UNICAP], [test "x${have_unicap}" = "xyes"])
+AM_CONDITIONAL([HAVE_LIB_UNICAP], [test "${have_unicap}" = "yes"])
 
 
 
@@ -459,26 +488,29 @@ AC_ARG_VAR([PKG_PIPEWIRE_LIBS], [linker flags for pipewire, overriding pkg-confi
 AC_ARG_VAR([PKG_LIBPIPEWIRE_0_3_CFLAGS],[(Use PKG_PIPEWIRE_CFLAGS instead)])
 AC_ARG_VAR([PKG_LIBPIPEWIRE_0_3_LIBS],[(Use PKG_PIPEWIRE_LIBS instead)])
 
-AS_IF([test "x${PKG_PIPEWIRE_CFLAGS}" != x],
+AS_IF([test -n "${PKG_PIPEWIRE_CFLAGS}"],
       [PKG_LIBPIPEWIRE_0_3_CFLAGS=${PKG_PIPEWIRE_CFLAGS}])
-AS_IF([test "x${PKG_PIPEWIRE_LIBS}" != x],
+AS_IF([test -n "${PKG_PIPEWIRE_LIBS}"],
       [PKG_LIBPIPEWIRE_0_3_LIBS=${PKG_PIPEWIRE_LIBS}])
+AS_IF([test -n "${with_pipewire}"],
+      [with_libpipewire_0_3=${with_pipewire}])
+
 GEM_ARG_WITH([pipewire], [video input/output], [force])
 GEM_CHECK_LIB([libpipewire-0.3], [pipewire-0.3], [pipewire/pipewire.h], [pw_get_library_version],
-              ,,, [video input/output], [$with_pipewire])
+              ,,, [video input/output (gets overriden by '--with-pipewire')], [$with_pipewire])
 GEM_LIB_PIPEWIRE_CFLAGS=${GEM_LIB_LIBPIPEWIRE_0_3_CFLAGS}
 GEM_LIB_PIPEWIRE_LIBS=${GEM_LIB_LIBPIPEWIRE_0_3_LIBS}
 AC_SUBST([GEM_LIB_PIPEWIRE_CFLAGS])
 AC_SUBST([GEM_LIB_PIPEWIRE_LIBS])
 have_pipewire="${have_libpipewire_0_3}"
-AM_CONDITIONAL([HAVE_PIPEWIRE], [test "x${have_pipewire}" = "xyes"])
+AM_CONDITIONAL([HAVE_PIPEWIRE], [test "${have_pipewire}" = "yes"])
 
 have_v4l="no"
 GEM_ARG_WITH([v4l], [video input], [force])
 AC_CHECK_HEADERS([linux/videodev.h], have_v4l="yes")
 GEM_CHECK_LIB([libv4l1], [v4l1],[libv4l1.h], [v4l1_open],,,, [video output])
-AS_IF([test "x$have_libv4l1" = "xyes"], [have_v4l="yes (libv4l)"])
-AS_IF([test "x$with_v4l" = "xno"], [have_v4l="no"])
+AS_IF([test "$have_libv4l1" = "yes"], [have_v4l="yes (libv4l)"])
+AS_IF([test "$with_v4l" = "no"], [have_v4l="no"])
 AM_CONDITIONAL([HAVE_V4L], [test "x${have_v4l}" != "xno"])
 
 
@@ -488,8 +520,8 @@ AC_CHECK_HEADERS([linux/videodev2.h])
 GEM_CHECK_LIB([libv4l2], [v4l2],[libv4l2.h], [v4l2_open],,,, [video input])
 # AC_DEFINE([HAVE_VIDEO4LINUX2], [], [video capturing using v4l2])
 
-AS_IF([test "x$have_libv4l2" = "xyes"], [have_v4l2="yes (libv4l)"])
-AS_IF([test "x$with_v4l2" = "xno"], [have_v4l2="no"])
+AS_IF([test "$have_libv4l2" = "yes"], [have_v4l2="yes (libv4l)"])
+AS_IF([test "$with_v4l2" = "no"], [have_v4l2="no"])
 AM_CONDITIONAL([HAVE_V4L2], [test "x${have_v4l2}" != "xno"])
 
 
@@ -497,55 +529,13 @@ dnl GEM_CHECK_LIB([vfw32], [vfw32],, [AVIFileInit],,,, [video input])
 GEM_CHECK_LIB([vfw32], [vfw32],[vfw.h], [capGetVideoFormat],,,, [video input])
 # is this needed?
 dnl GEM_CHECK_LIB([avicap32],[avicap32],,[main],,,,[video input])
-AM_CONDITIONAL([HAVE_VFW32], test "x${have_vfw32}" = "xyes")
+AM_CONDITIONAL([HAVE_VFW32], test "${have_vfw32}" = "yes")
 
 # VLC
 GEM_CHECK_LIB([libvlc], [vlc],[vlc/vlc.h], [libvlc_video_set_callbacks],,,, [video input])
 
 # VNC
 GEM_CHECK_LIB([libvncclient], [vncclient],[rfb/rfbclient.h], [rfbGetClient],,,, [video input])
-
-# assimp
-GEM_CHECK_LIB([assimp], [assimp],[assimp.h], [aiDetachAllLogStreams],,,, [3D model loading])
-## check whether this is assimp2 or assimp3
-have_assimp2="no"
-have_assimp3="no"
-
-old_cflags=${CFLAGS}
-old_cxxflags=${CXXFLAGS}
-old_ldflags=${LDFLAGS}
-CFLAGS="${CFLAGS} ${GEM_LIB_ASSIMP_CFLAGS}"
-CXXFLAGS="${CXXFLAGS} ${GEM_LIB_ASSIMP_CFLAGS}"
-LDFLAGS="${LDFLAGS} ${GEM_LIB_ASSIMP_LIBS}"
-AC_CHECK_HEADERS([assimp.h], [have_assimp2="yes"])
-AC_CHECK_HEADERS([assimp/cimport.h], [have_assimp3="yes"])
-CFLAGS=${old_cflags}
-CXXFLAGS=${old_cxxflags}
-LDFLAGS=${old_ldflags}
-
-AM_CONDITIONAL([HAVE_ASSIMP2], [test "x${have_assimp2}" = "xyes" ])
-AM_CONDITIONAL([HAVE_ASSIMP3], [test "x${have_assimp3}" = "xyes" ])
-
-## text support
-AC_ARG_WITH([default-font],
-            AS_HELP_STRING([--with-default-font=vera.ttf],[specify the default font for text-rendering])
-           )
-AS_IF([test "x$with_default_font" != "x" && \
-       test "x$with_default_font" != "xno" &&
-       test "x$with_default_font" != "xyes"], [
-  AC_DEFINE_UNQUOTED([GEM_DEFAULT_FONT], "${with_default_font}", [default font for text rendering])
-  AC_MSG_RESULT([using "${with_default_font}" as default font])
-])
-
-# enabling recording with quicktime4linux
-gem_tmp_lqt_libs="$LIBS"
-LIBS="$LIBS $GEM_CHECK_LIB_LIBS"
-AC_MSG_CHECKING(for lqt_open_write)
-AC_LINK_IFELSE([AC_LANG_CALL([], [lqt_open_write])],
-        AC_DEFINE([HAVE_LQT_OPEN_WRITE], [], [film recording using quicktime4linux])
-        AC_MSG_RESULT(yes),
-        AC_MSG_RESULT(no))
-LIBS="$gem_tmp_lqt_libs"
 
 
 # DECKLINK-support
@@ -557,12 +547,20 @@ AS_CASE([${host}]
 )
 AC_SUBST([GEM_DECKLINK_SYSTEM])
 
+AS_IF([test -n "${with_DeckLink}"], [
+AS_IF([test -n "${with_decklink}"], [
+AC_MSG_WARN([both '--with-DeckLink' and '--with-decklink' are given. Using the former...])
+])])
+
+AS_IF([test -z "${with_DeckLink}"], [with_DeckLink="${with_decklink}"])
+AS_IF([test -z "${with_DeckLink}"], [with_DeckLink="${with_ALL}"])
+
 have_decklink="no"
 AS_IF([test "x$with_DeckLink" != "xno"], [
   tmp_decklink_includes=""
-  AS_IF([test "x${with_DeckLink}" = "xyes" ], [ with_DeckLink="local" ])
-  AS_IF([test "x${with_DeckLink}" = "x" ], [ with_DeckLink="local" ])
-  AS_IF([test "x${with_DeckLink}" = "xlocal" ],  [
+  AS_IF([test "${with_DeckLink}" = "yes" ], [ with_DeckLink="local" ])
+  AS_IF([test -z "${with_DeckLink}" ], [ with_DeckLink="local" ])
+  AS_IF([test "${with_DeckLink}" = "local" ],  [
       decklink_sdkdir="${srcdir}/plugins/DECKLINK/SDK/${GEM_DECKLINK_SYSTEM}/"
       AS_IF([test -e ${decklink_sdkdir}/DeckLinkAPI.h], [
              with_DeckLink=yes
@@ -584,15 +582,15 @@ AS_IF([test "x$with_DeckLink" != "xno"], [
        ])
    ])
 ])
-AM_CONDITIONAL([GEM_DECKLINK_LOCAL], [test "x${have_decklink}" = "xlocal"])
+AM_CONDITIONAL([GEM_DECKLINK_LOCAL], [test "${have_decklink}" = "local"])
 
 GEM_CHECK_LIB([DeckLink],[], [DeckLinkAPI.h],[CreateDeckLinkIteratorInstance], ,,,[video input; use 'local' to use an embedded copy of the SDK])
 decklink_dlopen=
-AS_IF([test "x${PKG_DECKLINK_LIBS}" = "x" || test "x${have_decklink}" = "xlocal" ],[
+AS_IF([test -z "${PKG_DECKLINK_LIBS}" || test "${have_decklink}" = "local" ],[
  decklink_dlopen=yes
 ])
-AM_CONDITIONAL([GEM_DECKLINK_APISTUB], [test "x${decklink_dlopen}" = "xyes"])
-AS_IF([test "x${decklink_dlopen}" = "xyes" ],[
+AM_CONDITIONAL([GEM_DECKLINK_APISTUB], [test "${decklink_dlopen}" = "yes"])
+AS_IF([test "${decklink_dlopen}" = "yes" ],[
  AC_DEFINE(GEM_DECKLINK_USE_DLOPEN, 1, [Define to 1 to open DeckLinkAPI via dlopen()])
  AC_MSG_NOTICE([use dlopen() to open DeckLinkAPI])
 ])
@@ -600,18 +598,27 @@ AC_SUBST([GEM_DECKLINK_USE_DLOPEN])
 
 
 # NDI-support
-AC_ARG_WITH([ndi],
-            AS_HELP_STRING([--with-ndi=</path/to/NDI/SDK>],
+AC_ARG_WITH([NDI],
+            AS_HELP_STRING([--with-NDI=</path/to/NDI/SDK>],
                [enable NDI video capturing (use 'local' to use an embedded copy of the SDK)]))
 
+
+AS_IF([test -n "${with_NDI}"], [
+AS_IF([test -n "${with_ndi}"], [
+AC_MSG_WARN([both '--with-NDI' and '--with-ndi' are given. Using the former...])
+])])
+
+AS_IF([test -z "${with_NDI}"], [with_NDI="${with_ndi}"])
+AS_IF([test -z "${with_NDI}"], [with_NDI="${with_ALL}"])
+
 have_ndi="no"
-AS_IF([test "x$with_ndi" != "xno"], [
+AS_IF([test "x$with_NDI" != "xno"], [
   tmp_ndi_includes=""
-  AS_IF([test "x${with_ndi}" = "xyes" ], [ with_ndi="local" ])
-  AS_IF([test "x${with_ndi}" = "x" ], [ with_ndi="local" ])
-  AS_IF([test "x${with_ndi}" = "xlocal" ], [ have_ndi="yes"], [
-        AS_IF([test -d "${with_ndi}/include"],
-              [tmp_ndi_includes="${tmp_ndi_includes} -I${with_ndi}/include"],
+  AS_IF([test "${with_NDI}" = "yes" ], [ with_NDI="local" ])
+  AS_IF([test -z "${with_NDI}" ], [ with_NDI="local" ])
+  AS_IF([test "${with_NDI}" = "local" ], [ have_ndi="yes"], [
+        AS_IF([test -d "${with_NDI}/include"],
+              [tmp_ndi_includes="${tmp_ndi_includes} -I${with_NDI}/include"],
              )
   CPPFLAGS="$CPPFLAGS $tmp_ndi_includes"
 
@@ -623,7 +630,7 @@ AS_IF([test "x$with_ndi" != "xno"], [
   CPPFLAGS="$tmp_ndi_cppflags_org"
 ])
 
-  AS_IF([test "x$have_ndi" = "xyes"],[
+  AS_IF([test "$have_ndi" = "yes"],[
     AC_DEFINE([HAVE_NDI], [1], [video capturing using NDI by NewTek])
     GEM_NDI_CXXFLAGS="${tmp_ndi_includes}"
     GEM_NDI_LIBS=""
@@ -633,11 +640,32 @@ AS_IF([test "x$with_ndi" != "xno"], [
   AC_MSG_RESULT([$have_ndi])
 ])
 
-AM_CONDITIONAL(HAVE_NDI, [test "x$have_ndi" = "xyes"])
-AM_CONDITIONAL([GEM_NDI_LOCAL], [test "x${with_ndi}" = "xlocal"])
+AM_CONDITIONAL([HAVE_NDI], [test "$have_ndi" = "yes"])
+AM_CONDITIONAL([GEM_NDI_LOCAL], [test "${with_NDI}" = "local"])
 AC_SUBST(GEM_NDI_CXXFLAGS)
 AC_SUBST(GEM_NDI_LIBS)
 
+## model loading
+# assimp
+GEM_CHECK_LIB([assimp], [assimp],[assimp.h], [aiDetachAllLogStreams],,,, [3D model loading])
+## check whether this is assimp2 or assimp3
+have_assimp2="no"
+have_assimp3="no"
+
+old_cflags=${CFLAGS}
+old_cxxflags=${CXXFLAGS}
+old_ldflags=${LDFLAGS}
+CFLAGS="${CFLAGS} ${GEM_LIB_ASSIMP_CFLAGS}"
+CXXFLAGS="${CXXFLAGS} ${GEM_LIB_ASSIMP_CFLAGS}"
+LDFLAGS="${LDFLAGS} ${GEM_LIB_ASSIMP_LIBS}"
+AC_CHECK_HEADERS([assimp.h], [have_assimp2="yes"])
+AC_CHECK_HEADERS([assimp/cimport.h], [have_assimp3="yes"])
+CFLAGS=${old_cflags}
+CXXFLAGS=${old_cxxflags}
+LDFLAGS=${old_ldflags}
+
+AM_CONDITIONAL([HAVE_ASSIMP2], [test "${have_assimp2}" = "yes" ])
+AM_CONDITIONAL([HAVE_ASSIMP3], [test "${have_assimp3}" = "yes" ])
 
 
 # enabling "-freg-struct-return" (for FreeFrame)
@@ -646,15 +674,15 @@ AS_IF([test "x$enable_registerstruct" != "xno" ], [
 GEM_CHECK_CXXFLAGS([-freg-struct-return],
 		[enable_registerstruct="yes"], [enable_registerstruct="no"])
 
-AS_IF([test "x$enable_registerstruct" = "xyes" ], [
+AS_IF([test "$enable_registerstruct" = "yes" ], [
  AC_MSG_RESULT([enabling "register struct return"
    allows Gem to make use of FreeFrame-effects without recompiling them
    might break things, if you are using several different compilers])
 ])])
 
-AS_IF([test "x$WINDOWS" = "xyes"], [GEM_CHECK_CXXFLAGS([-mms-bitfields])])
-AS_IF([test "x$WINDOWS" = "xyes"], [GEM_CHECK_CXXFLAGS([-fexceptions])])
-AS_IF([test "x$KERN" = "xDarwin"], [
+AS_IF([test "$WINDOWS" = "yes"], [GEM_CHECK_CXXFLAGS([-mms-bitfields])])
+AS_IF([test "$WINDOWS" = "yes"], [GEM_CHECK_CXXFLAGS([-fexceptions])])
+AS_IF([test "$KERN" = "Darwin"], [
  GEM_CHECK_CXXFLAGS([-Os],,GEM_CHECK_CXXFLAGS([-O3]))
 ], [
 # shall we built FAT-binaries ?
@@ -673,46 +701,25 @@ GEM_CHECK_CXXFLAGS([-falign-loops -falign-functions -falign-jumps -funroll-loops
 GEM_CHECK_CXXFLAGS([-ffast-math])
 
 ## SIMD support
-# naive approach is to just check, which SIMD-flags the compiler takes
-# and use these
-# drawback: while the compiler might support compilation for a specific
-# SIMD instruction set, the hardware you are compiling for might not
-
-# proposal:
-# by default the configure-task should only enable flags that are known
-# to work on the machine we are compiling.
-# the user can override this by explicitly stating that they want the
-# flag to be enabled (if possible)
-# e.g. "./configure --enable-sse2" on a pentium-3 should
-# produce a binary that will only run on machines with SSE2 registers
-# whereas "./configure" will make a binary with only MMX enabled.
-#
-# but how do we test for the CPU-caps? on linux we could just read /proc/cpuinfo
-# but on other OSs?
-
-# we make it a bit complicated in order to allow people to enforce the
-# compilation with a specific SIMD-instruction set, even on platforms
-# that don't support it
-# why? think cross-compilation
-
 GEM_CHECK_FAT(GEM_ARCH)
 AC_MSG_RESULT($GEM_ARCH)
 
-AS_IF([test "x${ARCH}" = "xi386" || test "x${ARCH}" = "xi686" || test "x${ARCH}" = "xx86_64"], [
- AS_IF([test "x$enable_altivec" != "xyes"], [enable_altivec="no"])
-])
+have_simd=""
+GEM_ARG_ENABLE([mmx], [MMX-support])
+AS_IF([test "x$enable_mmx" != "xno" ],[GEM_CHECK_CXXFLAGS([-mmmx], [have_simd="${have_simd}/MMX"])])
 
-AS_IF([test "x${ARCH}" = "xPower Macintosh" || test "x${ARCH}" = "xpowerpc"], [
- AS_IF([test "x$enable_mmx"  != "xyes"], [enable_mmx="no"])
- AS_IF([test "x$enable_sse2" != "xyes"], [enable_sse2="no"])
-])
+GEM_ARG_ENABLE([sse2], [SSE2-support])
+AS_IF([test "$enable_sse2" = "yes" ],[GEM_CHECK_CXXFLAGS([-msse2], [have_simd="${have_simd}/SSE2"])])
 
-AS_IF([test "x$enable_mmx" != "xno" ],[GEM_CHECK_CXXFLAGS([-mmmx])])
-AS_IF([test "x$enable_sse2" = "xyes" ],[GEM_CHECK_CXXFLAGS([-msse2])])
-AS_IF([test "x$enable_altivec" != "xno"], [GEM_CHECK_CXXFLAGS([-faltivec])])
-AS_IF([test "x$enable_powerpc" = "xyes"], [GEM_CHECK_CXXFLAGS([-mpowerpc-gfxopt])])
+GEM_ARG_ENABLE([altivec], [AltiVec-support])
+AS_IF([test "x$enable_altivec" != "xno"], [GEM_CHECK_CXXFLAGS([-faltivec], [have_simd="${have_simd}/AltiVec"])])
+
+GEM_ARG_DISABLE([powerpc], [PowerPC specific optimizations])
+AS_IF([test "$enable_powerpc" = "yes"], [GEM_CHECK_CXXFLAGS([-mpowerpc-gfxopt], [have_simd="${have_simd}/PowerPC"])])
+have_simd="${have_simd#/}"
 
 # on OSX we might come across "pascal strings" containing "\p"...
+GEM_ARG_ENABLE([pascalstrings], [containing '\p'])
 AS_IF([test "x$enable_pascalstrings" != "xno"], [GEM_CHECK_CXXFLAGS([-fpascal-strings])])
 
 AC_ARG_WITH([defaultwindow],
@@ -722,10 +729,10 @@ AS_CASE(["$with_defaultwindow"],
  [gem*], [GEM_DEFAULT_WINDOW="$with_defaultwindow"],
          [GEM_DEFAULT_WINDOW=""])
 
-AS_IF([test "x${GEM_DEFAULT_WINDOW}" = "x"], [
- AS_IF([test "x${have_glfw3}" = "xyes"], [GEM_DEFAULT_WINDOW="gemglfw3window"],
-       [test "x$WINDOWS" = "xyes"], [GEM_DEFAULT_WINDOW="gemw32window"],
-       [test "x$DARWIN" = "xyes"], [GEM_DEFAULT_WINDOW="gemcocoawindow"],
+AS_IF([test -z "${GEM_DEFAULT_WINDOW}"], [
+ AS_IF([test "${have_glfw3}" = "yes"], [GEM_DEFAULT_WINDOW="gemglfw3window"],
+       [test "$WINDOWS" = "yes"], [GEM_DEFAULT_WINDOW="gemw32window"],
+       [test "$DARWIN" = "yes"], [GEM_DEFAULT_WINDOW="gemcocoawindow"],
        [test "x$no_glx" != "xyes"], [GEM_DEFAULT_WINDOW="gemglxwindow"],
        [test "x$no_glut" != "xyes"], [GEM_DEFAULT_WINDOW="gemglutwindow"]
        )
@@ -740,18 +747,32 @@ AC_ARG_WITH([build-date],
 AC_MSG_CHECKING([build-date])
 AS_IF([test "x$with_build_date"  = "xyes" ],[with_build_date=""])
 AS_IF([test "x$with_build_date"  = "xno"  ],[with_build_date=""])
-AS_IF([test "x$with_build_date" != "x"    ],
-      [AC_DEFINE_UNQUOTED([BUILD_DATE], ["$with_build_date"], [user-defined build-date string])])
-## urgh, brackets need to be escaped with @<:@ and @:>@...
-AS_IF([test "x$with_build_date" != "x"  ],[ with_build_date="@<:@default@:>@" ])
-AC_MSG_RESULT([$with_build_date])
 
+AS_IF([test -z "$with_build_date" ],[
+## raw estimate of the build (well: configure) time:
+AS_IF([test -n "${SOURCE_DATE_EPOCH}"],
+      [with_build_date="$(date -u -d "@$SOURCE_DATE_EPOCH" "+%FT%R" 2>/dev/null || date -u -r "$SOURCE_DATE_EPOCH" "+%FT%R" 2>/dev/null || date -u "+%FT%R")"],
+      [with_build_date="$(date -u +%FT%R)"])
+])
+
+## urgh, brackets need to be escaped with @<:@ and @:>@...
+AS_IF([test -z "$with_build_date" ],[
+  with_build_date="@<:@default@:>@"
+  AC_SUBST([BUILD_DATE], [$(date -u +%FT%R)])
+],[
+  AC_SUBST([BUILD_DATE], [$with_build_date])
+]
+
+)
+AS_IF([test -n "$with_build_date" ],
+      [AC_DEFINE_UNQUOTED([BUILD_DATE], ["$with_build_date"], [user-defined build-date string])])
+
+AC_MSG_RESULT([$with_build_date])
 
 ## dummy conditionals that are always "true" (ENABLED) or "false" (DISABLED)
 enabled="yes"
-AM_CONDITIONAL([ENABLED], test "x${enabled}" = "xyes")
-AM_CONDITIONAL([DISABLED], test "x${enabled}" = "xno")
-
+AM_CONDITIONAL([ENABLED], test "${enabled}" = "yes")
+AM_CONDITIONAL([DISABLED], test "${enabled}" = "no")
 
 # damned: gcc on osX seems to report that it supports "-ip -ipo_obj" although they are only icc flags
 dnl  GEM_CHECK_CXXFLAGS([-ip -ipo_obj])
@@ -766,40 +787,41 @@ dnl =======================================
 dnl
 dnl give some feedback about the configuration
 
-AS_IF([test "x$have_ftgl" = "xyes" ], [have_font=FTGL])
-AS_IF([test "x$have_ImageMagick" = "xyes"], [have_ImageMagick="yes (Magick++${magick7})"],
-      [test "x$have_MagickCore" = "xyes"], [have_ImageMagick="yes (MagickCore${magick7})"])
+AS_IF([test -z "${have_simd}"], [have_simd="no"])
+AS_IF([test "$have_ftgl" = "yes" ], [have_font=FTGL])
+AS_IF([test "$have_ImageMagick" = "yes"], [have_ImageMagick="yes (Magick++${magick7})"],
+      [test "$have_MagickCore" = "yes"], [have_ImageMagick="yes (MagickCore${magick7})"])
 
-AS_IF([test "x$have_quicktime_framework" = "x" ], [have_quicktime_framework="no"])
-AS_IF([test "x$have_quicktime_framework" = "xyes"], [have_libquicktime="yes (framework)"])
+AS_IF([test -z "$have_quicktime_framework" ], [have_quicktime_framework="no"])
+AS_IF([test "$have_quicktime_framework" = "yes"], [have_libquicktime="yes (framework)"])
 
-AS_IF([test "x$have_avfoundation_framework" = "x"], [have_avfoundation_framework="no"])
-AS_IF([test "x$have_avfoundation_framework" = "xyes"], [
+AS_IF([test -z "$have_avfoundation_framework"], [have_avfoundation_framework="no"])
+AS_IF([test "$have_avfoundation_framework" = "yes"], [
  have_libavfoundation="yes (framework)"
  GEM_FRAMEWORK_AVFOUNDATION_LIBS="$GEM_FRAMEWORK_AVFOUNDATION_LIBS -framework Accelerate -framework CoreMedia"
 ])
 
-AS_IF([test "x$have_imageio_framework" = "x"], [have_imageio_framework="no"])
-AS_IF([test "x$have_imageio_framework" = "xyes"], [have_libimageio="yes (framework)"])
+AS_IF([test -z "$have_imageio_framework"], [have_imageio_framework="no"])
+AS_IF([test "$have_imageio_framework" = "yes"], [have_libimageio="yes (framework)"])
 
 have_ieee1394=""
-AS_IF([test "x$have_libdc1394_2" = "xyes"], [have_ieee1394="$have_ieee1394 libdc1394"])
-AS_IF([test "x$have_ieee1394" = "x"], [have_ieee1394="no"], [have_ieee1394="yes (${have_ieee1394# })"])
-AS_IF([test "x${have_v4l}" = "x"], [have_v4l="no"])
-AS_IF([test "x${have_v4l2}" = "x"], [have_v4l2="no"])
-AS_IF([test "x${have_ieee1394}" = "x"], [have_ieee1394="no"])
-AS_IF([test "x${have_libdv}" = "x"], [have_libdv="no"])
+AS_IF([test "$have_libdc1394_2" = "yes"], [have_ieee1394="$have_ieee1394 libdc1394"])
+AS_IF([test -z "$have_ieee1394"], [have_ieee1394="no"], [have_ieee1394="yes (${have_ieee1394# })"])
+AS_IF([test -z "${have_v4l}"], [have_v4l="no"])
+AS_IF([test -z "${have_v4l2}"], [have_v4l2="no"])
+AS_IF([test -z "${have_ieee1394}"], [have_ieee1394="no"])
+AS_IF([test -z "${have_libdv}"], [have_libdv="no"])
 AS_IF([test "x${have_libdv}" != "xno"], [
   AS_IF([test "x${have_libiec61883}" != "xyes"], [have_libdv="no (missing libiec61883)"])
   AS_IF([test "x${have_libraw1394}" != "xyes"], [have_libdv="no (missing libraw1394)"])
 ])
-AS_IF([test "x${have_unicap}" = "x"], [have_unicap="no"])
-AS_IF([test "x${have_pipewire}" = "x"], [have_pipewire="no"])
-AS_IF([test "x${have_vfw32}" = "x"], [have_vfw32="no"])
-AS_IF([test "x${have_stb}" = "xyes"], [have_stb="YES (library)"], [have_stb="YES (local)"])
+AS_IF([test -z "${have_unicap}"], [have_unicap="no"])
+AS_IF([test -z "${have_pipewire}"], [have_pipewire="no"])
+AS_IF([test -z "${have_vfw32}"], [have_vfw32="no"])
+AS_IF([test "${have_stb}" = "yes"], [have_stb="YES (library)"], [have_stb="YES (local)"])
 
-AS_IF([test "x${have_decklink}" = "xlocal"], [have_DeckLink="YES (local)"])
-AS_IF([test "x${with_ndi}" = "xlocal"], [have_ndi="YES (local)"])
+AS_IF([test "${have_decklink}" = "local"], [have_DeckLink="YES (local)"])
+AS_IF([test "${with_NDI}" = "local"], [have_ndi="YES (local)"])
 # TODO: have_ds
 
 AC_MSG_RESULT([
@@ -820,6 +842,8 @@ Configuration:
                          : ${X_LIBS}
 
   Install path           : ${prefix}
+
+  SIMD                   : ${have_simd}
 
  RTE (${GEM_RTE}):
   executable             : ${GEM_RTE_EXE}
@@ -857,7 +881,6 @@ PLUGINS
   capture-support
     use AVfoundation     : ${have_avfoundation_framework}
     use DeckLink         : ${have_DeckLink}
-    use DirectShow       : NO
     use DV               : ${have_libdv}
     use ieee1394         : ${have_ieee1394}
     use NDI              : ${have_ndi}
@@ -888,16 +911,16 @@ PLUGINS
  ])
 ])
 
-AS_IF([test "x$have_pd" = "xno"], [
+AS_IF([test "$have_pd" = "no"], [
   AC_MSG_ERROR([Pd (header) is mandatory and seems to be missing!])
 ])
 
-AS_IF([test "x$no_gl" = "xyes"], [
+AS_IF([test "$no_gl" = "yes"], [
  AC_MSG_ERROR([GL (headers) not found! you need openGL!!!])
 ])
 
-AS_IF([test "x$no_glu" = "xyes" && test "x$no_agl" = "xyes"], [
- AS_IF([test "x$with_GLU" != "xno"],[AC_MSG_ERROR([GLU (headers) not found! you need openGL Utility Library!!!])])
+AS_IF([test "$no_glu" = "yes" && test "$no_agl" = "yes"], [
+ AS_IF([test "$with_GLU" != "no"],[AC_MSG_ERROR([GLU (headers) not found! you need openGL Utility Library!!!])])
 ])
 
 AC_MSG_RESULT([Now run make ...])

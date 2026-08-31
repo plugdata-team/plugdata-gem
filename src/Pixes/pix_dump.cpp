@@ -2,29 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1998 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    Copyright (c) 2002 James Tittle & Chris Clepper
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2000, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////
-//
-//  pix_dump
-//
-//  0409:forum::für::umläute:2000
-//  IOhannes m zmoelnig
-//  mailto:zmoelnig@iem.at
-//
-/////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////
 
 #include "pix_dump.h"
 #include "Gem/GemGL.h"
@@ -46,7 +29,7 @@ pix_dump :: pix_dump() :
   m_mode(GEM_RGBA)
 {
   m_image.data = 0;
-  m_dataOut = outlet_new(this->x_obj, &s_list);
+  m_dataOut = outlet_new(this->x_obj, gensym("list"));
 }
 
 /////////////////////////////////////////////////////////

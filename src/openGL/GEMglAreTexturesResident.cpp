@@ -4,12 +4,10 @@
 //
 // Implementation file
 //
-// Copyright (c) 2002-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//      zmoelnig@iem.at
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
+// SPDX-FileCopyrightText: © 2002, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//  this file has been generated...
+// this file has been generated...
 ////////////////////////////////////////////////////////
 
 #include "GEMglAreTexturesResident.h"
@@ -32,7 +30,7 @@ GEMglAreTexturesResident :: GEMglAreTexturesResident    (int argc,
   m_buffer  =new t_atom   [len];
   texturesMess(argc, argv);
 
-  m_inlet = inlet_new(this->x_obj, &this->x_obj->ob_pd, &s_list,
+  m_inlet = inlet_new(this->x_obj, &this->x_obj->ob_pd, gensym("list"),
                       gensym("textures"));
   m_out1 = outlet_new(this->x_obj, 0);
   m_out2 = outlet_new(this->x_obj, 0);
@@ -67,7 +65,7 @@ void GEMglAreTexturesResident :: render(GemState *state)
     t_float f = residences[i]?1.0:0.0;
     SETFLOAT(m_buffer+i, f);
   }
-  outlet_list(m_out2, &s_list, n, m_buffer);
+  outlet_list(m_out2, gensym("list"), n, m_buffer);
   outlet_float(m_out1, (ok?1.0:0.0));
 }
 

@@ -2,15 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2011-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2011, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "pix_frei0r.h"
 #include "Gem/Exception.h"
@@ -86,10 +83,11 @@ namespace {
       static const char* const frei0r_pathlist[] = {
         "/usr/local/lib/frei0r-1/",
         "/usr/lib/frei0r-1/",
-        /* hmm, i guess these are only valid for 64bit archs, but how do we catch them? */
+#if defined __SIZEOF_POINTER__ && (__SIZEOF_POINTER__ == 8)
+        /* these are only valid for 64bit archs */
         "/usr/local/lib64/frei0r-1/",
         "/usr/lib64/frei0r-1/",
-#define MULTIARCH_TRIPLET "x86_64-linux-gnu"
+#endif
 #ifdef MULTIARCH_TRIPLET
         /* Debian's multiarch */
         "/usr/local/lib/" MULTIARCH_TRIPLET "/frei0r-1/",
@@ -419,6 +417,36 @@ public:
   }
 
   GemDylib m_dylib;
+
+  static F0RPlugin *load(const std::string &pluginname,
+                         const std::string &extension, const t_canvas *canvas) {
+    std::string filename = pluginname;
+    gem::RTE::RTE *rte = gem::RTE::RTE::getRuntimeEnvironment();
+    if (rte) {
+      filename = rte->findFile(pluginname, extension, canvas);
+    }
+    try {
+      return new F0RPlugin(filename);
+    } catch (GemException &e) {
+      /* keep trying */
+    }
+
+    if (rte) {
+      for (size_t i = 0; i < s_frei0r_paths.size(); i++) {
+        if (!s_frei0r_paths[i].empty())
+          filename = rte->findFile(s_frei0r_paths[i] + "/" + pluginname,
+                                   extension, canvas);
+        try {
+          return new F0RPlugin(filename);
+        } catch (GemException &e) {
+          /* keep trying */
+        }
+      }
+    }
+
+    /* give up */
+    return NULL;
+  }
 };
 
 static std::map<const t_symbol*, std::string>s_class2filename;
@@ -443,30 +471,17 @@ pix_frei0r :: pix_frei0r(t_symbol*s)
   m_image.setFormat(GEM_RGBA);
   m_converterImage.setFormat(GEM_RGBA);
 
-  if(!s || s==&s_) {
+  if(!s || s==gensym("")) {
     m_canopen=true;
     return;
   }
-  std::string pluginname = s->s_name;
-  std::string filename = pluginname;
-  if(s_class2filename.find(s) != s_class2filename.end()) {
-    filename=s_class2filename[s];
-    //::post("using cached filename %s", filename.c_str());
-    try {
-      m_plugin = new F0RPlugin(filename);
-    } catch (GemException&e) {
-      // ignore the error, and keep trying
-      m_plugin = 0;
-    }
-  }
-  if (0 == m_plugin) {
-    gem::RTE::RTE*rte=gem::RTE::RTE::getRuntimeEnvironment();
-    if(rte) {
-      filename=rte->findFile(pluginname, GemDylib::getDefaultExtension(),
-                             getCanvas());
-    }
 
-    m_plugin = new F0RPlugin(filename);
+  std::string pluginname = s->s_name;
+  m_plugin =
+      F0RPlugin::load(pluginname, GemDylib::getDefaultExtension(), getCanvas());
+
+  if (0 == m_plugin) {
+    throw(GemException("couldn't find frei0r plugin '" + pluginname + "'"));
   }
 
   unsigned int numparams = m_plugin->m_parameterNames.size();
@@ -492,7 +507,7 @@ pix_frei0r :: pix_frei0r(t_symbol*s)
       s_inletType=gensym("symbol");
       break;
     default:
-      s_inletType=&s_;
+      s_inletType=gensym("");
     }
     m_inlet.push_back(inlet_new(this->x_obj, &this->x_obj->ob_pd, s_inletType,
                                 gensym(tempVt)));
@@ -535,20 +550,11 @@ void pix_frei0r :: openMess(t_symbol*s)
   if(m_plugin) {
     delete m_plugin;
   }
-  m_plugin=NULL;
-  try {
-    std::string filename = pluginname;
-    gem::RTE::RTE*rte=gem::RTE::RTE::getRuntimeEnvironment();
-    if(rte) {
-      filename=rte->findFile(pluginname, GemDylib::getDefaultExtension(),
-                             getCanvas());
-    }
-    m_plugin = new F0RPlugin(filename);
-  } catch (GemException&x) {
-    error("%s", x.what());
-  }
 
-  if(NULL==m_plugin) {
+  m_plugin =
+      F0RPlugin::load(pluginname, GemDylib::getDefaultExtension(), getCanvas());
+
+  if (NULL == m_plugin) {
     error("unable to open '%s'", pluginname.c_str());
     return;
   }
@@ -694,10 +700,10 @@ static const int offset_pix_=strlen("pix_");
 static void*frei0r_loader_new(t_symbol*s, int argc, t_atom*argv)
 {
   if(!s) {
-    ::logpost(0, 3+2, "frei0r_loader: no name given");
+    ::logpost(0, PD_DEBUG + 2, "frei0r_loader: no name given");
     return 0;
   }
-  ::logpost(0, 3+2, "frei0r_loader: %s",s->s_name);
+  ::logpost(0, PD_DEBUG + 2, "frei0r_loader: %s",s->s_name);
   try {
     const char*realname=s->s_name+offset_pix_; /* strip of the leading 'pix_' */
     gem::CPPExtern_proxy proxy(pix_frei0r_class, s->s_name, s, argc, argv,
@@ -706,7 +712,7 @@ static void*frei0r_loader_new(t_symbol*s, int argc, t_atom*argv)
     proxy.setObject(new pix_frei0r(gensym(realname)));
     return proxy.initialize();
   } catch (GemException&e) {
-    ::logpost(0, 3+2, "frei0r_loader: failed! (%s)", e.what());
+    ::logpost(0, PD_DEBUG + 2, "frei0r_loader: failed! (%s)", e.what());
     return 0;
   }
   return 0;
@@ -743,7 +749,7 @@ bool pix_frei0r :: loader(const t_canvas*canvas,
   try {
     plugin=new F0RPlugin(filename);
   } catch (GemException&e) {
-    ::logpost(0, 3+2, "frei0r_loader: failed!! (%s)", e.what());
+    ::logpost(0, PD_DEBUG + 2, "frei0r_loader: failed!! (%s)", e.what());
     return false;
   }
 

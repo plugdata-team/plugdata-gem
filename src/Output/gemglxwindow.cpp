@@ -1,18 +1,13 @@
-///////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2014 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2009, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 #include "Gem/GemConfig.h"
 
 #include "gemglxwindow.h"
@@ -478,7 +473,7 @@ struct gemglxwindow::PIMPL {
     }
 
     if(vi->depth<24) {
-      ::logpost(0, 3+0, "Only using %d color bits", vi->depth);
+      ::logpost(0, PD_DEBUG + 0, "Only using %d color bits", vi->depth);
     }
     if (vi->c_class != TrueColor && vi->c_class != DirectColor) {
       pd_error(parent, "TrueColor visual required for this program (got %d)",
@@ -856,7 +851,7 @@ bool gemglxwindow :: create(void)
                                     m_transparent, m_fsaa);
       } catch (GemException&ex) {
         error("creation of shared glxcontext failed: %s", ex.what());
-        logpost(0, 3+0, "continuing at your own risk!");
+        logpost(0, PD_DEBUG + 0, "continuing at your own risk!");
       }
       if(!sharedPimpl->gemcontext) {
         try {
@@ -965,21 +960,21 @@ void gemglxwindow :: destroy(void)
       XUnmapWindow      (m_pimpl->dpy, m_pimpl->win);
       err=XDestroyWindow(m_pimpl->dpy, m_pimpl->win);
       if(err) {
-        logpost(0, 3+1, "XDestroyWindow returned %d", err);
+        logpost(0, PD_DEBUG + 1, "XDestroyWindow returned %d", err);
       }
     }
 
     if (m_pimpl->cmap) {
       err=XFreeColormap(m_pimpl->dpy, m_pimpl->cmap);
       if(err) {
-        logpost(0, 3+1, "XFreeColormap returned %d", err);
+        logpost(0, PD_DEBUG + 1, "XFreeColormap returned %d", err);
       }
     }
 
     XFlush( m_pimpl->dpy );
     err=XCloseDisplay(m_pimpl->dpy); /* this crashes if no window is there */
     if(err) {
-      logpost(0, 3+1, "XCloseDisplay returned %d", err);
+      logpost(0, PD_DEBUG + 1, "XCloseDisplay returned %d", err);
     }
   }
   m_pimpl->dpy = NULL;

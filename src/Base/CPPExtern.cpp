@@ -2,15 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// mark@danks.org
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "CPPExtern.h"
 
@@ -31,7 +28,6 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-
 void *Obj_header::operator new(size_t, void *location, void *)
 {
   return(location);
@@ -49,17 +45,20 @@ struct CPPExtern::PIMPL {
   t_canvas*canvas;
   t_class*cls;
   mutable bool endpost; /* internal state for startpost/post/endpost */
+  t_symbol*empty;
   PIMPL(const char*name)
     : objectname(name?gensym(name):gensym("unknown Gem object"))
     , canvas(canvas_getcurrent())
     , cls(s_holdclass)
     , endpost(true)
+    , empty(gensym(""))
   {  }
   PIMPL(PIMPL*p)
     : objectname(p->objectname)
     , canvas(p->canvas)
     , cls(p->cls)
     , endpost(true)
+    , empty(gensym(""))
   {  }
 
 };
@@ -121,16 +120,17 @@ CPPExtern :: ~CPPExtern()
 
 void CPPExtern :: post(const char*fmt,...) const
 {
+  void*obj = x_obj?x_obj:s_holder;
   char buf[MAXPDSTRING];
   va_list ap;
   va_start(ap, fmt);
   vsnprintf(buf, MAXPDSTRING-1, fmt, ap);
   va_end(ap);
   if(pimpl->endpost && NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
-      && &s_ != pimpl->objectname) {
-    ::post("[%s]: %s", pimpl->objectname->s_name, buf);
+      && pimpl->empty != pimpl->objectname) {
+    ::logpost(obj, PD_NORMAL, "[%s]: %s", pimpl->objectname->s_name, buf);
   } else {
-    ::post("%s", buf);
+    ::logpost(obj, PD_NORMAL, "%s", buf);
   }
   pimpl->endpost=true;
 }
@@ -142,7 +142,7 @@ void CPPExtern :: startpost(const char*fmt,...) const
   vsnprintf(buf, MAXPDSTRING-1, fmt, ap);
   va_end(ap);
   if(pimpl->endpost && NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
-      && &s_ != pimpl->objectname) {
+      && pimpl->empty != pimpl->objectname) {
     ::startpost("[%s]: %s", pimpl->objectname->s_name, buf);
   } else {
     ::startpost("%s", buf);
@@ -157,45 +157,35 @@ void CPPExtern :: endpost(void) const
 
 void CPPExtern :: verbose(const int level, const char*fmt,...) const
 {
-  const int verbose2logpost_level = 3;
+  void*obj = x_obj?x_obj:s_holder;
+  const int verbose2logpost_level = PD_DEBUG;
   char buf[MAXPDSTRING];
   va_list ap;
   va_start(ap, fmt);
   vsnprintf(buf, MAXPDSTRING-1, fmt, ap);
   va_end(ap);
   if(NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
-     && &s_ != pimpl->objectname) {
-    ::logpost(x_obj, verbose2logpost_level + level, "[%s]: %s", pimpl->objectname->s_name, buf);
+     && pimpl->empty != pimpl->objectname) {
+    ::logpost(obj, verbose2logpost_level + level, "[%s]: %s", pimpl->objectname->s_name, buf);
   } else {
-    ::logpost(x_obj, verbose2logpost_level + level, "%s", buf);
+    ::logpost(obj, verbose2logpost_level + level, "%s", buf);
   }
 }
 
 void CPPExtern :: error(const char*fmt,...) const
 {
+  void*obj = x_obj?x_obj:s_holder;
   char buf[MAXPDSTRING];
   va_list ap;
   va_start(ap, fmt);
   vsnprintf(buf, MAXPDSTRING-1, fmt, ap);
   va_end(ap);
   if(NULL!=pimpl->objectname && NULL!=pimpl->objectname->s_name
-      && &s_ != pimpl->objectname) {
+      && pimpl->empty != pimpl->objectname) {
     const char*objname=pimpl->objectname->s_name;
-    if(x_obj) {
-      pd_error(x_obj, "[%s]: %s", objname, buf);
-    } else if (s_holder) {
-      pd_error(s_holder, "[%s]: %s", objname, buf);
-    } else {
-      pd_error(0, "[%s]: %s", objname, buf);
-    }
+    pd_error(obj, "[%s]: %s", objname, buf);
   } else {
-    if(x_obj) {
-      pd_error(x_obj, "%s", buf);
-    } else if (s_holder) {
-      pd_error(s_holder, "%s", buf);
-    } else {
-      pd_error(0, "%s", buf);
-    }
+    pd_error(obj, "%s", buf);
   }
 }
 

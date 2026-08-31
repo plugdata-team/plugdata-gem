@@ -2,18 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-2000 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
-//
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 /* OLDNAMES.lib pd.lib opengl32.lib glu32.lib freetype235mt.lib FTGL_static.lib libcpmt.lib msvcrt.lib msvcprt.lib ws2_32.lib pthreadVC.lib
  * pd.lib freetype235mt.lib FTGL_static.lib opengl32.lib glu32.lib ws2_32.lib pthreadVC.lib (?)
@@ -29,7 +23,6 @@
  * pthreadVC.lib
 
 */
-
 
 #include "Gem/GemConfig.h"
 /* -------------------------- setup function ------------------------------ */
@@ -54,6 +47,13 @@
 #ifndef _MSC_VER
 # define _open open
 # define _close close
+#endif
+
+#if defined(GEM_VERSION_MAJOR) && defined(PACKAGE_VERSION_MAJOR) && (GEM_VERSION_MAJOR != PACKAGE_VERSION_MAJOR)
+# error GEM_VERSION_MAJOR and PACKAGE_VERSION_MAJOR do not agree
+#endif
+#if defined(GEM_VERSION_MINOR) && defined(PACKAGE_VERSION_MINOR) && (GEM_VERSION_MINOR != PACKAGE_VERSION_MINOR)
+# error GEM_VERSION_MINOR and PACKAGE_VERSION_MINOR do not agree
 #endif
 
 
@@ -158,11 +158,11 @@ static bool checkVersion(const char*dirname, const char*filename,
   if(!result) {
     pd_error(0, "GEM: binary/abstractions version mismatch!");
     pd_error(0, "GEM:   continue at your own risk...");
-    logpost(0, 3+0, "GEM: binary is %d.%d, but Gem abstractions are %s",
+    logpost(0, PD_DEBUG + 0, "GEM: binary is %d.%d, but Gem abstractions are %s",
             GEM_VERSION_MAJOR, GEM_VERSION_MINOR, gotversion.c_str());
-    logpost(0, 3+0,
+    logpost(0, PD_DEBUG + 0,
             "GEM: This usually means that you have a path to another version of Gem stored in your startup preferences");
-    logpost(0, 3+0, "GEM: Consider removing the wrong path!");
+    logpost(0, PD_DEBUG + 0, "GEM: Consider removing the wrong path!");
   }
 
   return result;
@@ -203,7 +203,7 @@ static void addownpath(const char*filename)
     buf[MAXPDSTRING-1]=0;
     if ((fd=_open(buf, flags))>=0) {
       _close(fd);
-      logpost(0, 3+1, "GEM: trying to add Gem path '%s' to search-paths", mypath);
+      logpost(0, PD_DEBUG + 1, "GEM: trying to add Gem path '%s' to search-paths", mypath);
       gem::RTE::RTE*rte=gem::RTE::RTE::getRuntimeEnvironment();
       if(rte) {
         success = rte->addSearchPath(mypath, 0);
@@ -255,23 +255,23 @@ void setup()
   firsttime = false;
   // startup GEM
   post("GEM: Graphics Environment for Multimedia");
-  logpost(0, 3-1, "GEM: ver: %s", GemVersion::versionString());
-  logpost(0, 3-1, "GEM: compiled " BUILD_DATE );
-  logpost(0, 3-1, "GEM: maintained by %s", GEM_MAINTAINER);
-  logpost(0, 3-1, "GEM: Authors :\tMark Danks (original version)");
+  logpost(0, PD_NORMAL, "GEM: ver: %s", GemVersion::versionString());
+  logpost(0, PD_NORMAL, "GEM: compiled " BUILD_DATE );
+  logpost(0, PD_NORMAL, "GEM: maintained by %s", GEM_MAINTAINER);
+  logpost(0, PD_NORMAL, "GEM: Authors :\tMark Danks (original version)");
   for(unsigned int i=0; i<sizeof(GEM_AUTHORS)/sizeof(*GEM_AUTHORS); i++) {
-    logpost(0, 3-1, "GEM:\t\t%s", GEM_AUTHORS[i]);
+    logpost(0, PD_NORMAL, "GEM:\t\t%s", GEM_AUTHORS[i]);
   }
-  logpost(0, 3-1, "GEM: with help by %s", GEM_OTHERAUTHORS);
-  logpost(0, 3-1, "GEM: found a bug? miss a feature? please report it:");
-  logpost(0, 3-1, "GEM: \thomepage https://gem.iem.at/");
-  logpost(0, 3-1, "GEM: \tbug-tracker https://bugs.gem.iem.at/");
-  logpost(0, 3-1,
+  logpost(0, PD_NORMAL, "GEM: with help by %s", GEM_OTHERAUTHORS);
+  logpost(0, PD_NORMAL, "GEM: found a bug? miss a feature? please report it:");
+  logpost(0, PD_NORMAL, "GEM: \thomepage https://gem.iem.at/");
+  logpost(0, PD_NORMAL, "GEM: \tbug-tracker https://bugs.gem.iem.at/");
+  logpost(0, PD_NORMAL,
           "GEM: \tmailing-list https://lists.puredata.info/listinfo/gem-dev/");
 
   for(class_setup_list_t *l = register_class_setup_list; l;) {
     class_setup_list_t*next = l->next;
-    logpost(0, 3+4, "registering Gem object: %s", l->name);
+    //logpost(0, PD_DEBUG + 4, "registering Gem object: %s", l->name);
     l->setup();
     delete l;
     l = next;

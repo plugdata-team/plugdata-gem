@@ -2,17 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 1997-1999 Mark Danks.
-//    Copyright (c) Günther Geiger.
-//    Copyright (c) 2001-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 1997, Mark Danks and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "gemhead.h"
 
@@ -27,6 +22,7 @@
 
 #include "Gem/GLStack.h"
 #include "Gem/Exception.h"
+#include "Utils/GLUtil.h"
 
 #include <stdio.h>
 
@@ -137,6 +133,9 @@ void gemhead :: renderGL(GemState *state)
     return;
   }
 
+  // Set this gemhead as the current active object for error tracking
+  gem::utils::gl::setCurrentObject(this);
+
   // set the default color and transformation matrix
   glColor4f(1.f, 1.f, 1.f, 1.f);
 
@@ -179,6 +178,9 @@ void gemhead :: renderGL(GemState *state)
   if(stacks) {
     stacks->pop();
   }
+
+  // Clear the current active object after rendering
+  gem::utils::gl::setCurrentObject(NULL);
 }
 #ifdef __GNUC__
 # pragma GCC diagnostic pop

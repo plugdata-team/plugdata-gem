@@ -16,6 +16,12 @@
   You should have received a copy of the GNU Lesser General Public
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+  SPDX-FileCopyrightText: © 2004, Ross Bencina <rossb@audiomulch.com>
+  SPDX-FileCopyrightText: © 2005, Martin Kaltenbrunner <mkalten@iua.upf.edu>
+  SPDX-FileCopyrightText: © 2012, IOhannes m zmölnig and the GEM contributors
+  SPDX-License-Identifier: LGPL-2.1-or-later
 */
 
 #ifndef INCLUDED_FLOATPOINT_H

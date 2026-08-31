@@ -2,15 +2,12 @@
 //
 // GEM - Graphics Environment for Multimedia
 //
-// zmoelnig@iem.at
-//
 // Implementation file
 //
-//    Copyright (c) 2011-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//    For information on usage and redistribution, and for a DISCLAIMER OF ALL
-//    WARRANTIES, see the file, "GEM.LICENSE.TERMS" in this distribution.
+// SPDX-FileCopyrightText: © 2011, IOhannes m zmölnig and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
-/////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////
 
 #include "plugins/imagesaver.h"
 #include "plugins/PluginFactory.h"
@@ -198,7 +195,7 @@ public:
     }
   }
   bool addSaver( std::vector<std::string>available,
-                 std::string ID=std::string(""))
+                 const std::string&ID=std::string(""))
   {
     int count=0;
 
@@ -209,7 +206,7 @@ public:
         id.push_back(ID);
       } else {
         // request for an unavailable ID
-        logpost(0, 3+2, "backend '%s' unavailable", ID.c_str());
+        logpost(0, PD_DEBUG + 2, "backend '%s' unavailable", ID.c_str());
         return false;
       }
     } else {
@@ -219,7 +216,7 @@ public:
 
     for(unsigned int i=0; i<id.size(); i++) {
       std::string key=id[i];
-      logpost(0, 3+2, "trying to add '%s' as backend", key.c_str());
+      logpost(0, PD_DEBUG + 2, "trying to add '%s' as backend", key.c_str());
       if(std::find(m_ids.begin(), m_ids.end(), key)==m_ids.end()) {
         // not yet added, do so now!
         imagesaver*saver=NULL;
@@ -227,7 +224,7 @@ public:
           saver=gem::PluginFactory<imagesaver>::getInstance(key);
         } catch(GemException&x) {
           saver=NULL;
-          logpost(0, 3+1, "cannot use image loader plugin '%s': %s", key.c_str(),
+          logpost(0, PD_DEBUG + 1, "cannot use image loader plugin '%s': %s", key.c_str(),
                   x.what());
         }
         if(NULL==saver) {
@@ -236,7 +233,7 @@ public:
         m_ids.push_back(key);
         m_savers.push_back(saver);
         count++;
-        logpost(0, 3+2, "added backend#%d '%s' @ %p", (int)(m_savers.size()-1),
+        logpost(0, PD_DEBUG + 2, "added backend#%d '%s' @ %p", (int)(m_savers.size()-1),
                 key.c_str(), saver);
       }
     }
@@ -271,7 +268,7 @@ public:
         for(unsigned int i=0; i<m_savers.size(); i++) {
           if(id!=m_ids[i])
             continue;
-          logpost(0, 3+2, "trying saver[%d]=%s", i, m_ids[i].c_str());
+          logpost(0, PD_DEBUG + 2, "trying saver[%d]=%s", i, m_ids[i].c_str());
           if(m_savers[i]->save(img, filename, mimetype, props)) {
             return true;
           }
@@ -287,7 +284,7 @@ public:
       for(rit=priorities.rbegin(); rit != priorities.rend(); ++rit) {
         float prio=rit->first;
         int index=rit->second;
-        logpost(0, 3+2, "trying saver[%d]=%s / %f", index, m_ids[index].c_str(), prio);
+        logpost(0, PD_DEBUG + 2, "trying saver[%d]=%s / %f", index, m_ids[index].c_str(), prio);
         if(m_savers[index]->save(img, filename, mimetype, props)) {
           return true;
         }

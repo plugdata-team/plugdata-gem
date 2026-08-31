@@ -4,11 +4,8 @@
 //
 // Implementation file
 //
-// Copyright (c) 2002-2011 IOhannes m zmölnig. forum::für::umläute. IEM. zmoelnig@iem.at
-//      zmoelnig@iem.at
-//  For information on usage and redistribution, and for a DISCLAIMER
-//  *  OF ALL WARRANTIES, see the file, "GEM.LICENSE.TERMS"
-//
+// SPDX-FileCopyrightText: © 2004, Cyrille Henry and the GEM contributors
+// SPDX-License-Identifier: GPL-2.0-or-later
 //
 ////////////////////////////////////////////////////////
 
@@ -76,7 +73,7 @@ void gemlist_matrix :: render(GemState *state)
   for (i=0; i<16; i++) {
     SETFLOAT(alist+i, mi[i]);
   }
-  outlet_list (m_outletMatrice, &s_list, 16, alist);
+  outlet_list (m_outletMatrice, gensym("list"), 16, alist);
 }
 
 /////////////////////////////////////////////////////////
