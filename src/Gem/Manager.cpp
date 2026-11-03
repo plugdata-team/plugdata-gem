@@ -1384,6 +1384,10 @@ GLenum GemMan :: requestLight(int specific)
 {
   int i = 0;
   if (specific > 0) {
+    if (specific > NUM_LIGHTS) {
+      pd_error(0, "GEM: light %d out of range (1..%d)", specific, NUM_LIGHTS);
+      return(static_cast<GLenum>(0));
+    }
     i = specific - 1;
   } else {
     while(s_lights[i]) {

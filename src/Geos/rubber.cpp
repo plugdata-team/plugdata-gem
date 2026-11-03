@@ -307,6 +307,11 @@ int rubber :: rubber_grab(void)
   float min_d=0;
   int min_i=0;
 
+  // the masses are only allocated once we render, so there's nothing to grab before that
+  if (!m_mass) {
+    return -1;
+  }
+
   for (int i = 0; i < m_grid_sizeX*m_grid_sizeY; i++) {
     float dx0 = m_mass[i].x[0] - ctrX;
     float dx1 = m_mass[i].x[1] - ctrY;

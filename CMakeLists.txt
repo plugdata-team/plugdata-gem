@@ -159,8 +159,10 @@ file(GLOB GEM_SOURCES
   ${GEM_SOURCE_PATH}/Particles/part_gravity.cpp
   ${GEM_SOURCE_PATH}/Particles/part_head.cpp
   ${GEM_SOURCE_PATH}/Particles/part_info.cpp
+  ${GEM_SOURCE_PATH}/Particles/part_information.cpp
   ${GEM_SOURCE_PATH}/Particles/part_killold.cpp
   ${GEM_SOURCE_PATH}/Particles/part_killslow.cpp
+  ${GEM_SOURCE_PATH}/Particles/part_move.cpp
   ${GEM_SOURCE_PATH}/Particles/part_orbitpoint.cpp
   ${GEM_SOURCE_PATH}/Particles/part_render.cpp
   ${GEM_SOURCE_PATH}/Particles/part_sink.cpp
@@ -779,8 +781,10 @@ file(GLOB GEM_HEADERS
   ${GEM_SOURCE_PATH}/Particles/part_gravity.h
   ${GEM_SOURCE_PATH}/Particles/part_head.h
   ${GEM_SOURCE_PATH}/Particles/part_info.h
+  ${GEM_SOURCE_PATH}/Particles/part_information.h
   ${GEM_SOURCE_PATH}/Particles/part_killold.h
   ${GEM_SOURCE_PATH}/Particles/part_killslow.h
+  ${GEM_SOURCE_PATH}/Particles/part_move.h
   ${GEM_SOURCE_PATH}/Particles/part_orbitpoint.h
   ${GEM_SOURCE_PATH}/Particles/part_render.h
   ${GEM_SOURCE_PATH}/Particles/part_sink.h

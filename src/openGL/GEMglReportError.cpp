@@ -13,6 +13,10 @@
 #include "GEMglReportError.h"
 #include "Utils/GLUtil.h"
 
+#ifdef __APPLE__
+# include <OpenGL/OpenGL.h> // CGLGetCurrentContext
+#endif
+
 
 CPPEXTERN_NEW( GEMglReportError);
 using namespace gem::utils::gl;
@@ -42,6 +46,14 @@ GEMglReportError :: ~GEMglReportError ()
 void GEMglReportError :: render(GemState *state)
 {
   GLenum result=0, err;
+#ifdef __APPLE__
+  /* plugdata: a bang can arrive outside of rendering, or before there is any
+   * window: without a current context, macOS' glGetError() crashes */
+  if (!CGLGetCurrentContext()) {
+    outlet_float(m_outlet, 0);
+    return;
+  }
+#endif
   while ((err = glReportError(false))) {
     const char*errStr = glErrorString(err);
     error("GL[0x%04X]: %s", err, errStr?errStr:"generic error");
