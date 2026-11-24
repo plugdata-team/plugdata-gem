@@ -181,6 +181,9 @@ bool recordPIPEWIRE :: start(const std::string&filename, gem::Properties&props)
     } else if (("PortName" == key) && (props.get(key, s)) && !s.empty()) {
       pw_properties_set(pwprops, PW_KEY_PORT_NAME, s.c_str());
 #endif
+    } else if (("Description" == key) && (props.get(key, s)) && !s.empty()) {
+      /* OBS only accepts streams with descriptions */
+      pw_properties_set(pwprops, PW_KEY_NODE_DESCRIPTION, s.c_str());
     } else if (("autoconnect" == key) && (props.get(key, d))) {
       if((int)d) {
         flags |= PW_STREAM_FLAG_AUTOCONNECT;
@@ -357,6 +360,7 @@ bool recordPIPEWIRE :: enumProperties(gem::Properties&props)
   props.set("MediaRole", std::string("Source"));
   props.set("AppName", std::string("Pd"));
   props.set("NodeName", std::string("Gem"));
+  props.set("Description", std::string(""));
   props.set("autoconnect", 0);
   return true;
 }
@@ -432,6 +436,10 @@ void recordPIPEWIRE::on_param_changed(uint32_t id, const struct spa_pod *param)
 {
   //::post("%s:%d@%s", __FILE__, __LINE__, __FUNCTION__);
   if (param == NULL || id != SPA_PARAM_Format) {
+    //  4 SPA_PARAM_Format
+    // 15 SPA_PARAM_Latency
+    // 17 SPA_PARAM_Tag
+    // 20 SPA_PARAM_PeerCapability
     return;
   }
   struct spa_video_info format;
